@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    format:rustfmt:
+      glob: "*.rs"
+      run: cargo fmt -- {staged_files}
+      stage_fixed: true
+    format:taplo:
+      glob: "*.toml"
+      run: taplo fmt --colors=never {staged_files}
+    format:biome:
+      glob: "*.{js,ts,jsx,tsx,cjs,mjs,cts,mts}"
+      run: yarn biome format --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
