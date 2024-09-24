@@ -1,0 +1,23 @@
+name: "rust setup"
+description: "rust setup"
+inputs:
+  components:
+    description: "rust components"
+    required: false
+  bins:
+    description: "binaries to install"
+    required: false
+  github-token:
+    description: "github token to use"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - uses: moonrepo/setup-rust@v1
+      with:
+        channel: 1.70
+        components: ${{ inputs.components }}
+        cache-base: main
+        bins: ${{ inputs.bins }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
