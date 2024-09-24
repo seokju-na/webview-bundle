@@ -11,3 +11,10 @@
 
 #!.yarn/cache
 .pnp.*
+.idea
+node_modules
+dist
+esm
+/Cargo.lock
+/target
+*.tsbuildinfo
