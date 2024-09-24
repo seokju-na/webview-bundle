@@ -15,7 +15,6 @@ runs:
   steps:
     - uses: moonrepo/setup-rust@v1
       with:
-        channel: 1.70
         components: ${{ inputs.components }}
         cache-base: main
         bins: ${{ inputs.bins }}
