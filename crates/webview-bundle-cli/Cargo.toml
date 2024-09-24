@@ -1,0 +1,8 @@
+[package]
+authors     = ["Seokju Na <seokju.me@gmail.com>"]
+description = "TBD"
+edition     = "2021"
+license     = "MIT"
+name        = "webview-bundle-cli"
+repository  = "https://github.com/seokju-na/webview-bundle"
+version     = "0.0.0"
