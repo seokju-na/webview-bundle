@@ -12,7 +12,7 @@ test:
   yarn vitest run
 
 test-rust:
-  cargo test run --workspace --no-fail-fast
+  cargo test --workspace
 
 biome:
   yarn biome check
