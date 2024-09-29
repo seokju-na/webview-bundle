@@ -6,3 +6,12 @@ license     = "MIT"
 name        = "webview-bundle"
 repository  = "https://github.com/seokju-na/webview-bundle"
 version     = "0.0.0"
+
+[lib]
+bench   = false
+doctest = false
+
+[dependencies]
+bincode   = { workspace = true }
+lz4_flex  = { workspace = true }
+thiserror = { workspace = true }
