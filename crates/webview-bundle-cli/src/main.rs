@@ -1,6 +1,6 @@
-use biome_console::{markup, ColorMode, ConsoleExt, EnvConsole};
+use biome_console::{markup, ConsoleExt, EnvConsole};
 use std::process::ExitCode;
-use webview_bundle_cli::{cli_command, run, setup_panic_handler, ColorsArg};
+use webview_bundle_cli::{cli_command, run, setup_panic_handler, to_color_mode};
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -19,13 +19,5 @@ async fn main() -> ExitCode {
       });
       ExitCode::FAILURE
     }
-  }
-}
-
-fn to_color_mode(color: Option<&ColorsArg>) -> ColorMode {
-  match color {
-    Some(ColorsArg::Off) => ColorMode::Disabled,
-    Some(ColorsArg::Force) => ColorMode::Enabled,
-    None => ColorMode::Auto,
   }
 }
