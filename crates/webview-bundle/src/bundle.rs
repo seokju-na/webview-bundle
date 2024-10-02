@@ -1,6 +1,7 @@
 use crate::builder::Builder;
 use bincode::{Decode, Encode};
 use lz4_flex::decompress_size_prepended;
+use std::fmt::{Display, Formatter};
 use std::io::{Cursor, Read};
 use std::path::Path;
 
@@ -29,6 +30,15 @@ impl Version {
   }
 }
 
+impl Display for Version {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    let s = match self {
+      Self::Version1 => "version1",
+    };
+    f.write_str(s)
+  }
+}
+
 #[derive(Debug, PartialEq, Encode, Decode)]
 pub struct FileDescriptor {
   pub(crate) path: String,
@@ -39,6 +49,14 @@ pub struct FileDescriptor {
 impl FileDescriptor {
   pub(crate) fn path_matches<P: AsRef<Path>>(&self, path: &P) -> bool {
     self.path == path.as_ref().to_string_lossy()
+  }
+
+  pub fn path(&self) -> &String {
+    &self.path
+  }
+
+  pub fn size(&self) -> u64 {
+    self.length
   }
 }
 
@@ -52,6 +70,10 @@ pub struct Bundle {
 impl Bundle {
   pub fn version(&self) -> &Version {
     &self.version
+  }
+
+  pub fn descriptors(&self) -> &[FileDescriptor] {
+    &self.descriptors
   }
 
   pub fn read_file<P: AsRef<Path>>(&self, path: P) -> crate::Result<Vec<u8>> {

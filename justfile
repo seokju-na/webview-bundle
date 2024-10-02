@@ -2,6 +2,10 @@ _default:
   just --list -u
 
 alias t := test
+alias tr := test-rust
+alias f := format
+alias l := lint
+alias lr := lint-rust
 
 # Installs the tools needed to develop
 install-tools:
