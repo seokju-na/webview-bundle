@@ -1,9 +1,12 @@
 [workspace]
-members  = ["crates/*"]
+members  = ["crates/*", "packages/cli"]
 resolver = "2"
 
 [workspace.dependencies]
+anyhow             = "1"
 bincode            = "2.0.0-rc.3"
+biome_console      = "0.5.7"
+bpaf               = { version = "0.9.14", features = ["derive"] }
 lz4_flex           = "0.11.3"
 serde              = { version = "1", features = ["derive"] }
 serde_json         = "1"
@@ -15,3 +18,7 @@ tracing-subscriber = "0.3.18"
 # crates
 webview-bundle     = { version = "0.0.0", path = "./crates/webview-bundle" }
 webview-bundle-cli = { version = "0.0.0", path = "./crates/webview-bundle-cli" }
+
+[profile.release]
+lto   = true
+strip = "symbols"

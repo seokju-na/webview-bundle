@@ -9,7 +9,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["./.yarn/**", "*.json"]
+    "ignore": ["./.yarn/**", "*.json", "packages/cli/index.js", "packages/cli/index.d.ts"]
   },
   "formatter": {
     "enabled": true,

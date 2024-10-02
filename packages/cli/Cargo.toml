@@ -1,0 +1,26 @@
+[package]
+authors     = ["Seokju Na <seokju.me@gmail.com>"]
+description = "TBD"
+edition     = "2021"
+license     = "MIT"
+name        = "webview-bundle-cli-node"
+publish     = false
+repository  = "https://github.com/seokju-na/webview-bundle"
+version     = "0.0.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+webview-bundle-cli = { workspace = true }
+
+# Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
+anyhow        = { workspace = true }
+biome_console = { workspace = true }
+bpaf          = { workspace = true }
+napi          = { version = "2.16.11", default-features = false, features = ["napi4", "async"] }
+napi-derive   = "2.16.12"
+tokio         = { workspace = true, features = ["rt", "rt-multi-thread"] }
+
+[build-dependencies]
+napi-build = "2.1.3"
