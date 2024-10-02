@@ -4,9 +4,11 @@ use crate::prelude::*;
 use async_walkdir::WalkDir;
 use biome_console::{markup, Console, ConsoleExt};
 use futures::StreamExt;
+use human_bytes::human_bytes;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
-use webview_bundle::{encode, Bundle};
+use tokio::io::AsyncWriteExt;
+use webview_bundle::{encode_bytes, Bundle};
 
 #[derive(Debug)]
 pub(crate) struct PackCommandData {
@@ -27,11 +29,13 @@ pub(crate) async fn pack(console: &mut dyn Console, data: PackCommandData) -> Re
   setup_logging(cli_options.log_level, cli_options.log_kind);
 
   let dir_path = Path::new(&dir);
-  let walker = FileWalker::new(dir_path.to_path_buf()).walk().await?;
+  let walker = FileWalker::new(dir_path.to_path_buf(), console)
+    .walk()
+    .await?;
   let mut builder = Bundle::builder();
   for file in walker.files {
     console.log(markup! {
-      "Target file: "<Emphasis>{file.relative_path.to_string_lossy()}</Emphasis>
+      "Target file: "{file.relative_path.to_string_lossy()}
     });
     builder = builder.add_file(file.relative_path, &file.data);
   }
@@ -48,14 +52,29 @@ pub(crate) async fn pack(console: &mut dyn Console, data: PackCommandData) -> Re
     outfile_path = outfile_path.with_extension("wvb");
   }
   tracing::debug!("Outfile path: {:?}", outfile_path);
-  let outfile = match truncate {
-    true => std::fs::File::create(&outfile_path),
-    false => std::fs::File::create_new(&outfile_path),
-  }
-  .context("Fail to create outfile")?;
-  encode(&bundle, outfile).context("Fail to encode bundle")?;
+  let data = encode_bytes(&bundle)?;
+  tracing::debug!("Encode file size: {:?}", data.len());
+  match truncate {
+    true => {
+      tokio::fs::File::create(&outfile_path)
+        .await
+        .context("Fail to create outfile")?
+        .write_all(&data)
+        .await
+        .context("Fail to write outfile")?;
+    }
+    false => {
+      tokio::fs::File::create_new(&outfile_path)
+        .await
+        .context("Fail to create outfile")?
+        .write_all(&data)
+        .await
+        .context("Fail to write outfile")?;
+    }
+  };
+  let data_size = human_bytes(data.len() as f64);
   console.log(markup! {
-    "Pack webview bundle: "<Emphasis>{outfile_path.to_string_lossy()}</Emphasis>
+    <Emphasis><Success>"Pack completed"</Success></Emphasis>": "{outfile_path.to_string_lossy()}" "<Dim>"("{data_size}")"</Dim>
   });
   Ok(())
 }
@@ -65,16 +84,18 @@ struct File {
   data: Vec<u8>,
 }
 
-struct FileWalker {
+struct FileWalker<'a> {
   base_dir: PathBuf,
   files: Vec<File>,
+  console: &'a mut dyn Console,
 }
 
-impl FileWalker {
-  fn new(base_dir: PathBuf) -> Self {
+impl<'a> FileWalker<'a> {
+  fn new(base_dir: PathBuf, console: &'a mut dyn Console) -> Self {
     Self {
       base_dir,
       files: vec![],
+      console,
     }
   }
 
@@ -107,7 +128,10 @@ impl FileWalker {
           })
         }
         Some(Err(e)) => {
-          tracing::error!("Error while reading path: {e}");
+          tracing::warn!("Error while reading path: {e}");
+          self.console.log(markup! {
+            <Emphasis><Warn>"Warning"</Warn></Emphasis>": "{e.to_string()}
+          })
         }
         None => break,
       }

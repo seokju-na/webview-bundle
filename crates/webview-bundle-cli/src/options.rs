@@ -29,7 +29,7 @@ pub struct CliOptions {
   pub log_kind: LoggingKind,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ColorsArg {
   Off,
   Force,
@@ -46,5 +46,20 @@ impl FromStr for ColorsArg {
         "value {s:?} is not valid for the --colors argument"
       )),
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn color_args_from_str() {
+    assert_eq!("off".parse::<ColorsArg>(), Ok(ColorsArg::Off));
+    assert_eq!("force".parse::<ColorsArg>(), Ok(ColorsArg::Force));
+    assert_eq!(
+      "unknown".parse::<ColorsArg>(),
+      Err("value \"unknown\" is not valid for the --colors argument".to_string())
+    );
   }
 }
