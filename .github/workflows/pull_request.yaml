@@ -44,6 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/node-setup
       - uses: ./.github/actions/yarn-setup
+      - run: yarn workspaces -Apt run build
       - run: yarn vitest run
   lint-rust:
     runs-on: ubuntu-latest
