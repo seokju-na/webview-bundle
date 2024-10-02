@@ -5,7 +5,7 @@ use biome_console::{markup, BufferConsole, Console, ConsoleExt};
 use webview_bundle_cli::prelude::*;
 use webview_bundle_cli::{cli_command, run};
 
-pub(crate) async fn run_cli<'a>(console: &'a mut dyn Console, args: bpaf::Args<'a>) -> Result<()> {
+async fn test_run<'a>(console: &'a mut dyn Console, args: bpaf::Args<'a>) -> Result<()> {
   let command = cli_command().run_inner(args);
   match command {
     Ok(x) => {
@@ -26,7 +26,7 @@ pub(crate) async fn run_cli<'a>(console: &'a mut dyn Console, args: bpaf::Args<'
 #[tokio::test]
 async fn unknown_command() {
   let mut console = BufferConsole::default();
-  let result = run_cli(
+  let result = test_run(
     &mut console,
     bpaf::Args::from(["unknown", "--help"].as_slice()),
   );
@@ -54,7 +54,7 @@ async fn pack_and_extract() {
   let mut outfile = xfs.base_dir_path_buf();
   outfile.push("bundle.wvb");
 
-  let result = run_cli(
+  let result = test_run(
     &mut console,
     bpaf::Args::from(
       [
@@ -72,7 +72,7 @@ async fn pack_and_extract() {
   let mut outdir = xfs.base_dir_path_buf();
   outdir.push("output");
 
-  let result = run_cli(
+  let result = test_run(
     &mut console,
     bpaf::Args::from(
       [
