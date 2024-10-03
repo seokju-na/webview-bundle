@@ -1,16 +1,13 @@
 {
-  "name": "@webview-bundle/cli",
+  "name": "@webview-bundle/binding",
   "version": "0.0.0",
   "main": "index.js",
   "types": "index.d.ts",
-  "bin": {
-    "webview-bundle": "./webview-bundle.js"
-  },
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/cli"
+    "directory": "packages/binding"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -21,8 +18,11 @@
     "url": "https://github.com/seokju-na"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  },
   "napi": {
-    "name": "cli",
+    "name": "binding",
     "triples": {
       "additional": [
         "aarch64-apple-darwin",
@@ -34,13 +34,10 @@
       ]
     }
   },
-  "engines": {
-    "node": ">= 10"
-  },
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
+    "build:debug": "napi build --platform --js=binding.js --dts=binding.d.ts",
     "prepublishOnly": "napi prepublish -t npm",
     "universal": "napi universal",
     "version": "napi version"

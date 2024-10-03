@@ -1,0 +1,20 @@
+[package]
+edition = "2021"
+name    = "webview-bundle-binding"
+publish = false
+version = "0.0.0"
+
+[lib]
+crate-type = ["cdylib"]
+doctest    = false
+test       = false
+
+[dependencies]
+webview-bundle = { workspace = true }
+
+# Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
+napi        = { workspace = true }
+napi-derive = { workspace = true }
+
+[build-dependencies]
+napi-build = { workspace = true }

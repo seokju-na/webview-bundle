@@ -9,7 +9,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["./.yarn/**", "*.json", "packages/cli/index.js", "packages/cli/index.d.ts"]
+    "ignore": [
+      "./.yarn/**",
+      "*.json",
+      "packages/cli/index.js",
+      "packages/cli/index.d.ts",
+      "packages/binding/binding.js",
+      "packages/binding/binding.d.ts"
+    ]
   },
   "formatter": {
     "enabled": true,

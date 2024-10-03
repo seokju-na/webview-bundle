@@ -1,5 +1,5 @@
 [workspace]
-members  = ["crates/*", "packages/cli"]
+members  = ["crates/*", "packages/cli", "packages/binding"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -8,6 +8,9 @@ bincode            = "2.0.0-rc.3"
 biome_console      = "0.5.7"
 bpaf               = { version = "0.9.14", features = ["derive"] }
 lz4_flex           = "0.11.3"
+napi               = { version = "2.16.11", default-features = false, features = ["napi4", "async"] }
+napi-build         = "2.1.3"
+napi-derive        = "2.16.12"
 serde              = { version = "1", features = ["derive"] }
 serde_json         = "1"
 thiserror          = "1"
