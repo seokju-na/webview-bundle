@@ -21,7 +21,7 @@ it('file not found error', async () => {
   await expect(bundle.readFile('unknown/dir/index.html')).rejects.toThrowError(new Error('file not found'));
 });
 
-it('create', async () => {
+it('create bundle', async () => {
   const data = Buffer.from('export const A = 10;', 'utf8');
   const bundle = await binding.create([{ path: 'index.js', data }]);
   await expect(bundle.readFile('index.js')).resolves.toEqual(data);
