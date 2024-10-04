@@ -10,7 +10,7 @@ pub const HEADER_MAGIC_BYTES: [u8; 8] = [0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 0x8
 pub(crate) const VERSION_BYTES_LENGTH: usize = 4;
 pub(crate) const FILE_DESCRIPTORS_SIZE_BYTES_LENGTH: usize = 4;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Version {
   /// Version 1
   Version1,
@@ -39,7 +39,7 @@ impl Display for Version {
   }
 }
 
-#[derive(Debug, PartialEq, Encode, Decode)]
+#[derive(Debug, PartialEq, Encode, Decode, Clone)]
 pub struct FileDescriptor {
   pub(crate) path: String,
   pub(crate) offset: u64,
@@ -60,7 +60,7 @@ impl FileDescriptor {
   }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Bundle {
   pub(crate) version: Version,
   pub(crate) descriptors: Vec<FileDescriptor>,

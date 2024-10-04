@@ -2,31 +2,53 @@ _default:
   just --list -u
 
 alias t := test
-alias tr := test-rust
 alias f := format
 alias l := lint
-alias lr := lint-rust
+alias b := build
 
-# Installs the tools needed to develop
-install-tools:
-	cargo install cargo-binstall
-	cargo binstall taplo-cli knope
+# Setup development environment
+setup:
+  # Install Rust-related tools
+  cargo install cargo-binstall
+  cargo binstall taplo-cli knope
 
-test:
+  # Setup Node.js environment
+  corepack enable
+  corepack prepare --activate
+  yarn
+
+test: test-rust test-js
+
+test-js: build-debug
   yarn vitest run
 
 test-rust:
-  cargo test --workspace
+  cargo test --workspace --no-fail-fast
 
 biome:
   yarn biome check
 
-format:
-  cargo fmt
+format: format-toml format-rust format-js
+
+format-toml:
   taplo format
 
-lint:
+format-rust:
+  cargo fmt --all
+
+format-js:
+  yarn biome format
+
+lint: lint-rust lint-js
+
+lint-js:
   yarn biome check
 
 lint-rust:
-  cargo clippy
+  cargo clippy --workspace
+
+build:
+  yarn workspaces foreach -Apt run build
+
+build-debug:
+  yarn workspaces foreach -Apt run build:debug

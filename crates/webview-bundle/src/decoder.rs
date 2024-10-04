@@ -84,4 +84,12 @@ mod tests {
     let decoded = decode(encoded).unwrap();
     assert_eq!(bundle, decoded);
   }
+
+  #[test]
+  fn invalid_magic() {
+    assert!(matches!(
+      decode(vec![0, 0, 0, 0, 0, 0, 0, 0]).unwrap_err(),
+      crate::Error::InvalidMagic,
+    ));
+  }
 }
