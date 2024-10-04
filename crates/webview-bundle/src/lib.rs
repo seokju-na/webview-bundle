@@ -6,6 +6,7 @@ mod error;
 
 pub(crate) type Result<T> = std::result::Result<T, Error>;
 
+pub use builder::Builder;
 pub use bundle::{Bundle, Version};
 pub use decoder::decode;
 pub use encoder::{encode, encode_bytes};

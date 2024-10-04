@@ -3,7 +3,7 @@ use crate::{Bundle, Version};
 use lz4_flex::compress_prepend_size;
 use std::path::Path;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Builder {
   version: Option<Version>,
   offset: u64,

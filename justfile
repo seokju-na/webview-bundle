@@ -6,6 +6,7 @@ alias tr := test-rust
 alias f := format
 alias l := lint
 alias lr := lint-rust
+alias b := build
 
 # Installs the tools needed to develop
 install-tools:
@@ -30,3 +31,9 @@ lint:
 
 lint-rust:
   cargo clippy
+
+build:
+  yarn workspaces foreach -Apt run build
+
+build-debug:
+  yarn workspaces foreach -Apt run build:debug

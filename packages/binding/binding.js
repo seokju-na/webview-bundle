@@ -310,7 +310,9 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Bundle, parse } = nativeBinding
+const { Bundle, decode, encode, create } = nativeBinding
 
 module.exports.Bundle = Bundle
-module.exports.parse = parse
+module.exports.decode = decode
+module.exports.encode = encode
+module.exports.create = create
