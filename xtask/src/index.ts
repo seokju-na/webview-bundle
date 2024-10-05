@@ -4,7 +4,7 @@ import { ReleaseCommand } from './release/ReleaseCommand';
 const [node, app, ...args] = process.argv;
 
 const cli = new Cli({
-  binaryLabel: 'webview-bundle-xtask',
+  binaryLabel: 'xtask',
   binaryName: `${node} ${app}`,
   binaryVersion: '0.0.0',
 });

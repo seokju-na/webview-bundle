@@ -633,6 +633,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rainbowatcher/toml-edit-js@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "@rainbowatcher/toml-edit-js@npm:0.2.1"
+  checksum: 10c0/a6b028f29dccfb3602972edea84c3ff91b0114050e3a6dda78f459194d9dded2f735056fee89d16fd861b06b6dbb8618ca29ffc849b8f59c507746e3c217c1ce
+  languageName: node
+  linkType: hard
+
 "@rollup/rollup-android-arm-eabi@npm:4.22.4":
   version: 4.22.4
   resolution: "@rollup/rollup-android-arm-eabi@npm:4.22.4"
@@ -742,22 +749,6 @@ __metadata:
   version: 4.22.4
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.22.4"
   conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@taplo/core@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@taplo/core@npm:0.2.0"
-  checksum: 10c0/4bbc3b696c49e267da2dfcd13e7812e5c09febda583856b35569773542e93f9c28a50dab69c635e1d5e11a4de6962ab08e006985fa38d2df1b3ef19d471efa05
-  languageName: node
-  linkType: hard
-
-"@taplo/lib@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@taplo/lib@npm:0.5.0"
-  dependencies:
-    "@taplo/core": "npm:^0.2.0"
-  checksum: 10c0/0d1ea190586cac09a1c28fc43f807ba843a3313329744aacf49200da909beacbc43e5ebb89677d608b821458ad9378bc3d398c2aa7eff7e567ad59f85cc5ed82
   languageName: node
   linkType: hard
 
@@ -1667,6 +1658,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"memoize@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "memoize@npm:10.0.0"
+  dependencies:
+    mimic-function: "npm:^5.0.0"
+  checksum: 10c0/1584351834564be66b21d47b7afe495851f622669ad49e2f4fa4f35d5633471b93176cf602130a95f71fa0aee65a20179817ffac2dd11fa354aa19a8109a14e8
+  languageName: node
+  linkType: hard
+
+"mimic-function@npm:^5.0.0":
+  version: 5.0.1
+  resolution: "mimic-function@npm:5.0.1"
+  checksum: 10c0/f3d9464dd1816ecf6bdf2aec6ba32c0728022039d992f178237d8e289b48764fee4131319e72eedd4f7f094e22ded0af836c3187a7edc4595d28dd74368fd81d
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^9.0.4":
   version: 9.0.5
   resolution: "minimatch@npm:9.0.5"
@@ -2175,13 +2182,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"toml@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "toml@npm:3.0.0"
-  checksum: 10c0/8d7ed3e700ca602e5419fca343e1c595eb7aa177745141f0761a5b20874b58ee5c878cd045c408da9d130cb2b611c639912210ba96ce2f78e443569aa8060c18
-  languageName: node
-  linkType: hard
-
 "typanion@npm:^3.8.0":
   version: 3.14.0
   resolution: "typanion@npm:3.14.0"
@@ -2420,13 +2420,13 @@ __metadata:
   resolution: "xtask@workspace:xtask"
   dependencies:
     "@napi-rs/simple-git": "npm:^0.1.19"
-    "@taplo/lib": "npm:^0.5.0"
+    "@rainbowatcher/toml-edit-js": "npm:^0.2.1"
     "@types/node": "npm:22.7.4"
     "@types/semver": "npm:^7"
     clipanion: "npm:^4.0.0-rc.4"
     esbuild: "npm:^0.24.0"
+    memoize: "npm:^10.0.0"
     semver: "npm:^7.6.3"
-    toml: "npm:^3.0.0"
     type-fest: "npm:^4.26.1"
     vitest: "npm:2.1.2"
   bin:

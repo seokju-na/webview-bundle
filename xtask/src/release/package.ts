@@ -1,78 +1,43 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import type { PackageJson as PackageJsonType } from 'type-fest';
-import toml from '@taplo/lib';
-import { type BumpRule, Version } from './versioning';
+import type { NonEmptyTuple } from 'type-fest';
+import type { Action } from './action';
+import type { ReleasePackage } from './config';
+import { type VersionedFile, loadVersionedFile } from './versionedFile';
+import type { BumpRule } from './versioning';
 
-export type PackageType = 'package.json' | 'Cargo.toml';
-
-export interface Package {
-  readonly type: PackageType;
-  readonly filepath: string;
-  version: Version;
-  nextVersion: Version;
-  get diff(): -1 | 0 | 1;
-  bump(rule: BumpRule): void;
-  write(): Promise<boolean>;
-}
-
-class PackageJson implements Package {
-  readonly type: PackageType = 'package.json';
-  private readonly raw: PackageJsonType;
-  version: Version;
-  nextVersion: Version;
-
-  static async load(filepath: string) {
-    const raw: PackageJsonType = JSON.parse(await readFile(filepath, 'utf8'));
-    const version = Version.parse(raw.version!);
-    return new PackageJson(filepath, raw, version);
-  }
-
-  constructor(
-    public readonly filepath: string,
-    raw: PackageJsonType,
-    version: Version,
-    nextVersion?: Version
-  ) {
-    this.version = version;
-    this.nextVersion = nextVersion ?? version;
-    this.raw = raw;
-  }
-
-  get diff() {
-    return this.nextVersion.compare(this.version);
-  }
-
-  bump(rule: BumpRule) {
-    this.nextVersion = this.version.bump(rule);
-  }
-
-  async write() {
-    if (this.diff === 0) {
-      return false;
+export class Package {
+  static async load(name: string, pkg: ReleasePackage) {
+    const versionedFiles = await Promise.all(pkg.versionedFiles.map(loadVersionedFile));
+    if (versionedFiles.length === 0) {
+      throw new Error(`No versioned files for package: ${name}`);
     }
-    const raw = { ...this.raw, version: this.nextVersion.format() };
-    await writeFile(this.filepath, JSON.stringify(raw, null, 2));
-    return true;
+    return new Package(name, versionedFiles as any as NonEmptyTuple<VersionedFile>, pkg.scopes ?? []);
   }
-}
 
-class CargoTomlPackage implements Package {
-  readonly type: PackageType = 'Cargo.toml';
+  protected constructor(
+    public readonly name: string,
+    public readonly versionedFiles: NonEmptyTuple<VersionedFile>,
+    public readonly scopes: string[]
+  ) {}
 
-  static async load(filepath: string) {
-
+  get version() {
+    return this.versionedFiles[0].version;
   }
-}
 
-export async function loadPackage(filepath: string): Promise<Package> {
-  const filename = path.basename(filepath);
-  switch (filename) {
-    case 'package.json':
-      return await PackageJson.load(filepath);
-    case 'Cargo.toml':
-      break;
-    default:
-      throw new Error(`Invalid package: ${filename}`);
+  get nextVersion() {
+    return this.versionedFiles[0].nextVersion;
+  }
+
+  get versionDiff(): -1 | 0 | 1 {
+    return this.versionedFiles[0].versionDiff;
+  }
+
+  bumpVersion(rule: BumpRule) {
+    for (let i = 0; i < this.versionedFiles.length; i += 1) {
+      this.versionedFiles[i]!.bumpVersion(rule);
+    }
+  }
+
+  write(): Action[] {
+    return this.versionedFiles.map(x => x.write()).filter(x => x != null);
   }
 }

@@ -4,14 +4,14 @@
   "bin": "./dist/index.js",
   "scripts": {
     "postinstall": "yarn out",
-    "out": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\""
+    "out": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --log-level=error"
   },
   "dependencies": {
     "@napi-rs/simple-git": "^0.1.19",
-    "@taplo/lib": "^0.5.0",
+    "@rainbowatcher/toml-edit-js": "^0.2.1",
     "clipanion": "^4.0.0-rc.4",
+    "memoize": "^10.0.0",
     "semver": "^7.6.3",
-    "toml": "^3.0.0",
     "type-fest": "^4.26.1"
   },
   "devDependencies": {

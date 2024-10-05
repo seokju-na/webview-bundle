@@ -11,12 +11,17 @@ export class Version {
 
   constructor(protected sem: semver.SemVer) {}
 
+  getPrereleaseIdentifier(): string | undefined {
+    return this.sem.prerelease[0] as string | undefined;
+  }
+
   compare(other: Version): 1 | 0 | -1 {
     return this.sem.compare(other.sem);
   }
 
   bump(rule: BumpRule): Version {
-    const sem = rule.type === 'prerelease' ? this.sem.inc('prerelease', rule.identifier) : this.sem.inc(rule.type);
+    const sem = new semver.SemVer(this.sem.format());
+    rule.type === 'prerelease' ? sem.inc('prerelease', rule.identifier) : sem.inc(rule.type);
     return new Version(sem);
   }
 
