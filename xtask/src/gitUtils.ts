@@ -70,9 +70,3 @@ export function signature(name: string, email: string) {
 export function defaultSignature() {
   return signature('Seokju Na', 'seokju.me@gmail.com');
 }
-
-export function commitToHead(repo: Repository, signature: Signature, message: string) {
-  const headRef = repo.head();
-  const oid = repo.commit(null, signature, signature, message, headRef.peelToTree());
-  return repo.findCommit(oid)!;
-}

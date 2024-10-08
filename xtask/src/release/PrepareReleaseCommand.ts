@@ -73,17 +73,24 @@ export class PrepareReleaseCommand extends Command {
       }
     }
 
+    if (this.dryRun) {
+      return 0;
+    }
+
     // Add files to git index
     // TODO: `@napi-rs/simple-git` does not implement `index()` so we have to use git with CLI
     for (const action of actions.filter(x => x.type === 'writeFile')) {
-      const args = ['add', action.filepath];
-      if (this.dryRun) {
-        args.push('--dry-run');
-      }
-      await execa('git', args, { cwd: rootDir, stdio: 'inherit' });
+      await execa('git', ['add', action.filepath, '--verbose'], { cwd: rootDir, stdio: 'inherit' });
     }
     if (!this.dryRun) {
-      gitUtils.commitToHead(repo, gitUtils.defaultSignature(), 'chore: release commit');
+      await execa('git', [
+        'commit',
+        '-m',
+        'chore: prepare release',
+        '--no-verify',
+        '--author="Seokju Na <seokju.me@gmail.com>"',
+        '--verbose',
+      ]);
     }
 
     // Push to remote
