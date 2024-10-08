@@ -17,3 +17,11 @@ export const findRootDir = memoize(() => {
 export function relativePathToRootDir(filepath: string) {
   return path.relative(findRootDir(), filepath);
 }
+
+export function absolutePathFromRootDir(filepath: string) {
+  if (path.isAbsolute(filepath)) {
+    return filepath;
+  }
+  const rootDir = findRootDir();
+  return path.join(rootDir, filepath);
+}

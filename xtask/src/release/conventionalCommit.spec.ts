@@ -1,4 +1,3 @@
-import semver from 'semver';
 import { describe, expect, it } from 'vitest';
 import { parseConventionalCommit } from './conventionalCommit';
 
@@ -39,12 +38,5 @@ BREAKING CHANGE: remove '.addSomething()' method
   it('throw error if message is not conventional commit', () => {
     expect(() => parseConventionalCommit('any commit message')).toThrowError();
     expect(() => parseConventionalCommit('unknown: hello world')).toThrowError();
-  });
-
-  it('test', () => {
-    const v = semver.parse('1.2.4-beta');
-    console.log(v?.prerelease);
-    v?.inc('prerelease', 'beta');
-    console.log(v?.format());
   });
 });

@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import init, { edit, parse, stringify } from '@rainbowatcher/toml-edit-js';
+import init, { edit, parse } from '@rainbowatcher/toml-edit-js';
+import chalk from 'chalk';
+import { execa } from 'execa';
 import type { PackageJson as PackageJsonType } from 'type-fest';
 import type { Action } from './action';
 import { type BumpRule, Version } from './versioning';
@@ -12,9 +14,10 @@ export interface VersionedFile {
   readonly filepath: string;
   version: Version;
   nextVersion: Version;
-  get versionDiff(): -1 | 0 | 1;
+  get versionChanged(): boolean;
   bumpVersion(rule: BumpRule): void;
   write(): Action | undefined;
+  publish(dryRun?: boolean): Promise<boolean>;
 }
 
 abstract class BaseVersionedFile implements VersionedFile {
@@ -31,8 +34,8 @@ abstract class BaseVersionedFile implements VersionedFile {
     this.nextVersion = nextVersion ?? version;
   }
 
-  get versionDiff(): -1 | 0 | 1 {
-    return this.nextVersion.compare(this.version);
+  get versionChanged(): boolean {
+    return this.nextVersion.compare(this.version) !== 0;
   }
 
   bumpVersion(rule: BumpRule) {
@@ -40,6 +43,7 @@ abstract class BaseVersionedFile implements VersionedFile {
   }
 
   abstract write(): Action | undefined;
+  abstract publish(dryRun?: boolean): Promise<boolean>;
 }
 
 class PackageJsonVersionedFile extends BaseVersionedFile {
@@ -57,12 +61,14 @@ class PackageJsonVersionedFile extends BaseVersionedFile {
   }
 
   write(): Action | undefined {
-    if (this.versionDiff === 0) {
+    if (!this.versionChanged) {
       return undefined;
     }
     const raw = { ...this.raw, version: this.nextVersion.format() };
-    const diff = `- "version": "${this.version.format()}"
-+ "version": "${this.nextVersion.format()}"`;
+    const diff = [
+      chalk.bgRed(`- "version": "${this.version.format()}"`),
+      chalk.bgGreen(`+ "version": "${this.nextVersion.format()}"`),
+    ].join('\n');
     const action: Action = {
       type: 'writeFile',
       filepath: this.filepath,
@@ -70,6 +76,19 @@ class PackageJsonVersionedFile extends BaseVersionedFile {
       diff,
     };
     return action;
+  }
+
+  async publish(dryRun = false) {
+    if (this.raw.private === true) {
+      return false;
+    }
+    const cwd = path.basename(this.filepath);
+    const args = ['npm', 'publish', '--access', 'public'];
+    if (dryRun) {
+      args.push('--dry-run');
+    }
+    await execa('yarn', args, { stdio: 'inherit', cwd });
+    return true;
   }
 }
 
@@ -90,12 +109,14 @@ class CargoTomlVersionedFile extends BaseVersionedFile {
   }
 
   write(): Action | undefined {
-    if (this.versionDiff === 0) {
+    if (!this.versionChanged) {
       return undefined;
     }
     const content = edit(this.raw, 'package.version', this.nextVersion.format());
-    const diff = `- version = "${this.version.format()}"
-+ version = "${this.nextVersion.format()}"`;
+    const diff = [
+      chalk.bgRed(`- version = "${this.version.format()}"`),
+      chalk.bgGreen(`+ version = "${this.nextVersion.format()}"`),
+    ].join('\n');
     const action: Action = {
       type: 'writeFile',
       filepath: this.filepath,
@@ -103,6 +124,20 @@ class CargoTomlVersionedFile extends BaseVersionedFile {
       diff,
     };
     return action;
+  }
+
+  async publish(dryRun = false) {
+    const parsed = parse(this.raw);
+    if (parsed?.package?.publish === false) {
+      return false;
+    }
+    const cwd = path.basename(this.filepath);
+    const args = ['publish'];
+    if (dryRun) {
+      args.push('--dry-run');
+    }
+    await execa('cargo', args, { stdio: 'inherit', cwd });
+    return true;
   }
 }
 

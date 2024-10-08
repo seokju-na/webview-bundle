@@ -21,6 +21,9 @@
     "url": "https://github.com/seokju-na"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  },
   "napi": {
     "name": "cli",
     "triples": {
@@ -32,16 +35,14 @@
         "x86_64-unknown-linux-musl",
         "i686-pc-windows-msvc"
       ]
-    }
-  },
-  "engines": {
-    "node": ">= 10"
+    },
+    "npmClient": "yarn"
   },
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi prepublish -t npm",
+    "prepublishOnly": "napi prepublish --skip-gh-release",
     "universal": "napi universal",
     "version": "napi version"
   },

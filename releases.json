@@ -1,9 +1,11 @@
 {
+  "rootChangelog": "CHANGELOG.md",
   "packages": {
     "core": {
       "versionedFiles": [
         "crates/webview-bundle/Cargo.toml"
       ],
+      "changelog": "crates/webview-bundle/CHANGELOG.md",
       "scopes": ["core"]
     },
     "cli": {
@@ -21,7 +23,14 @@
         "packages/cli/npm/win32-ia32-msvc/package.json",
         "packages/cli/npm/win32-x64-msvc/package.json"
       ],
-      "scopes": ["cli"]
+      "changelog": "packages/cli/CHANGELOG.md",
+      "scopes": ["cli"],
+      "beforeReleaseScripts": [
+        {
+          "command": "yarn artifacts",
+          "cwd": "packages/cli"
+        }
+      ]
     },
     "binding": {
       "versionedFiles": [
@@ -37,7 +46,20 @@
         "packages/binding/npm/win32-ia32-msvc/package.json",
         "packages/binding/npm/win32-x64-msvc/package.json"
       ],
-      "scopes": ["binding"]
+      "changelog": "packages/binding/CHANGELOG.md",
+      "scopes": ["binding"],
+      "beforeReleaseScripts": [
+        {
+          "command": "yarn artifacts",
+          "cwd": "packages/cli"
+        }
+      ]
+    }
+  },
+  "github": {
+    "repo": {
+      "owner": "seokju-na",
+      "name": "webview-bundle"
     }
   }
 }

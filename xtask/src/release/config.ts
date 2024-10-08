@@ -1,17 +1,26 @@
 import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import * as workspaceUtils from '../workspaceUtils';
 
 interface ReleaseConfigRaw {
-  packages?: Record<string, ReleasePackage>;
+  rootChangelog?: string;
+  packages: Record<string, ReleasePackage>;
+}
+
+export interface ReleaseScript {
+  command: string;
+  cwd?: string;
+  env?: Record<string, string>;
 }
 
 export interface ReleasePackage {
   versionedFiles: string[];
+  changelog: string;
   scopes?: string[];
+  beforeReleaseScripts?: ReleaseScript[];
 }
 
 export class ReleaseConfig {
+  readonly rootChangelog?: string;
   readonly packages = new Map<string, ReleasePackage>();
 
   static async load(filepath: string) {
@@ -20,6 +29,8 @@ export class ReleaseConfig {
   }
 
   protected constructor(raw: ReleaseConfigRaw) {
+    this.rootChangelog =
+      raw.rootChangelog != null ? workspaceUtils.absolutePathFromRootDir(raw.rootChangelog) : undefined;
     for (const [name, pkg] of Object.entries(raw.packages ?? {})) {
       this.packages.set(name, pkg);
     }
@@ -27,22 +38,15 @@ export class ReleaseConfig {
 }
 
 function parseConfigRaw(raw: ReleaseConfigRaw) {
-  const rootDir = workspaceUtils.findRootDir();
-  if (raw.packages != null) {
-    raw.packages = Object.fromEntries(
-      Object.entries(raw.packages).map(([name, pkg]) => [
-        name,
-        {
-          ...pkg,
-          versionedFiles: pkg.versionedFiles.map(filepath => {
-            if (path.isAbsolute(filepath)) {
-              return filepath;
-            }
-            return path.join(rootDir, filepath);
-          }),
-        },
-      ])
-    );
-  }
+  raw.packages = Object.fromEntries(
+    Object.entries(raw.packages).map(([name, pkg]) => [
+      name,
+      {
+        ...pkg,
+        versionedFiles: pkg.versionedFiles.map(workspaceUtils.absolutePathFromRootDir),
+        changelog: workspaceUtils.absolutePathFromRootDir(pkg.changelog),
+      },
+    ])
+  );
   return raw;
 }

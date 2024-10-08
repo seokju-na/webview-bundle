@@ -1,4 +1,5 @@
 import { Cli } from 'clipanion';
+import { PrepareReleaseCommand } from './release/PrepareReleaseCommand';
 import { ReleaseCommand } from './release/ReleaseCommand';
 
 const [node, app, ...args] = process.argv;
@@ -10,4 +11,5 @@ const cli = new Cli({
 });
 
 cli.register(ReleaseCommand);
+cli.register(PrepareReleaseCommand);
 cli.runExit(args);
