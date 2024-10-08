@@ -1,7 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Repository } from '@napi-rs/simple-git';
+import chalk from 'chalk';
 import { Command, Option } from 'clipanion';
+import { partition } from 'es-toolkit';
 import { execa, execaCommand } from 'execa';
 import * as gitUtils from '../gitUtils';
 import * as workspaceUtils from '../workspaceUtils';
@@ -66,34 +68,48 @@ export class PrepareReleaseCommand extends Command {
     allActions.push(rootChangelog?.write());
 
     const actions = allActions.filter(x => x != null);
-    for (const action of actions) {
-      this.context.stdout.write(`${formatAction(action)}\n\n`);
+    if (actions.length === 0) {
+      this.context.stderr.write(chalk.red('Nothing to release'));
+      this.context.stderr.write('\n');
+      return 1;
+    }
+
+    const [beforeActions, afterActions] = partition(actions, x => x.type !== 'addGitTag');
+
+    await this.runActions(beforeActions, { repo });
+
+    // Add files to git index
+    if (this.dryRun) {
+      this.context.stdout.write('Will git add files and commit');
+    } else {
+      // TODO: `@napi-rs/simple-git` does not implement `index()` so we have to use git with CLI
+      for (const action of actions.filter(x => x.type === 'writeFile')) {
+        await execa('git', ['add', action.filepath, '--verbose'], { cwd: rootDir, stdio: 'inherit' });
+      }
       if (!this.dryRun) {
-        await this.runAction(action, { repo });
+        await execa('git', [
+          'commit',
+          '-m',
+          'chore: prepare release',
+          '--no-verify',
+          '--author="Seokju Na <seokju.me@gmail.com>"',
+          '--verbose',
+        ]);
       }
     }
 
-    if (this.dryRun) {
-      return 0;
-    }
-
-    // Add files to git index
-    // TODO: `@napi-rs/simple-git` does not implement `index()` so we have to use git with CLI
-    for (const action of actions.filter(x => x.type === 'writeFile')) {
-      await execa('git', ['add', action.filepath, '--verbose'], { cwd: rootDir, stdio: 'inherit' });
-    }
-    if (!this.dryRun) {
-      await execa('git', [
-        'commit',
-        '-m',
-        'chore: prepare release',
-        '--no-verify',
-        '--author="Seokju Na <seokju.me@gmail.com>"',
-        '--verbose',
-      ]);
-    }
+    await this.runActions(afterActions, { repo });
 
     // Push to remote
+  }
+
+  private async runActions(actions: Action[], params: { repo: Repository }) {
+    for (const action of actions) {
+      this.context.stdout.write(`${formatAction(action)}\n\n`);
+      if (!this.dryRun) {
+        await this.runAction(action, params);
+      }
+    }
   }
 
   private async runAction(
