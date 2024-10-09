@@ -8,13 +8,13 @@
   },
   "dependencies": {
     "@napi-rs/simple-git": "^0.1.19",
+    "@octokit/rest": "^21.0.2",
     "@rainbowatcher/toml-edit-js": "^0.2.1",
     "chalk": "^5.3.0",
     "clipanion": "^4.0.0-rc.4",
     "diff": "^7.0.0",
     "es-toolkit": "^1.24.0",
     "execa": "^9.4.0",
-    "memoize": "^10.0.0",
     "semver": "^7.6.3",
     "type-fest": "^4.26.1"
   },

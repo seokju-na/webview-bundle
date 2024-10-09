@@ -1,0 +1,20 @@
+name: Prepare Release
+on:
+  workflow_dispatch:
+permissions:
+  pull-requests: write
+concurrency:
+  group: prepare_release
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+      - uses: ./.github/actions/node-setup
+      - uses: ./.github/actions/rust-setup
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ./.github/actions/yarn-setup
+      -

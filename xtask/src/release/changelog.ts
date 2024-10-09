@@ -30,18 +30,33 @@ export class Changelog {
   appendChanges(title: string, changes: Changes) {
     const lines = this.nextContent.split('\n');
 
-    const changesTitle = `## ${title}`;
-    const idx = lines.findIndex(x => x.startsWith(changesTitle));
+    const sectionTitle = `## ${title}`;
+    const idx = lines.findIndex(x => x.startsWith(sectionTitle));
 
     const changesLines = changes.format().split('\n');
 
     if (idx > -1) {
       lines.splice(idx + 2, 0, ...changesLines);
     } else {
-      changesLines.unshift(`\n${changesTitle}\n`);
+      changesLines.unshift(`\n${sectionTitle}\n`);
       lines.splice(1, 0, ...changesLines);
     }
     this.nextContent = lines.join('\n');
+  }
+
+  extractSection(title: string) {
+    const lines = this.nextContent.split('\n');
+
+    const sectionTitle = `## ${title}`;
+    const idx = lines.findIndex(x => x.startsWith(sectionTitle));
+    if (idx > -1) {
+      return '';
+    }
+
+    let nextIdx = lines.slice(idx + 1).findIndex(x => !x.startsWith(sectionTitle) && x.startsWith('## '));
+    nextIdx = nextIdx === -1 ? lines.length : nextIdx;
+    const sectionLines = lines.slice(idx, nextIdx);
+    return sectionLines.join('\n');
   }
 
   write(): Action | undefined {

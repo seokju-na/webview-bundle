@@ -1,6 +1,6 @@
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
-import memoize from 'memoize';
+import { memoize } from 'es-toolkit';
 
 export const findRootDir = memoize(() => {
   let dir = process.cwd();

@@ -2,7 +2,9 @@ import path from 'node:path';
 import chalk from 'chalk';
 import { Command, Option } from 'clipanion';
 import * as gitUtils from '../gitUtils';
+import { getGithub } from '../github';
 import * as workspaceUtils from '../workspaceUtils';
+import { Changelog } from './changelog';
 import { ReleaseConfig } from './config';
 import { Package } from './package';
 
@@ -11,6 +13,12 @@ export class ReleaseCommand extends Command {
 
   dryRun = Option.Boolean('--dry-run', false, {
     description: "Perform dry run. Don't change any files or any network calls.",
+  });
+
+  githubToken = Option.String('--github-token', {
+    required: true,
+    env: 'GITHUB_TOKEN',
+    description: 'GitHub token to use. Used to create GitHub Release.',
   });
 
   async execute() {
@@ -37,12 +45,23 @@ export class ReleaseCommand extends Command {
     for (const pkg of targetPackages) {
       try {
         await this.publishPackage(pkg);
-        results.push(`  ✅ "${pkg.name}v${pkg.version.format()}"`);
+        results.push(`  ✅ Publish succeed: "${pkg.name}v${pkg.version.format()}"`);
       } catch (e) {
         this.context.stderr.write((e as Error)?.message);
         this.context.stderr.write('\n');
         exitCode = 1;
-        results.push(`  ❌ "${pkg.name}v${pkg.version.format()}"`);
+        results.push(`  ❌ Publish failed: "${pkg.name}v${pkg.version.format()}"`);
+        continue;
+      }
+
+      try {
+        const release = await this.createGitHubRelease(pkg, config);
+        results.push(`  ✅ Create GitHub release succeed: "${pkg.name}v${pkg.version.format()}" (${release.html_url})`);
+      } catch (e) {
+        this.context.stderr.write((e as Error)?.message);
+        this.context.stderr.write('\n');
+        exitCode = 1;
+        results.push(`  ❌ Create GitHub release failed: "${pkg.name}v${pkg.version.format()}"`);
       }
     }
     this.context.stdout.write('\n\nRelease results:');
@@ -64,5 +83,21 @@ export class ReleaseCommand extends Command {
         this.context.stdout.write('=> Since it is not a publishable package, publishing is skipped');
       }
     }
+  }
+
+  async createGitHubRelease(pkg: Package, config: ReleaseConfig) {
+    const github = getGithub(this.githubToken);
+    const changelog = await Changelog.load(config.packages.get(pkg.name)!.changelog);
+    const title = `${pkg.name} v${pkg.version.format()}`;
+    const { data: release } = await github.repos.createRelease({
+      owner: config.github.repo.owner,
+      repo: config.github.repo.name,
+      name: title,
+      tag_name: gitUtils.tagShorthand(pkg.versionGitTag),
+      body: changelog.extractSection(title),
+      prerelease: pkg.version.getPrereleaseIdentifier() != null,
+      draft: false,
+    });
+    return release;
   }
 }

@@ -47,7 +47,7 @@ jobs:
       - uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: yarn workspaces foreach -Apt run build
+      - run: yarn workspaces foreach -Apt run build:debug
       - run: yarn vitest run
   lint-rust:
     runs-on: ubuntu-latest
