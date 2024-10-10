@@ -1,6 +1,6 @@
 {
   "name": "@webview-bundle/binding",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "index.js",
   "types": "index.d.ts",
   "homepage": "https://github.com/seokju-na/webview-bundle",
@@ -38,9 +38,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release --js=binding.js --dts=binding.d.ts",
     "build:debug": "napi build --platform --js=binding.js --dts=binding.d.ts",
-    "prepublishOnly": "napi prepublish -t npm",
-    "universal": "napi universal",
-    "version": "napi version"
+    "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
     "@napi-rs/cli": "2.18.4",

@@ -4,3 +4,4 @@ Cargo.lock
 npm
 *.node
 __test__
+artifacts

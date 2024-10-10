@@ -2,13 +2,16 @@ name: "rust setup"
 description: "rust setup"
 inputs:
   components:
-    description: "rust components"
+    description: "Comma-separated list of additional components to install."
     required: false
   bins:
-    description: "binaries to install"
+    description: "Comma-separated list of global binaries to install into Cargo."
+    required: false
+  targets:
+    description: "Comma-separated list of additional targets to install."
     required: false
   github-token:
-    description: "github token to use"
+    description: "GitHub token to use"
     required: false
 runs:
   using: "composite"
@@ -17,6 +20,7 @@ runs:
       with:
         components: ${{ inputs.components }}
         cache-base: main
+        targets: ${{ inputs.targets }}
         bins: ${{ inputs.bins }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}

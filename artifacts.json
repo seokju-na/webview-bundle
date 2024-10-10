@@ -1,0 +1,17 @@
+{
+  "dir": "artifacts-merged",
+  "files": [
+    {
+      "source": "target/release/**/webview-bundle-cli?(.exe)",
+      "dist": "crates/webview-bundle-cli/artifacts"
+    },
+    {
+      "source": "packages/binding/*.node",
+      "dist": "packages/binding/artifacts"
+    },
+    {
+      "source": "packages/cli/*.node",
+      "dist": "packages/cli/artifacts"
+    }
+  ]
+}

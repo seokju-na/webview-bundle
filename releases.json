@@ -1,0 +1,65 @@
+{
+  "rootChangelog": "CHANGELOG.md",
+  "packages": {
+    "core": {
+      "versionedFiles": [
+        "crates/webview-bundle/Cargo.toml"
+      ],
+      "changelog": "crates/webview-bundle/CHANGELOG.md",
+      "scopes": ["core"]
+    },
+    "cli": {
+      "versionedFiles": [
+        "crates/webview-bundle-cli/Cargo.toml",
+        "packages/cli/Cargo.toml",
+        "packages/cli/package.json",
+        "packages/cli/npm/darwin-arm64/package.json",
+        "packages/cli/npm/darwin-x64/package.json",
+        "packages/cli/npm/linux-arm64-gnu/package.json",
+        "packages/cli/npm/linux-arm64-musl/package.json",
+        "packages/cli/npm/linux-x64-gnu/package.json",
+        "packages/cli/npm/linux-x64-musl/package.json",
+        "packages/cli/npm/win32-arm64-msvc/package.json",
+        "packages/cli/npm/win32-ia32-msvc/package.json",
+        "packages/cli/npm/win32-x64-msvc/package.json"
+      ],
+      "changelog": "packages/cli/CHANGELOG.md",
+      "scopes": ["cli"],
+      "beforeReleaseScripts": [
+        {
+          "command": "yarn artifacts",
+          "cwd": "packages/cli"
+        }
+      ]
+    },
+    "binding": {
+      "versionedFiles": [
+        "packages/binding/Cargo.toml",
+        "packages/binding/package.json",
+        "packages/binding/npm/darwin-arm64/package.json",
+        "packages/binding/npm/darwin-x64/package.json",
+        "packages/binding/npm/linux-arm64-gnu/package.json",
+        "packages/binding/npm/linux-arm64-musl/package.json",
+        "packages/binding/npm/linux-x64-gnu/package.json",
+        "packages/binding/npm/linux-x64-musl/package.json",
+        "packages/binding/npm/win32-arm64-msvc/package.json",
+        "packages/binding/npm/win32-ia32-msvc/package.json",
+        "packages/binding/npm/win32-x64-msvc/package.json"
+      ],
+      "changelog": "packages/binding/CHANGELOG.md",
+      "scopes": ["binding"],
+      "beforeReleaseScripts": [
+        {
+          "command": "yarn artifacts",
+          "cwd": "packages/cli"
+        }
+      ]
+    }
+  },
+  "github": {
+    "repo": {
+      "owner": "seokju-na",
+      "name": "webview-bundle"
+    }
+  }
+}

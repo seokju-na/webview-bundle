@@ -5,6 +5,7 @@ alias t := test
 alias f := format
 alias l := lint
 alias b := build
+alias x := xtask
 
 # Setup development environment
 setup:
@@ -17,38 +18,51 @@ setup:
   corepack prepare --activate
   yarn
 
+# Test all files
 test: test-rust test-js
 
+# Test JS files
 test-js: build-debug
   yarn vitest run
 
+# Test Rust files
 test-rust:
-  cargo test --workspace --no-fail-fast
+  cargo test --workspace --no-fail-fastk
 
-biome:
-  yarn biome check
-
+# Format all files
 format: format-toml format-rust format-js
 
+# Format TOML files
 format-toml:
   taplo format
 
+# Format Rust files
 format-rust:
   cargo fmt --all
 
+# Format JS files via Biome
 format-js:
   yarn biome format
 
+# Lint all files
 lint: lint-rust lint-js
 
+# Lint JS files via Biome
 lint-js:
   yarn biome check
 
+# Lint Rust files via Clippy
 lint-rust:
   cargo clippy --workspace
 
+# Build as release mode
 build:
   yarn workspaces foreach -Apt run build
 
+# Build as debug mode
 build-debug:
   yarn workspaces foreach -Apt run build:debug
+
+# Run xtask
+xtask *ARGS:
+  yarn xtask {{ARGS}}

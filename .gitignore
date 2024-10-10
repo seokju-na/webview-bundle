@@ -18,3 +18,5 @@ esm
 /Cargo.lock
 /target
 *.tsbuildinfo
+artifacts-merged/
+*.node

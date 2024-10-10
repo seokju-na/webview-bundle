@@ -14,7 +14,6 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "isolatedModules": true,
     "resolveJsonModule": true,
     "jsx": "react-jsx"
   }

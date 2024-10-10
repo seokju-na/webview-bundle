@@ -1,8 +1,13 @@
 name: "node setup"
 description: "node setup"
+inputs:
+  architecture:
+    description: "Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default."
+    required: false
 runs:
   using: "composite"
   steps:
     - uses: actions/setup-node@v4
       with:
         node-version-file: ".nvmrc"
+        architecture: ${{ inputs.architecture }}

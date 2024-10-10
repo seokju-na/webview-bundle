@@ -9,7 +9,7 @@ repository  = "https://github.com/seokju-na/webview-bundle"
 version     = "0.0.0"
 
 [[bin]]
-name = "cargo-webview-bundle"
+name = "webview-bundle-cli"
 path = "./src/main.rs"
 
 [dependencies]
