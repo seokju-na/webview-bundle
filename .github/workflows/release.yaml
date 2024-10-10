@@ -1,6 +1,8 @@
 name: Release
 on:
   push:
+    branches:
+      - "main"
 permissions:
   attestations: write
   contents: write
@@ -8,6 +10,7 @@ concurrency:
   group: release
 jobs:
   build:
+    if: "contains(github.event.head_commit.message, 'chore: prepare release')"
     strategy:
       fail-fast: false
       matrix:
@@ -46,7 +49,6 @@ jobs:
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: yarn workspaces foreach -At run build --target aarch64-pc-windows-msvc
-    name: Build ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
     steps:
       - name: Git checkout
@@ -82,19 +84,37 @@ jobs:
         run: ${{ matrix.settings.build }}
         if: ${{ !matrix.settings.docker }}
         shell: bash
-      - name: Upload artifact
+      - name: Merge artifacts
+        run: yarn x artifacts merge
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.settings.target }}
-          path: |
-            packages/**/*.node
+          name: artifacts-${{ matrix.settings.host }}-${{ matrix.settings.target }}
+          path: artifacts-merged
           if-no-files-found: error
-  merge-build-artifacts:
+  release:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Merge uploaded artifacts
-        uses: actions/upload-artifact/merge@v4
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
         with:
-          name: merged-artifacts
-          pattern: build-*
+          github-token: ${{ github.token }}
+      - name: Setup Yarn
+        uses: ./.github/actions/yarn-setup
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-*
+          merge-multiple: true
+          path: artifacts-merged
+      - name: Spread artifacts
+        run: yarn x artifacts spread
+      - name: Release
+        run: yarn x release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
