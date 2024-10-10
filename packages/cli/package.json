@@ -42,9 +42,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi prepublish --skip-gh-release",
-    "universal": "napi universal",
-    "version": "napi version"
+    "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
     "@napi-rs/cli": "2.18.4",
