@@ -1057,7 +1057,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@webview-bundle/node-binding@workspace:packages/node-binding":
+"@webview-bundle/electron@workspace:packages/electron":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/electron@workspace:packages/electron"
+  dependencies:
+    "@types/node": "npm:22.7.4"
+    "@webview-bundle/node-binding": "workspace:^"
+    typescript: "npm:5.6.2"
+    vitest: "npm:2.1.2"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding@workspace:^, @webview-bundle/node-binding@workspace:packages/node-binding":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/node-binding@workspace:packages/node-binding"
   dependencies:
