@@ -1,13 +1,9 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { Repository } from '@napi-rs/simple-git';
 import chalk from 'chalk';
 import { Command, Option } from 'clipanion';
-import { partition } from 'es-toolkit';
-import { execa, execaCommand } from 'execa';
 import * as gitUtils from '../gitUtils';
 import * as workspaceUtils from '../workspaceUtils';
-import { type Action, formatAction } from './action';
+import { type Action, formatAction, runAction } from './action';
 import { Changelog } from './changelog';
 import { Changes } from './changes';
 import { ReleaseConfig } from './config';
@@ -43,7 +39,7 @@ export class PrepareReleaseCommand extends Command {
       const diff = `${pkg.version.format()} -> ${pkg.nextVersion.format()}`;
       this.context.stdout.write(`Changes for "${pkg.name}": ${diff}\n\n`);
 
-      allActions.push(...pkg.write());
+      allActions.push(...pkg.writeVersionedFiles());
 
       // Changelog
       const changelog = await Changelog.load(info.changelog);
@@ -52,16 +48,6 @@ export class PrepareReleaseCommand extends Command {
       allActions.push(changelog.write());
       if (rootChangelog != null) {
         rootChangelog.appendChanges(`${pkg.name} v${pkg.nextVersion.format()}`, changes);
-      }
-
-      // Run before release scripts
-      for (const script of info.beforeReleaseScripts ?? []) {
-        allActions.push({
-          type: 'runCommand',
-          command: script.command,
-          cwd: script.cwd != null ? workspaceUtils.absolutePathFromRootDir(script.cwd) : workspaceUtils.findRootDir(),
-          env: script.env,
-        });
       }
     }
 
@@ -74,72 +60,11 @@ export class PrepareReleaseCommand extends Command {
       return 1;
     }
 
-    const [beforeActions, afterActions] = partition(actions, x => x.type !== 'addGitTag');
-
-    await this.runActions(beforeActions, { repo });
-
-    // Add files to git index
-    if (this.dryRun) {
-      this.context.stdout.write('Will git add files and commit');
-    } else {
-      // TODO: `@napi-rs/simple-git` does not implement `index()` so we have to use git with CLI
-      for (const action of actions.filter(x => x.type === 'writeFile')) {
-        await execa('git', ['add', action.filepath, '--verbose'], { cwd: rootDir, stdio: 'inherit' });
-      }
-      if (!this.dryRun) {
-        await execa('git', [
-          'commit',
-          '-m',
-          'chore: prepare release',
-          '--no-verify',
-          '--author="Seokju Na <seokju.me@gmail.com>"',
-          '--verbose',
-        ]);
-      }
-    }
-
-    await this.runActions(afterActions, { repo });
-
-    // Push to remote
-  }
-
-  private async runActions(actions: Action[], params: { repo: Repository }) {
     for (const action of actions) {
-      this.context.stdout.write(`${formatAction(action)}\n\n`);
+      this.context.stdout.write(formatAction(action));
+      this.context.stdout.write('\n\n');
       if (!this.dryRun) {
-        await this.runAction(action, params);
-      }
-    }
-  }
-
-  private async runAction(
-    action: Action,
-    params: {
-      repo: Repository;
-    }
-  ) {
-    const { repo } = params;
-    switch (action.type) {
-      case 'writeFile': {
-        await fs.writeFile(workspaceUtils.absolutePathFromRootDir(action.filepath), action.content, 'utf8');
-        break;
-      }
-      case 'addGitTag': {
-        const head = repo.head();
-        const headCommit = repo.findCommit(head.target()!);
-        gitUtils.addTag(
-          repo,
-          action.tagName,
-          headCommit!.asObject(),
-          gitUtils.defaultSignature(),
-          action.tagName,
-          true
-        );
-        break;
-      }
-      case 'runCommand': {
-        await execaCommand(action.command, { cwd: action.cwd, env: action.env, stdio: 'inherit' });
-        break;
+        await runAction(action);
       }
     }
   }

@@ -1,4 +1,6 @@
 import { Cli } from 'clipanion';
+import { ArtifactsMergeCommand } from './artifacts/ArtifactsMergeCommand';
+import { ArtifactsSpreadCommand } from './artifacts/ArtifactsSpreadCommand';
 import { PrepareReleaseCommand } from './release/PrepareReleaseCommand';
 import { PrepareReleasePRCommand } from './release/PrepareReleasePRCommand';
 import { ReleaseCommand } from './release/ReleaseCommand';
@@ -14,4 +16,6 @@ const cli = new Cli({
 cli.register(ReleaseCommand);
 cli.register(PrepareReleaseCommand);
 cli.register(PrepareReleasePRCommand);
+cli.register(ArtifactsMergeCommand);
+cli.register(ArtifactsSpreadCommand);
 cli.runExit(args);

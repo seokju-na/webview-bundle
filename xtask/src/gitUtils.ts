@@ -67,6 +67,12 @@ export function signature(name: string, email: string) {
   return Signature.now(name, email);
 }
 
+export function formatSignature(signature: Signature) {
+  const name = signature.name()!;
+  const email = signature.email()!;
+  return `${name} <${email}>`;
+}
+
 export function defaultSignature() {
   return signature('Seokju Na', 'seokju.me@gmail.com');
 }

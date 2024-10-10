@@ -49,14 +49,7 @@ export class Package {
     }
   }
 
-  write(): Action[] {
-    const writes = this.versionedFiles.map(x => x.write()).filter(x => x != null);
-    const tags: Action[] = [
-      {
-        type: 'addGitTag',
-        tagName: this.nextVersionGitTag,
-      },
-    ];
-    return [...writes, ...tags];
+  writeVersionedFiles(): Action[] {
+    return this.versionedFiles.map(x => x.write()).filter(x => x != null);
   }
 }

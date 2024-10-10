@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import { diffLines } from 'diff';
 import type { Action } from './action';
 import type { Changes } from './changes';
-import type { Version } from './versioning';
 
 export class Changelog {
   content: string;

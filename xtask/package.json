@@ -15,6 +15,8 @@
     "diff": "^7.0.0",
     "es-toolkit": "^1.24.0",
     "execa": "^9.4.0",
+    "fast-glob": "^3.3.2",
+    "minimatch": "^10.0.1",
     "semver": "^7.6.3",
     "type-fest": "^4.26.1"
   },
