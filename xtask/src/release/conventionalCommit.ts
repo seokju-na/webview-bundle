@@ -7,7 +7,7 @@ export const CONVENTIONAL_COMMIT_TYPES = [
   'test',
   'docs',
   'build',
-  'opes',
+  'ops',
   'chore',
 ] as const;
 
