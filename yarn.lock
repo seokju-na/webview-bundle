@@ -1044,9 +1044,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webview-bundle/binding@workspace:packages/binding":
+"@webview-bundle/binding@workspace:packages/node-binding":
   version: 0.0.0-use.local
-  resolution: "@webview-bundle/binding@workspace:packages/binding"
+  resolution: "@webview-bundle/binding@workspace:packages/node-binding"
   dependencies:
     "@napi-rs/cli": "npm:2.18.4"
     "@types/node": "npm:22.7.4"
