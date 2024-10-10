@@ -14,8 +14,8 @@
       "*.json",
       "packages/cli/index.js",
       "packages/cli/index.d.ts",
-      "packages/binding/binding.js",
-      "packages/binding/binding.d.ts"
+      "packages/node-binding/binding.js",
+      "packages/node-binding/binding.d.ts"
     ]
   },
   "formatter": {

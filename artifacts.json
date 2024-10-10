@@ -6,8 +6,8 @@
       "dist": "crates/webview-bundle-cli/artifacts"
     },
     {
-      "source": "packages/binding/*.node",
-      "dist": "packages/binding/artifacts"
+      "source": "packages/node-binding/*.node",
+      "dist": "packages/node-binding/artifacts"
     },
     {
       "source": "packages/cli/*.node",

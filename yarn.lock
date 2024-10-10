@@ -1044,17 +1044,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webview-bundle/binding@workspace:packages/binding":
-  version: 0.0.0-use.local
-  resolution: "@webview-bundle/binding@workspace:packages/binding"
-  dependencies:
-    "@napi-rs/cli": "npm:2.18.4"
-    "@types/node": "npm:22.7.4"
-    typescript: "npm:5.6.2"
-    vitest: "npm:2.1.2"
-  languageName: unknown
-  linkType: soft
-
 "@webview-bundle/cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/cli@workspace:packages/cli"
@@ -1065,6 +1054,17 @@ __metadata:
     vitest: "npm:2.1.2"
   bin:
     webview-bundle: ./webview-bundle.js
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding@workspace:packages/node-binding":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding@workspace:packages/node-binding"
+  dependencies:
+    "@napi-rs/cli": "npm:2.18.4"
+    "@types/node": "npm:22.7.4"
+    typescript: "npm:5.6.2"
+    vitest: "npm:2.1.2"
   languageName: unknown
   linkType: soft
 

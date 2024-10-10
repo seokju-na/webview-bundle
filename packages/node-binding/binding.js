@@ -32,24 +32,24 @@ switch (platform) {
   case 'android':
     switch (arch) {
       case 'arm64':
-        localFileExisted = existsSync(join(__dirname, 'binding.android-arm64.node'))
+        localFileExisted = existsSync(join(__dirname, 'node-binding.android-arm64.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.android-arm64.node')
+            nativeBinding = require('./node-binding.android-arm64.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-android-arm64')
+            nativeBinding = require('@webview-bundle/node-binding-android-arm64')
           }
         } catch (e) {
           loadError = e
         }
         break
       case 'arm':
-        localFileExisted = existsSync(join(__dirname, 'binding.android-arm-eabi.node'))
+        localFileExisted = existsSync(join(__dirname, 'node-binding.android-arm-eabi.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.android-arm-eabi.node')
+            nativeBinding = require('./node-binding.android-arm-eabi.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-android-arm-eabi')
+            nativeBinding = require('@webview-bundle/node-binding-android-arm-eabi')
           }
         } catch (e) {
           loadError = e
@@ -63,13 +63,13 @@ switch (platform) {
     switch (arch) {
       case 'x64':
         localFileExisted = existsSync(
-          join(__dirname, 'binding.win32-x64-msvc.node')
+          join(__dirname, 'node-binding.win32-x64-msvc.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.win32-x64-msvc.node')
+            nativeBinding = require('./node-binding.win32-x64-msvc.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-win32-x64-msvc')
+            nativeBinding = require('@webview-bundle/node-binding-win32-x64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -77,13 +77,13 @@ switch (platform) {
         break
       case 'ia32':
         localFileExisted = existsSync(
-          join(__dirname, 'binding.win32-ia32-msvc.node')
+          join(__dirname, 'node-binding.win32-ia32-msvc.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.win32-ia32-msvc.node')
+            nativeBinding = require('./node-binding.win32-ia32-msvc.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-win32-ia32-msvc')
+            nativeBinding = require('@webview-bundle/node-binding-win32-ia32-msvc')
           }
         } catch (e) {
           loadError = e
@@ -91,13 +91,13 @@ switch (platform) {
         break
       case 'arm64':
         localFileExisted = existsSync(
-          join(__dirname, 'binding.win32-arm64-msvc.node')
+          join(__dirname, 'node-binding.win32-arm64-msvc.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.win32-arm64-msvc.node')
+            nativeBinding = require('./node-binding.win32-arm64-msvc.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-win32-arm64-msvc')
+            nativeBinding = require('@webview-bundle/node-binding-win32-arm64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -108,23 +108,23 @@ switch (platform) {
     }
     break
   case 'darwin':
-    localFileExisted = existsSync(join(__dirname, 'binding.darwin-universal.node'))
+    localFileExisted = existsSync(join(__dirname, 'node-binding.darwin-universal.node'))
     try {
       if (localFileExisted) {
-        nativeBinding = require('./binding.darwin-universal.node')
+        nativeBinding = require('./node-binding.darwin-universal.node')
       } else {
-        nativeBinding = require('@webview-bundle/binding-darwin-universal')
+        nativeBinding = require('@webview-bundle/node-binding-darwin-universal')
       }
       break
     } catch {}
     switch (arch) {
       case 'x64':
-        localFileExisted = existsSync(join(__dirname, 'binding.darwin-x64.node'))
+        localFileExisted = existsSync(join(__dirname, 'node-binding.darwin-x64.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.darwin-x64.node')
+            nativeBinding = require('./node-binding.darwin-x64.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-darwin-x64')
+            nativeBinding = require('@webview-bundle/node-binding-darwin-x64')
           }
         } catch (e) {
           loadError = e
@@ -132,13 +132,13 @@ switch (platform) {
         break
       case 'arm64':
         localFileExisted = existsSync(
-          join(__dirname, 'binding.darwin-arm64.node')
+          join(__dirname, 'node-binding.darwin-arm64.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.darwin-arm64.node')
+            nativeBinding = require('./node-binding.darwin-arm64.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-darwin-arm64')
+            nativeBinding = require('@webview-bundle/node-binding-darwin-arm64')
           }
         } catch (e) {
           loadError = e
@@ -152,12 +152,12 @@ switch (platform) {
     if (arch !== 'x64') {
       throw new Error(`Unsupported architecture on FreeBSD: ${arch}`)
     }
-    localFileExisted = existsSync(join(__dirname, 'binding.freebsd-x64.node'))
+    localFileExisted = existsSync(join(__dirname, 'node-binding.freebsd-x64.node'))
     try {
       if (localFileExisted) {
-        nativeBinding = require('./binding.freebsd-x64.node')
+        nativeBinding = require('./node-binding.freebsd-x64.node')
       } else {
-        nativeBinding = require('@webview-bundle/binding-freebsd-x64')
+        nativeBinding = require('@webview-bundle/node-binding-freebsd-x64')
       }
     } catch (e) {
       loadError = e
@@ -168,26 +168,26 @@ switch (platform) {
       case 'x64':
         if (isMusl()) {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-x64-musl.node')
+            join(__dirname, 'node-binding.linux-x64-musl.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-x64-musl.node')
+              nativeBinding = require('./node-binding.linux-x64-musl.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-x64-musl')
+              nativeBinding = require('@webview-bundle/node-binding-linux-x64-musl')
             }
           } catch (e) {
             loadError = e
           }
         } else {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-x64-gnu.node')
+            join(__dirname, 'node-binding.linux-x64-gnu.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-x64-gnu.node')
+              nativeBinding = require('./node-binding.linux-x64-gnu.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-x64-gnu')
+              nativeBinding = require('@webview-bundle/node-binding-linux-x64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -197,26 +197,26 @@ switch (platform) {
       case 'arm64':
         if (isMusl()) {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-arm64-musl.node')
+            join(__dirname, 'node-binding.linux-arm64-musl.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-arm64-musl.node')
+              nativeBinding = require('./node-binding.linux-arm64-musl.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-arm64-musl')
+              nativeBinding = require('@webview-bundle/node-binding-linux-arm64-musl')
             }
           } catch (e) {
             loadError = e
           }
         } else {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-arm64-gnu.node')
+            join(__dirname, 'node-binding.linux-arm64-gnu.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-arm64-gnu.node')
+              nativeBinding = require('./node-binding.linux-arm64-gnu.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-arm64-gnu')
+              nativeBinding = require('@webview-bundle/node-binding-linux-arm64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -226,26 +226,26 @@ switch (platform) {
       case 'arm':
         if (isMusl()) {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-arm-musleabihf.node')
+            join(__dirname, 'node-binding.linux-arm-musleabihf.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-arm-musleabihf.node')
+              nativeBinding = require('./node-binding.linux-arm-musleabihf.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-arm-musleabihf')
+              nativeBinding = require('@webview-bundle/node-binding-linux-arm-musleabihf')
             }
           } catch (e) {
             loadError = e
           }
         } else {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-arm-gnueabihf.node')
+            join(__dirname, 'node-binding.linux-arm-gnueabihf.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-arm-gnueabihf.node')
+              nativeBinding = require('./node-binding.linux-arm-gnueabihf.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-arm-gnueabihf')
+              nativeBinding = require('@webview-bundle/node-binding-linux-arm-gnueabihf')
             }
           } catch (e) {
             loadError = e
@@ -255,26 +255,26 @@ switch (platform) {
       case 'riscv64':
         if (isMusl()) {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-riscv64-musl.node')
+            join(__dirname, 'node-binding.linux-riscv64-musl.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-riscv64-musl.node')
+              nativeBinding = require('./node-binding.linux-riscv64-musl.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-riscv64-musl')
+              nativeBinding = require('@webview-bundle/node-binding-linux-riscv64-musl')
             }
           } catch (e) {
             loadError = e
           }
         } else {
           localFileExisted = existsSync(
-            join(__dirname, 'binding.linux-riscv64-gnu.node')
+            join(__dirname, 'node-binding.linux-riscv64-gnu.node')
           )
           try {
             if (localFileExisted) {
-              nativeBinding = require('./binding.linux-riscv64-gnu.node')
+              nativeBinding = require('./node-binding.linux-riscv64-gnu.node')
             } else {
-              nativeBinding = require('@webview-bundle/binding-linux-riscv64-gnu')
+              nativeBinding = require('@webview-bundle/node-binding-linux-riscv64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -283,13 +283,13 @@ switch (platform) {
         break
       case 's390x':
         localFileExisted = existsSync(
-          join(__dirname, 'binding.linux-s390x-gnu.node')
+          join(__dirname, 'node-binding.linux-s390x-gnu.node')
         )
         try {
           if (localFileExisted) {
-            nativeBinding = require('./binding.linux-s390x-gnu.node')
+            nativeBinding = require('./node-binding.linux-s390x-gnu.node')
           } else {
-            nativeBinding = require('@webview-bundle/binding-linux-s390x-gnu')
+            nativeBinding = require('@webview-bundle/node-binding-linux-s390x-gnu')
           }
         } catch (e) {
           loadError = e

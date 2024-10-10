@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name    = "webview-bundle-binding"
+name    = "webview-bundle-node-binding"
 publish = false
 version = "0.1.0"
 

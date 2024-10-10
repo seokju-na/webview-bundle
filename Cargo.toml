@@ -1,5 +1,5 @@
 [workspace]
-members  = ["crates/*", "packages/cli", "packages/binding"]
+members  = ["crates/*", "packages/cli", "packages/node-binding"]
 resolver = "2"
 
 [workspace.dependencies]
