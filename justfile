@@ -55,6 +55,10 @@ lint-js:
 lint-rust:
   cargo clippy --workspace
 
+# Typechecking with TSC
+typecheck:
+  tsc --noEmit
+
 # Build as release mode
 build:
   yarn workspaces foreach -Apt run build
