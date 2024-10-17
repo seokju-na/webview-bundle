@@ -11,7 +11,7 @@ alias x := xtask
 setup:
   # Install Rust-related tools
   cargo install cargo-binstall
-  cargo binstall taplo-cli knope
+  cargo binstall taplo-cli
 
   # Setup Node.js environment
   corepack enable
