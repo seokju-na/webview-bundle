@@ -1,0 +1,20 @@
+{
+  "name": "example-electron-simple",
+  "private": true,
+  "main": "./dist/index.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "esbuild src/index.ts --bundle --outfile=./dist/index.js --target=node20 --format=cjs --platform=node --external:electron --external:@webview-bundle/node-binding --sourcemap",
+    "make-bundle": "webview-bundle pack ./bundle -o bundle.wvb --truncate"
+  },
+  "dependencies": {
+    "@webview-bundle/electron": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "22.7.4",
+    "@webview-bundle/cli": "workspace:^",
+    "electron": "^33.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "5.6.2"
+  }
+}

@@ -27,7 +27,7 @@ test-js: build-debug
 
 # Test Rust files
 test-rust:
-  cargo test --workspace --no-fail-fastk
+  cargo test --workspace --no-fail-fast
 
 # Format all files
 format: format-toml format-rust format-js
@@ -54,6 +54,10 @@ lint-js:
 # Lint Rust files via Clippy
 lint-rust:
   cargo clippy --workspace
+
+# Typechecking with TSC
+typecheck:
+  tsc --noEmit
 
 # Build as release mode
 build:
