@@ -54,6 +54,13 @@
           "cwd": "packages/node-binding"
         }
       ]
+    },
+    "electron": {
+      "versionedFiles": [
+        "packages/electron/package.json"
+      ],
+      "changelog": "packages/electron/CHANGELOG.md",
+      "scopes": ["electron"]
     }
   },
   "github": {
