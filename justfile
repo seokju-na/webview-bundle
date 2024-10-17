@@ -22,7 +22,7 @@ setup:
 test: test-rust test-js
 
 # Test JS files
-test-js: build-debug
+test-js: build
   yarn vitest run
 
 # Test Rust files
