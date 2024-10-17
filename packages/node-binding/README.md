@@ -1,1 +1,1 @@
-# @webview-bundle/binding
+# @webview-bundle/node-binding

@@ -11,7 +11,7 @@ alias x := xtask
 setup:
   # Install Rust-related tools
   cargo install cargo-binstall
-  cargo binstall taplo-cli knope
+  cargo binstall taplo-cli
 
   # Setup Node.js environment
   corepack enable
@@ -22,7 +22,7 @@ setup:
 test: test-rust test-js
 
 # Test JS files
-test-js: build-debug
+test-js: build
   yarn vitest run
 
 # Test Rust files
