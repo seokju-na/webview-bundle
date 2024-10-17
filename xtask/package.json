@@ -4,7 +4,7 @@
   "bin": "./dist/index.js",
   "scripts": {
     "postinstall": "yarn out",
-    "out": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --log-level=error"
+    "out": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --external:esbuild --external:typescript --log-level=error"
   },
   "dependencies": {
     "@napi-rs/simple-git": "^0.1.19",
@@ -14,17 +14,18 @@
     "clipanion": "^4.0.0-rc.4",
     "diff": "^7.0.0",
     "es-toolkit": "^1.24.0",
+    "esbuild": "^0.24.0",
     "execa": "^9.4.0",
     "fast-glob": "^3.3.2",
     "minimatch": "^10.0.1",
     "semver": "^7.6.3",
-    "type-fest": "^4.26.1"
+    "type-fest": "^4.26.1",
+    "typescript": "5.6.2"
   },
   "devDependencies": {
     "@types/diff": "^5.2.3",
     "@types/node": "22.7.4",
     "@types/semver": "^7",
-    "esbuild": "^0.24.0",
     "vitest": "2.1.2"
   }
 }
