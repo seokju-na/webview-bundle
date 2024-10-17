@@ -4,8 +4,7 @@
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./renderer": "./src/renderer/index.ts"
+    ".": "./src/index.ts"
   },
   "publishConfig": {
     "access": "public",
@@ -17,11 +16,6 @@
         "require": "./dist/index.js",
         "import": "./esm/index.mjs",
         "types": "./dist/index.d.ts"
-      },
-      "./renderer": {
-        "require": "./dist/renderer/index.js",
-        "import": "./esm/renderer/index.mjs",
-        "types": "./dist/renderer/index.d.ts"
       }
     }
   },
@@ -29,7 +23,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/node-binding"
+    "directory": "packages/electron"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -41,15 +35,23 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": ""
+    "build": "xtask build-js-library ./src --platform=node --target=node20"
+  },
+  "peerDependencies": {
+    "electron": ">= 25"
   },
   "dependencies": {
-    "@webview-bundle/node-binding": "workspace:^"
+    "@webview-bundle/node-binding": "workspace:^",
+    "mime-types": "^2.1.35"
   },
   "devDependencies": {
+    "@types/mime-types": "^2",
     "@types/node": "22.7.4",
+    "@yarnpkg/fslib": "^3.1.0",
     "electron": "^33.0.0",
+    "rolldown": "0.13.2",
     "typescript": "5.6.2",
-    "vitest": "2.1.2"
+    "vitest": "2.1.2",
+    "xtask": "workspace:^"
   }
 }

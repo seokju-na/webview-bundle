@@ -1,61 +1,80 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type Bundle, decode } from '@webview-bundle/node-binding';
+import type { Bundle } from '@webview-bundle/node-binding';
+import type { contentType as contentTypeFn } from 'mime-types';
+import type { Cache } from './Cache';
+import type { Loader } from './Loader';
+import { URI } from './URI';
 
-interface Config {
-  bundleDir: string;
+export interface ProtocolHandlerConfig {
+  loader: Loader;
+  cache?: Cache<Bundle>;
+  contentType?: (filepath: string) => string | undefined;
+  headers?: (headers: Record<string, string>) => Record<string, string>;
+  error?: (e: unknown) => Response | undefined;
 }
 
-// 1. 번들 불러오는 로더 => 역할 분리 필요
-// 2. 스킴 헬퍼 -> 커스텀 스킴을 적절하게 URL로 파싱해주고, 번들 내 파일 경로도 찾아줌
-// 3. 번들에서 불러온 파일 데이터를 적절하게 Response 객체로 변환
-// 4. 캐시?
-export function protocolHandler({ bundleDir }: Config) {
-  return async (request: Request): Promise<Response> => {
-    const bundleFilepath = path.join(bundleDir, 'bundle.wvb');
-    const bundle = await readBundle(bundleFilepath);
+const defaultContentType = () => {
+  const { contentType: getContentType } = require('mime-types');
+  return (filepath: string): string | undefined => {
+    const contentType = (getContentType as typeof contentTypeFn)(filepath) || undefined;
+    return contentType;
+  };
+};
 
-    // const url = new URL(request.url);
-    // const filepath = resolveFilepath(url);
-    // console.log(filepath);
-    console.log(request.method, request.url);
-    const filepath = request.url === 'app://test/' ? 'index.html' : 'index.js';
-    const fileRaw = await bundle.readFile(filepath);
-    const resp = new Response(fileRaw, {
-      headers: {
-        'content-type': filepath.endsWith('.html')
-          ? 'text/html'
-          : filepath.endsWith('.js')
-            ? 'text/javascript'
-            : 'text/plain',
-      },
-    });
-    return resp;
+export function protocolHandler({ loader, cache, contentType, headers, error }: ProtocolHandlerConfig) {
+  const getContentType = contentType != null ? contentType : defaultContentType();
+  const loadBundle = async (uri: URI): Promise<Bundle> => {
+    const cacheKey = loader.getBundleName?.(uri) ?? uri.toString();
+    if (cache?.has(cacheKey) === true) {
+      return cache.get(cacheKey)!;
+    }
+    const bundle = await loader.load(uri);
+    cache?.set(cacheKey, bundle);
+
+    return bundle;
+  };
+  const makeHeaders = (filepath: string): Record<string, string> => {
+    const type = getContentType(filepath);
+    const defaultHeaders = {
+      'content-type': type ?? 'text/plain',
+    };
+    return headers?.(defaultHeaders) ?? defaultHeaders;
+  };
+
+  return async (request: Request): Promise<Response> => {
+    const uri = new URI(request.url);
+    const bundle = await loadBundle(uri);
+    const filepath = uriToFilepath(uri);
+    try {
+      const data = await bundle.readFile(filepath);
+      const response = new Response(data, { headers: makeHeaders(filepath) });
+      return response;
+    } catch (e) {
+      const response = error?.(e);
+      if (response != null) {
+        return response;
+      }
+      if (isFileNotFoundError(e)) {
+        return new Response(null, {
+          status: 404,
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+          },
+        });
+      }
+      throw e;
+    }
   };
 }
 
-let bundle: Bundle | null = null;
-async function readBundle(filepath: string): Promise<Bundle> {
-  if (bundle != null) {
-    return bundle;
-  }
-  const raw = await fs.readFile(filepath);
-  bundle = await decode(raw);
-  return bundle;
-}
-
-function resolveFilepath(url: URL): string {
-  let filepath = stripStartSlash(url.pathname);
+function uriToFilepath(uri: URI): string {
+  const filepath = uri.path.slice(1);
   if (path.extname(filepath) !== '') {
     return filepath;
   }
-  filepath = filepath.endsWith('/') ? `${filepath}index.html` : `${filepath}/index.html`;
-  return filepath;
+  return [filepath, 'index.html'].filter(x => x !== '').join('/');
 }
 
-function stripStartSlash(str: string): string {
-  if (str.startsWith('/')) {
-    return str.slice(1);
-  }
-  return str;
+function isFileNotFoundError(e: unknown): boolean {
+  return e != null && typeof e === 'object' && (e as Error)?.message?.includes('file not found');
 }

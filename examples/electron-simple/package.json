@@ -4,7 +4,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "start": "electron .",
-    "build": "esbuild src/index.ts --bundle --outfile=./dist/index.js --target=node20 --format=cjs --platform=node --external:electron --loader:.node=file",
+    "build": "esbuild src/index.ts --bundle --outfile=./dist/index.js --target=node20 --format=cjs --platform=node --external:electron --external:@webview-bundle/node-binding --sourcemap",
     "make-bundle": "webview-bundle pack ./bundle -o bundle.wvb --truncate"
   },
   "dependencies": {

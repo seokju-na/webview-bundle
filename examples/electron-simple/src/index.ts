@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { protocolHandler } from '@webview-bundle/electron';
+import { FSLoader, protocolHandler } from '@webview-bundle/electron';
 import { BrowserWindow, app, protocol } from 'electron';
 
 protocol.registerSchemesAsPrivileged([
@@ -22,17 +22,16 @@ async function createWindow() {
     height: 600,
   });
 
-  await mainWindow.loadURL('app://test/');
+  await mainWindow.loadURL('app://bundle');
   mainWindow.webContents.openDevTools();
 }
 
+const handler = protocolHandler({
+  loader: FSLoader.fromDir(path.join(__dirname, '../')),
+});
+
 app.on('ready', () => {
-  protocol.handle(
-    'app',
-    protocolHandler({
-      bundleDir: path.join(__dirname, '../'),
-    })
-  );
+  protocol.handle('app', handler);
   createWindow();
 });
 app.on('window-all-closed', () => {
