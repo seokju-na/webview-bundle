@@ -1,0 +1,15 @@
+[package]
+authors     = ["Seokju Na <seokju.me@gmail.com>"]
+description = "TBD"
+edition     = "2021"
+license     = "MIT"
+name        = "webview-bundle-tauri"
+publish     = false
+repository  = "https://github.com/seokju-na/webview-bundle"
+version     = "0.0.0"
+
+[dependencies]
+webview-bundle = { workspace = true }
+
+tauri = { workspace = true }
+tokio = { workspace = true }
