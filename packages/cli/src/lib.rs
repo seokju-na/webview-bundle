@@ -17,18 +17,10 @@ pub async fn run(args: Vec<String>) -> Result<()> {
       return Err(Error::new(Status::InvalidArg, "Invalid arguments"));
     }
   };
-  let task = tokio::spawn(async move {
-    let mut console = EnvConsole::default();
-    console.set_color(to_color_mode(command.get_color()));
-    run_command(&mut console, command).await
-  });
-  match task.await {
+  let mut console = EnvConsole::default();
+  console.set_color(to_color_mode(command.get_color()));
+  match run_command(&mut console, command).await {
     Ok(_) => Ok(()),
-    Err(e) => {
-      if e.is_panic() {
-        return Err(Error::new(Status::GenericFailure, "Unexpected panic"));
-      }
-      Err(Error::new(Status::GenericFailure, format!("{:#}", e)))
-    }
+    Err(e) => Err(Error::new(Status::GenericFailure, format!("{:#}", e))),
   }
 }
