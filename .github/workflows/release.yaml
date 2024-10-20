@@ -53,6 +53,9 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+      - name: Setup tauri for linux
+        if: ${{ matrix.settings.host == 'ubuntu-latest' }}
+        uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
         if: ${{ !matrix.settings.docker }}
@@ -61,7 +64,6 @@ jobs:
         if: ${{ !matrix.settings.docker }}
         with:
           targets: ${{ matrix.settings.target }}
-          tauri: ${{ matrix.settings.host == 'ubuntu-latest' }}
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
         if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' || matrix.settings.target == 'armv7-unknown-linux-musleabihf' }}
@@ -99,6 +101,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+      - name: Setup tauri for linux
+        uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
       - name: Setup Rust

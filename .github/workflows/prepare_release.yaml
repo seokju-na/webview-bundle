@@ -13,13 +13,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: "0"
+      - name: Setup tauri for linux
+        uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ github.token }}
-          tauri: true
       - name: Setup Yarn
         uses: ./.github/actions/yarn-setup
       - name: Switch branch
