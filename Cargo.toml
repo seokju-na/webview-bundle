@@ -4,6 +4,7 @@ resolver = "2"
 
 [workspace.dependencies]
 anyhow             = "1"
+async-trait        = "0.1.83"
 bincode            = "2.0.0-rc.3"
 biome_console      = "0.5.7"
 bpaf               = { version = "0.9.14", features = ["derive"] }
@@ -20,9 +21,9 @@ tokio              = "1.40.0"
 tracing            = { version = "0.1.40", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3.18"
 
-# crates
-webview-bundle     = { version = "0.0.0", path = "./crates/webview-bundle" }
-webview-bundle-cli = { version = "0.0.0", path = "./crates/webview-bundle-cli" }
+webview-bundle       = { version = "0.0.0", path = "./crates/webview-bundle" }
+webview-bundle-cli   = { version = "0.0.0", path = "./crates/webview-bundle-cli" }
+webview-bundle-tauri = { version = "0.0.0", path = "./crates/webview-bundle-tauri" }
 
 [profile.release]
 lto   = true
