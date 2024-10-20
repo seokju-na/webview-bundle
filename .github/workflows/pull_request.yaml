@@ -54,6 +54,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/tauri-linux-setup
       - uses: ./.github/actions/rust-setup
         with:
           components: clippy
@@ -78,6 +79,8 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
+      - if: ${{ matrix.settings.host == 'ubuntu-latest' }}
+        uses: ./.github/actions/tauri-linux-setup
       - uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ github.token }}
