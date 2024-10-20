@@ -2,13 +2,15 @@
   "name": "example-tauri-simple",
   "private": true,
   "scripts": {
-    "dev": "tauri dev"
+    "dev": "tauri dev",
+    "make-bundle": "webview-bundle pack ./bundle -o bundle.wvb --truncate"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.3",
+    "@webview-bundle/cli": "workspace:^",
     "typescript": "5.6.2"
   }
 }
