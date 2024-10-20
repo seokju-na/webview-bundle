@@ -19,6 +19,7 @@ jobs:
           components: rustfmt
           bins: taplo-cli
           github-token: ${{ github.token }}
+          tauri: true
       - run: cargo fmt --all --check
       - run: taplo format --check
   lint:
@@ -47,6 +48,7 @@ jobs:
       - uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ github.token }}
+          tauri: true
       - run: yarn workspaces foreach -Apt run build:debug
       - run: yarn vitest run
   lint-rust:
@@ -58,6 +60,7 @@ jobs:
         with:
           components: clippy
           github-token: ${{ github.token }}
+          tauri: true
       - run: cargo clippy
   test-rust:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
@@ -81,4 +84,5 @@ jobs:
       - uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ github.token }}
+          tauri: ${{ matrix.settings.host == 'ubuntu-latest' }}
       - run: cargo test --workspace

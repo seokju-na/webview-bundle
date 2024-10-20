@@ -61,6 +61,7 @@ jobs:
         if: ${{ !matrix.settings.docker }}
         with:
           targets: ${{ matrix.settings.target }}
+          tauri: ${{ matrix.settings.host == 'ubuntu-latest' }}
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
         if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' || matrix.settings.target == 'armv7-unknown-linux-musleabihf' }}
