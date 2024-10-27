@@ -12,6 +12,11 @@ webview-bundle = { workspace = true }
 
 async-trait   = { workspace = true }
 buildstructor = "0.5.4"
+lru           = { version = "0.12.5", optional = true }
+mime_guess    = { workspace = true }
 tauri         = { workspace = true }
 thiserror     = { workspace = true }
 tokio         = { workspace = true }
+
+[features]
+cache-lru = ["dep:lru"]
