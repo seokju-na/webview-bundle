@@ -1,7 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{Manager, WebviewUrl};
-use webview_bundle_tauri::{Config, FSLoader};
+use webview_bundle_tauri::cache::NoopCache;
+use webview_bundle_tauri::config::Config;
+use webview_bundle_tauri::loader::FSLoader;
 
 fn main() {
   tauri::Builder::default()
@@ -10,7 +12,10 @@ fn main() {
       dir.pop();
       dir.pop();
       dir.push("examples/tauri-simple");
-      let config = Config::builder().loader(FSLoader::from_dir(dir)).build();
+      let config = Config::builder()
+        .cache(NoopCache::default())
+        .loader(FSLoader::from_dir(dir))
+        .build();
       Ok(config)
     }))
     .setup(|app| {
