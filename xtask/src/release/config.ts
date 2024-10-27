@@ -1,31 +1,51 @@
 import { readFile } from 'node:fs/promises';
+import { z } from 'zod';
 import * as workspaceUtils from '../workspaceUtils';
 
-interface ReleaseConfigRaw {
-  rootChangelog?: string;
-  packages: Record<string, ReleasePackage>;
-  github: ReleaseGitHub;
-}
+export const ReleaseScriptSchema = z.object({
+  command: z.string().describe('Command to execute script within.'),
+  cwd: z.string().describe('Current working directory which script will be executed.').optional(),
+  env: z
+    .record(z.string(), z.string())
+    .describe('Environment variables to injected into script child process.')
+    .optional(),
+});
+export type ReleaseScript = z.infer<typeof ReleaseScriptSchema>;
 
-export interface ReleaseScript {
-  command: string;
-  cwd?: string;
-  env?: Record<string, string>;
-}
+export const ReleasePackageSchema = z.object({
+  versionedFiles: z
+    .string()
+    .array()
+    .describe(
+      'Version files (e.g. package.json, Cargo.toml) which version will be bumped when release process proceed.'
+    ),
+  changelog: z.string().describe('Changelog path file for this package.'),
+  scopes: z
+    .string()
+    .array()
+    .describe('Scopes to determine which git conventional commits are related to this package.')
+    .optional(),
+  beforeReleaseScripts: ReleaseScriptSchema.array().describe('Scripts to execute before release step.').optional(),
+});
+export type ReleasePackage = z.infer<typeof ReleasePackageSchema>;
 
-export interface ReleaseGitHub {
-  repo: {
-    owner: string;
-    name: string;
-  };
-}
+export const ReleaseGitHubSchema = z.object({
+  repo: z.object({
+    owner: z.string().describe('GitHub repository owner name.'),
+    name: z.string().describe('GitHub repository name.'),
+  }),
+});
+export type ReleaseGitHub = z.infer<typeof ReleaseGitHubSchema>;
 
-export interface ReleasePackage {
-  versionedFiles: string[];
-  changelog: string;
-  scopes?: string[];
-  beforeReleaseScripts?: ReleaseScript[];
-}
+export const ReleaseConfigSchema = z.object({
+  rootChangelog: z
+    .string()
+    .describe('Changelog file path which describes all of crates/packages changelog.')
+    .optional(),
+  packages: z.record(z.string(), ReleasePackageSchema).describe('Packages to execute release steps.'),
+  github: ReleaseGitHubSchema,
+});
+type ReleaseConfigRaw = z.infer<typeof ReleaseConfigSchema>;
 
 export class ReleaseConfig {
   readonly rootChangelog?: string;
