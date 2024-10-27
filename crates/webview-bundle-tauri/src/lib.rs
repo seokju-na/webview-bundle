@@ -1,20 +1,23 @@
-mod config;
-mod error;
-mod loader;
+pub mod cache;
+pub mod config;
+pub mod error;
+pub mod loader;
 
-pub use config::Config;
-pub use error::Error;
-pub use loader::{FSLoader, Loader};
+use crate::cache::Cache;
+use crate::config::Config;
+use crate::loader::Loader;
 use std::path::Path;
 use tauri::http::{Method, Response, Uri};
 use tauri::plugin::{PluginApi, TauriPlugin};
 use tauri::{plugin, AppHandle, Manager, Runtime};
+use webview_bundle::Bundle;
 
-pub fn init<R, L, F>(scheme: &'static str, config: F) -> TauriPlugin<R>
+pub fn init<R, L, C, F>(scheme: &'static str, config: F) -> TauriPlugin<R>
 where
   R: Runtime,
   L: Loader + Send + Sync + 'static,
-  F: FnOnce(&AppHandle<R>, PluginApi<R, ()>) -> Result<Config<L>, Box<dyn std::error::Error>>
+  C: Cache<String, Bundle> + Send + Sync + 'static,
+  F: FnOnce(&AppHandle<R>, PluginApi<R, ()>) -> Result<Config<L, C>, Box<dyn std::error::Error>>
     + Send
     + 'static,
 {
@@ -33,13 +36,13 @@ where
       let uri = request.uri().clone();
       let app = ctx.app_handle().clone();
       tauri::async_runtime::spawn(async move {
-        let config = app.state::<Config<L>>();
+        let config = app.state::<Config<L, C>>();
         let bundle = config.loader().load(&uri).await.unwrap();
         let filepath = uri_to_filepath(&uri);
-        let buf = bundle.read_file(filepath).unwrap();
+        let buf = bundle.read_file(&filepath).unwrap(); // TODO: handle file not found error
         responder.respond(
           Response::builder()
-            .header("content-type", "text/html")
+            .header("content-type", mime_types_from_filepath(&filepath))
             .header("content-length", buf.len())
             .status(200)
             .body(buf)
@@ -60,4 +63,12 @@ fn uri_to_filepath(uri: &Uri) -> String {
     return index_html;
   }
   [filepath, index_html].join("/")
+}
+
+fn mime_types_from_filepath(filepath: &String) -> String {
+  let guess = mime_guess::from_path(filepath);
+  guess
+    .first()
+    .map(|x| x.to_string())
+    .unwrap_or("text/plain".to_string())
 }
