@@ -1,4 +1,5 @@
 {
+  "$schema": "./xtask/dist/schema/artifacts.json",
   "dir": "artifacts-merged",
   "files": [
     {
