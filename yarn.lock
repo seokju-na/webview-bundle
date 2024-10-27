@@ -1307,12 +1307,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@webview-bundle/tauri@workspace:packages/tauri":
-  version: 0.0.0-use.local
-  resolution: "@webview-bundle/tauri@workspace:packages/tauri"
-  languageName: unknown
-  linkType: soft
-
 "@yarnpkg/fslib@npm:^3.1.0":
   version: 3.1.0
   resolution: "@yarnpkg/fslib@npm:3.1.0"
