@@ -1,0 +1,15 @@
+[package]
+edition = "2021"
+name    = "example-tauri-simple"
+publish = false
+version = "0.1.0"
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+serde                = { workspace = true }
+serde_json           = { workspace = true }
+tauri                = { workspace = true, features = ["unstable", "tracing"] }
+url                  = { version = "2", features = ["serde"] }
+webview-bundle-tauri = { workspace = true }

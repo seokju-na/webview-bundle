@@ -62,6 +62,13 @@
       ],
       "changelog": "packages/electron/CHANGELOG.md",
       "scopes": ["electron"]
+    },
+    "tauri": {
+      "versionedFiles": [
+        "crates/webview-bundle-tauri/Cargo.toml"
+      ],
+      "changelog": "crates/webview-bundle-tauri/CHANGELOG.md",
+      "scopes": ["tauri"]
     }
   },
   "github": {
