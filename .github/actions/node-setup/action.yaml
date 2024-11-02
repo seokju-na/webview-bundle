@@ -1,6 +1,9 @@
 name: "node setup"
 description: "node setup"
 inputs:
+  version:
+    description: "Version to use"
+    required: false
   architecture:
     description: "Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default."
     required: false
@@ -9,5 +12,6 @@ runs:
   steps:
     - uses: actions/setup-node@v4
       with:
+        node-version: ${{ inputs.version }}
         node-version-file: ".nvmrc"
         architecture: ${{ inputs.architecture }}

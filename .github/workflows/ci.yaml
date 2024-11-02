@@ -1,8 +1,8 @@
-name: Pull Request
+name: ci
 on:
   pull_request:
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 jobs:
   format:
@@ -36,14 +36,23 @@ jobs:
   test:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - node-version: '18'
+          - node-version: '20'
+          - node-version: '22'
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/node-setup
+        with:
+          version: ${{ matrix.settings.node-version }}
       - uses: ./.github/actions/yarn-setup
       - uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ github.token }}
-      - run: yarn workspaces foreach -Apt run build:debug
+      - run: yarn workspaces foreach -Apt run build
       - run: yarn vitest run
   lint-rust:
     runs-on: ubuntu-latest

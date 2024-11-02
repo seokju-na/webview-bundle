@@ -4,7 +4,7 @@ on:
 permissions:
   pull-requests: write
 concurrency:
-  group: prepare_release
+  group: prepare-release
 jobs:
   prepare-release:
     runs-on: ubuntu-latest
