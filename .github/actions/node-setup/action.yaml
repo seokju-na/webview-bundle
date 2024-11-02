@@ -2,8 +2,9 @@ name: "node setup"
 description: "node setup"
 inputs:
   version:
-    description: "Version to use"
+    description: "Version to use. Default to '.nvmrc'."
     required: false
+    default: '20'
   architecture:
     description: "Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default."
     required: false
@@ -13,5 +14,19 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.version }}
-        node-version-file: ".nvmrc"
         architecture: ${{ inputs.architecture }}
+    - run: |
+        corepack enable
+        corepack prepare --activate
+      shell: bash
+    - id: yarn-cache-dir
+      run: echo "YARN_CACHE_DIR=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      shell: bash
+    - uses: actions/cache@v4
+      with:
+        path: ${{ steps.yarn-cache-dir.outputs.YARN_CACHE_DIR }}
+        key: ${{ runner.os }}-${{ inputs.version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ inputs.version }}-yarn-
+    - run: yarn install
+      shell: bash
