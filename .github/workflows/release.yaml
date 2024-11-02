@@ -69,8 +69,6 @@ jobs:
         if: ${{ matrix.settings.target == 'armv7-unknown-linux-gnueabihf' || matrix.settings.target == 'armv7-unknown-linux-musleabihf' }}
         with:
           version: 0.13.0
-      - name: Yarn setup
-        uses: ./.github/actions/yarn-setup
       - name: Setup Node.js for x86
         uses: ./.github/actions/node-setup
         if: matrix.settings.target == 'i686-pc-windows-msvc'
@@ -109,8 +107,6 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ github.token }}
-      - name: Setup Yarn
-        uses: ./.github/actions/yarn-setup
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:

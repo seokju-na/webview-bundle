@@ -4,7 +4,7 @@ on:
 permissions:
   pull-requests: write
 concurrency:
-  group: prepare_release
+  group: prepare-release
 jobs:
   prepare-release:
     runs-on: ubuntu-latest
@@ -21,8 +21,6 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           github-token: ${{ github.token }}
-      - name: Setup Yarn
-        uses: ./.github/actions/yarn-setup
       - name: Switch branch
         run: git switch -c release
       - name: Run xtask (prepare-release)
