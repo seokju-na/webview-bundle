@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "yarn out && yarn out-schema",
     "out": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --external:esbuild --external:typescript --log-level=error",
-    "out-schema": "tsx out-schema.mts"
+    "out-schema": "tsx out-schema.ts"
   },
   "dependencies": {
     "@napi-rs/simple-git": "^0.1.19",
