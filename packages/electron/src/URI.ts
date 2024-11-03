@@ -68,7 +68,13 @@ function parse(uri: string): {
     const userinfo = [url.username, url.password].filter(x => x !== '').join(':');
     const host = url.hostname;
     const port = url.port;
-    const path = url.pathname;
+    const path =
+      url.pathname === '/'
+        ? url.pathname
+        : url.pathname.endsWith('/')
+          ? // Strip last '/'
+            url.pathname.slice(0, url.pathname.length - 1)
+          : url.pathname;
     const query = url.search.slice(1);
     const fragment = url.hash.slice(1);
     return {

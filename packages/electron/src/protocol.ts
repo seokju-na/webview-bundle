@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { Bundle } from '@webview-bundle/node-binding';
-import type { contentType as contentTypeFn } from 'mime-types';
+import type { lookup } from 'mime-types';
 import type { Cache } from './Cache';
 import type { Loader } from './Loader';
 import { URI } from './URI';
@@ -14,9 +14,9 @@ export interface ProtocolHandlerConfig {
 }
 
 const defaultContentType = () => {
-  const { contentType: getContentType } = require('mime-types');
+  const { lookup: getContentType } = require('mime-types');
   return (filepath: string): string | undefined => {
-    const contentType = (getContentType as typeof contentTypeFn)(filepath) || undefined;
+    const contentType = (getContentType as typeof lookup)(filepath) || undefined;
     return contentType;
   };
 };
@@ -70,9 +70,9 @@ export function protocolHandler({ loader, cache, contentType, headers, error }: 
 function uriToFilepath(uri: URI): string {
   const filepath = uri.path.slice(1);
   if (path.extname(filepath) !== '') {
-    return filepath;
+    return decodeURIComponent(filepath);
   }
-  return [filepath, 'index.html'].filter(x => x !== '').join('/');
+  return decodeURIComponent([filepath, 'index.html'].filter(x => x !== '').join('/'));
 }
 
 function isFileNotFoundError(e: unknown): boolean {
