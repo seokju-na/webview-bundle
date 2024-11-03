@@ -1,0 +1,16 @@
+{
+  "name": "@benchmark/node-binding",
+  "private": true,
+  "scripts": {
+    "bench": "vitest bench --run"
+  },
+  "dependencies": {
+    "@webview-bundle/node-binding": "workspace:^",
+    "yazl": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/yazl": "^2.4.5",
+    "benchmark-tools": "workspace:^",
+    "vitest": "2.1.2"
+  }
+}

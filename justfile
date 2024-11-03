@@ -67,6 +67,10 @@ build:
 build-debug:
   yarn workspaces foreach -Apt run build:debug
 
+# Run benchmarks
+benchmark: build
+  yarn workspaces foreach -A --include='@benchmark/*' run bench
+
 # Run xtask
 xtask *ARGS:
   yarn xtask {{ARGS}}

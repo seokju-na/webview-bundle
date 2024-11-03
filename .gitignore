@@ -15,8 +15,10 @@
 node_modules
 dist
 esm
+out
 /Cargo.lock
 /target
 *.tsbuildinfo
 artifacts-merged/
 *.node
+.next
