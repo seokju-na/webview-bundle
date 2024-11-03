@@ -15,9 +15,9 @@ describe('URI', () => {
     expect(uri.toString()).toEqual('app://username:password@host:80/path/1/2/3?foo=bar#hash');
   });
 
-  it('?', () => {
-    const uri = new URI('app://bundle/');
-    expect(uri.path).toEqual('/');
+  it('parse URI path ends with slash', () => {
+    const uri = new URI('app://out.wvb/category/3/');
+    expect(uri.path).toEqual('/category/3');
   });
 
   it('parse URI with empty path', () => {
