@@ -2139,6 +2139,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@webview-bundle/publisher@workspace:packages/publisher":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/publisher@workspace:packages/publisher"
+  languageName: unknown
+  linkType: soft
+
 "@yarnpkg/fslib@npm:^3.1.0":
   version: 3.1.0
   resolution: "@yarnpkg/fslib@npm:3.1.0"
