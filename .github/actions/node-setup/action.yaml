@@ -2,7 +2,7 @@ name: "node setup"
 description: "node setup"
 inputs:
   version:
-    description: "Version to use. Default to '.nvmrc'."
+    description: "Version to use. Default to '29"
     required: false
     default: '20'
   architecture:
