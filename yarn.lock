@@ -1444,6 +1444,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/plugin-retry@npm:^7.1.2":
+  version: 7.1.2
+  resolution: "@octokit/plugin-retry@npm:7.1.2"
+  dependencies:
+    "@octokit/request-error": "npm:^6.0.0"
+    "@octokit/types": "npm:^13.0.0"
+    bottleneck: "npm:^2.15.3"
+  peerDependencies:
+    "@octokit/core": ">=6"
+  checksum: 10c0/bf2175faaee74b1aadba972417140ab6d983c1aadd1bffed48b7abc6eac9b6c9c230f4f7bf5f8f7e14016998890472188587a1c044e96a664b1cc0fb4c21a8c5
+  languageName: node
+  linkType: hard
+
+"@octokit/request-error@npm:^6.0.0":
+  version: 6.1.6
+  resolution: "@octokit/request-error@npm:6.1.6"
+  dependencies:
+    "@octokit/types": "npm:^13.6.2"
+  checksum: 10c0/cbbed77ddd1d40a1bed36224667c2fac4c20ce375a78d4648745ad1fedc8c2b1d01343b5908979d5b6557736245637eb58efc65d0cd1ef047ea6be74b46c47d2
+  languageName: node
+  linkType: hard
+
 "@octokit/request-error@npm:^6.0.1":
   version: 6.1.5
   resolution: "@octokit/request-error@npm:6.1.5"
@@ -1483,6 +1505,15 @@ __metadata:
   dependencies:
     "@octokit/openapi-types": "npm:^22.2.0"
   checksum: 10c0/891334b5786ba6aef953384cec05d53e05132dd577c0c22db124d55eaa69609362d1e3147853b46e91bf226e046ba24d615c55214c8f8f4e7c3a5c38429b38e9
+  languageName: node
+  linkType: hard
+
+"@octokit/types@npm:^13.6.2":
+  version: 13.6.2
+  resolution: "@octokit/types@npm:13.6.2"
+  dependencies:
+    "@octokit/openapi-types": "npm:^22.2.0"
+  checksum: 10c0/ea51afb21b667b25dad9e5daae1701da1b362a4d6ed9609f6d3f9f219e5389bf50f7e53ae029ca190750e278be3ab963cac648a95ad248f245a5fda16a4f1ed1
   languageName: node
   linkType: hard
 
@@ -2139,9 +2170,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@webview-bundle/publisher@workspace:packages/publisher":
+"@webview-bundle/publisher-github@workspace:packages/publisher-github":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/publisher-github@workspace:packages/publisher-github"
+  dependencies:
+    "@octokit/core": "npm:^6.1.2"
+    "@octokit/plugin-retry": "npm:^7.1.2"
+    "@octokit/rest": "npm:^21.0.2"
+    "@octokit/types": "npm:^13.6.2"
+    "@webview-bundle/publisher": "workspace:^"
+    xtask: "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/publisher@workspace:^, @webview-bundle/publisher@workspace:packages/publisher":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/publisher@workspace:packages/publisher"
+  dependencies:
+    xtask: "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -2337,6 +2383,13 @@ __metadata:
   version: 3.2.0
   resolution: "boolean@npm:3.2.0"
   checksum: 10c0/6a0dc9668f6f3dda42a53c181fcbdad223169c8d87b6c4011b87a8b14a21770efb2934a778f063d7ece17280f8c06d313c87f7b834bb1dd526a867ffcd00febf
+  languageName: node
+  linkType: hard
+
+"bottleneck@npm:^2.15.3":
+  version: 2.19.5
+  resolution: "bottleneck@npm:2.19.5"
+  checksum: 10c0/b0f72e45b2e0f56a21ba720183f16bef8e693452fb0495d997fa354e42904353a94bd8fd429868e6751bc85e54b6755190519eed5a0ae0a94a5185209ae7c6d0
   languageName: node
   linkType: hard
 
