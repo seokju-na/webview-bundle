@@ -30,5 +30,11 @@
     "email": "seokju.me@gmail.com",
     "url": "https://github.com/seokju-na"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "xtask build-js-library ./src --platform=node --target=node20"
+  },
+  "devDependencies": {
+    "xtask": "workspace:^"
+  }
 }

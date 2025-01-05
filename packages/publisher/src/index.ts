@@ -1,2 +1,3 @@
 export { Publisher } from './Publisher';
-export { PublishOptions } from './PublishOptions';
+export type { PublishOptions } from './PublishOptions';
+export { AlreadyPublishedError } from './AlreadyPublishedError';
