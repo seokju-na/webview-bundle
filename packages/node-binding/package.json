@@ -43,6 +43,6 @@
   "devDependencies": {
     "@napi-rs/cli": "2.18.4",
     "@types/node": "22.7.4",
-    "vitest": "2.1.2"
+    "vitest": "3.1.2"
   }
 }

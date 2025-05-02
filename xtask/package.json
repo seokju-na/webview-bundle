@@ -30,7 +30,7 @@
     "@types/node": "22.7.4",
     "@types/semver": "^7",
     "tsx": "^4.19.2",
-    "vitest": "2.1.2",
+    "vitest": "3.1.2",
     "zod-to-json-schema": "3.23.5"
   }
 }
