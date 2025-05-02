@@ -154,7 +154,7 @@ version = "0.1.0"
     assert_eq!(
       versioned_file.publish(&next_version).unwrap(),
       vec![Actions::Command {
-        path: RelativePathBuf::from("Cargo.toml"),
+        path: RelativePathBuf::from(""),
         cmd: "cargo".to_string(),
         args: vec!["publish".to_string(), "--allow-dirty".to_string()],
       }]

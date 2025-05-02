@@ -88,6 +88,7 @@ mod tests {
     let path = RelativePathBuf::from("package.json");
     let content = r#"
       {
+        "name": "test",
         "version": "1.0.0"
       }
     "#;
@@ -102,6 +103,7 @@ mod tests {
     let path = RelativePathBuf::from("package.json");
     let content = r#"
       {
+        "name": "test",
         "version": "1.0.0",
         "private": true
       }
@@ -114,6 +116,7 @@ mod tests {
   fn write() {
     let path = RelativePathBuf::from("package.json");
     let content = r#"{
+  "name": "test",
   "version": "1.0.0"
 }
 "#;
@@ -124,6 +127,7 @@ mod tests {
       vec![Actions::Write {
         path: RelativePathBuf::from("package.json"),
         content: r#"{
+  "name": "test",
   "version": "1.1.0"
 }
 "#
@@ -138,6 +142,7 @@ mod tests {
     let path = RelativePathBuf::from("package.json");
     let content = r#"
       {
+        "name": "test",
         "version": "1.0.0"
       }
     "#;
@@ -148,7 +153,7 @@ mod tests {
       vec![Actions::Command {
         cmd: "npm".to_string(),
         args: vec!["publish".to_string(), "--access=public".to_string()],
-        path: RelativePathBuf::from("package.json"),
+        path: RelativePathBuf::from(""),
       }]
     )
   }
@@ -158,6 +163,7 @@ mod tests {
     let path = RelativePathBuf::from("package.json");
     let content = r#"
       {
+        "name": "test",
         "version": "1.0.0"
       }
     "#;
@@ -172,7 +178,7 @@ mod tests {
           "--access=public".to_string(),
           "--tag=next".to_string()
         ],
-        path: RelativePathBuf::from("package.json"),
+        path: RelativePathBuf::from(""),
       }]
     )
   }
