@@ -24,18 +24,18 @@ where
   }
 
   // 1. Write files
-  write_release_targets(root_dir, &mut targets, console.clone(), dry_run)?;
-  write_root_cargo(root_dir, &targets, console.clone(), dry_run)?;
-  write_root_changelog(root_dir, &config, &targets, console.clone(), dry_run)?;
+  write_release_targets(root_dir, &mut targets, console.clone(), !dry_run)?;
+  write_root_cargo(root_dir, &targets, console.clone(), !dry_run)?;
+  write_root_changelog(root_dir, &config, &targets, console.clone(), !dry_run)?;
 
   // 2. Publish targets
   publish_targets(root_dir, &targets, console.clone(), dry_run)?;
 
   // 3. Commit changes
-  commit_changes(&repo, &targets, console.clone(), dry_run)?;
+  commit_changes(&repo, &targets, console.clone(), !dry_run)?;
 
   // 4. Add git tag
-  create_git_tags(&repo, &targets, console.clone(), dry_run)?;
+  create_git_tags(&repo, &targets, console.clone(), !dry_run)?;
 
   // 5. Create GitHub releases
 
