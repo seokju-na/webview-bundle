@@ -18,6 +18,10 @@ setup:
     corepack prepare --activate
     yarn
 
+    # Pre-requirements
+    yarn lefthook install
+    yarn workspace xtask run out
+
 # Test all files
 test: test-rust test-js
 

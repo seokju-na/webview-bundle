@@ -9,7 +9,6 @@
   ],
   "packageManager": "yarn@4.9.1",
   "scripts": {
-    "postinstall": "lefthook install",
     "xtask": "xtask",
     "x": "xtask"
   },
