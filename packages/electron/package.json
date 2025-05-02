@@ -9,12 +9,12 @@
   "publishConfig": {
     "access": "public",
     "main": "./dist/index.js",
-    "module": "./esm/index.mjs",
+    "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "exports": {
       ".": {
         "require": "./dist/index.js",
-        "import": "./esm/index.mjs",
+        "import": "./dist/index.mjs",
         "types": "./dist/index.d.ts"
       }
     }
@@ -33,9 +33,13 @@
     "email": "seokju.me@gmail.com",
     "url": "https://github.com/seokju-na"
   },
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
   "scripts": {
-    "build": "xtask build-js-library ./src --platform=node --target=node20"
+    "prepack": "yarn build",
+    "build": "tsup"
   },
   "peerDependencies": {
     "electron": ">= 25"
@@ -49,6 +53,8 @@
     "@types/node": "22.7.4",
     "@yarnpkg/fslib": "^3.1.0",
     "electron": "^33.0.0",
+    "fast-glob": "^3.3.3",
+    "tsup": "^8.4.0",
     "vitest": "3.1.2"
   }
 }
