@@ -32,7 +32,7 @@ where
   publish_targets(root_dir, &targets, console.clone(), dry_run)?;
 
   // 3. Commit changes
-  commit_changes(&repo, &targets, console.clone(), !dry_run)?;
+  commit_changes(&repo, &config, &targets, console.clone(), !dry_run)?;
 
   // 4. Add git tag
   create_git_tags(&repo, &targets, console.clone(), !dry_run)?;
@@ -174,6 +174,7 @@ where
 
 fn commit_changes<C>(
   repo: &Repository,
+  config: &Config,
   targets: &[ReleaseTarget],
   console: Arc<Mutex<Box<C>>>,
   dry_run: bool,
@@ -198,6 +199,11 @@ where
       pathspecs.push(changelog.path().to_string());
     }
   }
+  if let Some(ref root_changelog_path) = config.root_changelog {
+    pathspecs.push(root_changelog_path.to_owned());
+  }
+
+  let mut cons = console.lock().unwrap();
 
   let mut index = repo.index()?;
   index.add_all(pathspecs, IndexAddOption::DEFAULT, None)?;
@@ -207,8 +213,12 @@ where
   let sig = Signature::now("Seokju Na", "seokju.me@gmail.com")?;
   let parent = repo.head()?.peel_to_commit()?;
   let commit_id = repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent])?;
-  console.lock().unwrap().log(markup! {
-    <Success>"[root]"</Success>" Commit release completed: "<Dim>{commit_id.to_string()}</Dim>
+  let commit = repo.find_commit(commit_id)?;
+  cons.log(markup! {
+    <Success>"[root]"</Success>" Commit changes with \""{message}"\"\n"
+    <Dim>"  sha: "{commit_id.to_string()}</Dim>"\n"
+    <Dim>"  author name: "{commit.author().name().unwrap_or_default()}</Dim>"\n"
+    <Dim>"  author email: "{commit.author().email().unwrap_or_default()}</Dim>
   });
   Ok(())
 }
@@ -238,8 +248,13 @@ where
       continue;
     }
     let tag_id = repo.tag(&tag_name, &target, &sig, &tag_name, false)?;
+    let tag = repo.find_tag(tag_id)?;
     cons.log(markup! {
-    <Success>{prefix}</Success>" Tag created: "<Dim>{tag_id.to_string()}</Dim>
+      <Success>{prefix}</Success>" Tag created with name \""{tag_name}"\"\n"
+      <Dim>"  sha: "{tag_id.to_string()}</Dim>"\n"
+      <Dim>"  message: "{tag.message().unwrap_or_default()}</Dim>"\n"
+      <Dim>"  tagger name: "{tag.tagger().and_then(|x| x.name().map(|x| x.to_string())).unwrap_or_default()}</Dim>"\n"
+      <Dim>"  tagger email: "{tag.tagger().and_then(|x| x.email().map(|x| x.to_string())).unwrap_or_default()}</Dim>
     });
   }
   Ok(())
