@@ -3,8 +3,10 @@ use crate::actions::run_actions;
 use crate::cargo::write_cargo_workspace_version;
 use crate::changelog::Changelog;
 use crate::changes::Changes;
+use crate::commands::PrereleaseOptions;
 use crate::config::Config;
 use crate::package::Package;
+use crate::version::BumpRule;
 use biome_console::{Console, ConsoleExt, markup};
 use git2::{IndexAddOption, ObjectType, Repository, Signature};
 use relative_path::RelativePathBuf;
@@ -12,32 +14,45 @@ use similar::DiffableStr;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-pub fn release<C>(root_dir: &Path, console: Arc<Mutex<Box<C>>>, dry_run: bool) -> Result<(), Error>
+pub fn release<C>(
+  root_dir: &Path,
+  console: Arc<Mutex<Box<C>>>,
+  prerelease: Option<PrereleaseOptions>,
+  dry_run: bool,
+) -> Result<(), Error>
 where
   C: Console + Send + Sync + 'static,
 {
   let config = Config::load(root_dir)?;
   let repo = Repository::open(root_dir)?;
-  let mut targets = prepare_targets(root_dir, &repo, &config, console.clone())?;
+  let mut targets = prepare_targets(
+    root_dir,
+    &repo,
+    &config,
+    prerelease.as_ref(),
+    console.clone(),
+  )?;
   if targets.is_empty() {
     return Ok(());
   }
 
   // 1. Write files
-  write_release_targets(root_dir, &mut targets, console.clone(), !dry_run)?;
-  write_root_cargo(root_dir, &targets, console.clone(), !dry_run)?;
-  write_root_changelog(root_dir, &config, &targets, console.clone(), !dry_run)?;
+  write_release_targets(root_dir, &mut targets, console.clone(), dry_run)?;
+  write_root_cargo(root_dir, &targets, console.clone(), dry_run)?;
+  write_root_changelog(root_dir, &config, &targets, console.clone(), dry_run)?;
 
   // 2. Publish targets
   publish_targets(root_dir, &targets, console.clone(), dry_run)?;
 
-  // 3. Commit changes
-  commit_changes(&repo, &config, &targets, console.clone(), !dry_run)?;
+  if prerelease.is_none() {
+    // 3. Commit changes
+    commit_changes(&repo, &config, &targets, console.clone(), dry_run)?;
 
-  // 4. Add git tag
-  create_git_tags(&repo, &targets, console.clone(), !dry_run)?;
+    // 4. Add git tag
+    create_git_tags(&repo, &targets, console.clone(), dry_run)?;
 
-  // 5. Create GitHub releases
+    // 5. Create GitHub releases
+  }
 
   Ok(())
 }
@@ -48,6 +63,7 @@ fn prepare_targets<C>(
   root_dir: &Path,
   repo: &Repository,
   config: &Config,
+  prerelease: Option<&PrereleaseOptions>,
   console: Arc<Mutex<Box<C>>>,
 ) -> Result<Vec<ReleaseTarget>, Error>
 where
@@ -61,7 +77,13 @@ where
     let mut cons = console.lock().unwrap();
     let prefix = format!("[{}]", pkg.name());
     let changes = Changes::from_git_tag(repo, &pkg.versioned_git_tag(), &pkg.config().scopes)?;
-    let bump_rule = changes.get_bump_rule();
+    let bump_rule = match prerelease {
+      Some(opts) => Some(BumpRule::Prerelease {
+        id: opts.id.to_owned(),
+        num: opts.num,
+      }),
+      None => changes.get_bump_rule(),
+    };
     if bump_rule.is_none() {
       cons.log(markup! {
         <Info>{prefix}</Info>" No changes found. Skip release."

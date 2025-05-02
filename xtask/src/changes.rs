@@ -4,7 +4,6 @@ use crate::versioned_git_tag::VersionedGitTag;
 use git2::{Commit, Repository};
 use std::fmt::Formatter;
 use std::slice::Iter;
-use time::OffsetDateTime;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ChangeAuthor {
@@ -15,8 +14,6 @@ pub struct ChangeAuthor {
 #[derive(Debug)]
 pub struct Change {
   pub commit: ConventionalCommit,
-  pub author: Option<ChangeAuthor>,
-  pub timestamp: i64,
 }
 
 impl<'a> TryFrom<&Commit<'a>> for Change {
@@ -24,34 +21,9 @@ impl<'a> TryFrom<&Commit<'a>> for Change {
 
   fn try_from(value: &Commit<'a>) -> Result<Self, Self::Error> {
     let conventional_commit = ConventionalCommit::try_from(value)?;
-    let name = value.author().name().map(|x| x.to_string());
-    let email = value.author().email().map(|x| x.to_string());
-    let author = if let (Some(name), Some(email)) = (name, email) {
-      Some(ChangeAuthor { name, email })
-    } else {
-      None
-    };
-    let timestamp = value.time().seconds();
     Ok(Self {
       commit: conventional_commit,
-      author,
-      timestamp,
     })
-  }
-}
-
-impl Change {
-  #[must_use]
-  pub fn new(
-    commit: ConventionalCommit,
-    author: Option<ChangeAuthor>,
-    timestamp: Option<i64>,
-  ) -> Self {
-    Self {
-      commit,
-      author,
-      timestamp: timestamp.unwrap_or(OffsetDateTime::now_utc().unix_timestamp()),
-    }
   }
 }
 

@@ -1,5 +1,4 @@
 use crate::Error;
-use crate::changes::ChangeAuthor;
 use crate::exec::Exec;
 use biome_console::{Console, ConsoleExt, markup};
 use relative_path::RelativePathBuf;

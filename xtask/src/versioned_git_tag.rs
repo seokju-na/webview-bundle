@@ -14,14 +14,6 @@ impl VersionedGitTag {
     }
   }
 
-  pub fn name(&self) -> &str {
-    &self.name
-  }
-
-  pub fn version(&self) -> &Version {
-    &self.version
-  }
-
   pub fn tag_name(&self) -> String {
     format!("{}/v{}", self.name, self.version)
   }
@@ -37,7 +29,7 @@ impl VersionedGitTag {
     let mut oid: Option<Oid> = None;
     repo.tag_foreach(|tag_oid, name| {
       if let Ok(tag_name) = std::str::from_utf8(name) {
-        if tag_name == self.tag_name() {
+        if tag_name == self.tag_ref() {
           oid = Some(tag_oid);
           return false;
         }

@@ -77,4 +77,4 @@ benchmark: build
 
 # Run xtask
 xtask *ARGS:
-    yarn xtask {{ ARGS }}
+    cargo run -p xtask --bin xtask --quiet -- {{ ARGS }}

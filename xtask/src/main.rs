@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 mod actions;
 mod cargo;
 mod changelog;
@@ -39,14 +38,14 @@ async fn main() -> ExitCode {
   let result = match command {
     CliCommand::Release {
       cli_options: _,
+      prerelease,
       dry_run,
-    } => commands::release(root_dir, cons, dry_run),
+    } => commands::release(root_dir, cons, prerelease, dry_run),
   };
   match result {
     Ok(_) => ExitCode::SUCCESS,
     Err(e) => {
       let mut console = EnvConsole::default();
-      console.set_color(to_color_mode(command.get_color()));
       console.error(markup! {
         <Error>"Error: "</Error>{format!("{:?}", e)}
       });

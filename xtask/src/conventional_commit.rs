@@ -36,11 +36,13 @@ impl std::fmt::Display for ConventionalCommitKind {
 
 #[derive(Debug)]
 pub struct ConventionalCommit {
+  #[allow(dead_code)]
   pub sha: String,
   pub kind: ConventionalCommitKind,
   pub scopes: Vec<String>,
   pub is_breaking: bool,
   pub summary: String,
+  #[allow(dead_code)]
   pub body: Option<String>,
 }
 
