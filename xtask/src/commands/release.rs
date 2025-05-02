@@ -77,20 +77,20 @@ where
     let mut cons = console.lock().unwrap();
     let prefix = format!("[{}]", pkg.name());
     let changes = Changes::from_git_tag(repo, &pkg.versioned_git_tag(), &pkg.config().scopes)?;
-    let bump_rule = match prerelease {
-      Some(opts) => Some(BumpRule::Prerelease {
-        id: opts.id.to_owned(),
-        num: opts.num,
-      }),
-      None => changes.get_bump_rule(),
-    };
+    let bump_rule = changes.get_bump_rule();
     if bump_rule.is_none() {
       cons.log(markup! {
         <Info>{prefix}</Info>" No changes found. Skip release."
       });
       continue;
     }
-    let bump_rule = bump_rule.unwrap();
+    let bump_rule = match prerelease {
+      Some(opts) => BumpRule::Prerelease {
+        id: opts.id.to_owned(),
+        num: opts.num,
+      },
+      None => bump_rule.unwrap(),
+    };
     pkg.bump_version(&bump_rule)?;
     cons.log(markup! {
       <Info>{prefix}</Info>" "{pkg.version().to_string()}" -> "<Success>{pkg.next_version().to_string()}</Success>
