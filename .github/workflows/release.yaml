@@ -120,8 +120,17 @@ jobs:
       - uses: extractions/setup-just@v3
       - name: Spread artifacts
         run: just xtask spread-artifacts
+      - name: Setup registry authentication
+        run: |
+          set -ex
+          npm config set provenance true
+          npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
+          npm config set access public
       - name: Prerelease
         run: just xtask release --prerelease=next.${{ github.run_number }} --github-token=${{ github.token }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
   release:
     runs-on: ubuntu-latest
     if: github.ref_type == 'tag' && github.ref_name == 'release'
@@ -148,3 +157,6 @@ jobs:
         run: just xtask spread-artifacts
       - name: Release
         run: just xtask release --github-token=${{ github.token }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
