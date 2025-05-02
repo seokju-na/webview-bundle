@@ -238,7 +238,7 @@ where
       continue;
     }
     let tag_id = repo.tag(&tag_name, &target, &sig, &tag_name, false)?;
-    console.lock().unwrap().log(markup! {
+    cons.log(markup! {
     <Success>{prefix}</Success>" Tag created: "<Dim>{tag_id.to_string()}</Dim>
     });
   }
