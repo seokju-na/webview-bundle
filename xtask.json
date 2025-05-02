@@ -19,7 +19,8 @@
       "scopes": ["cli"],
       "beforePublishScripts": [
         {
-          "command": "yarn artifacts",
+          "command": "yarn",
+          "args": ["artifacts"],
           "cwd": "packages/cli"
         }
       ]
@@ -34,7 +35,8 @@
       "scopes": ["node-binding"],
       "beforePublishScripts": [
         {
-          "command": "yarn artifacts",
+          "command": "yarn",
+          "args": ["artifacts"],
           "cwd": "packages/node-binding"
         }
       ]
