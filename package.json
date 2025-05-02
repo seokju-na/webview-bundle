@@ -4,17 +4,9 @@
   "workspaces": [
     "packages/*",
     "examples/*",
-    "benchmarks/**/*",
-    "xtask"
+    "benchmarks/**/*"
   ],
   "packageManager": "yarn@4.9.1",
-  "scripts": {
-    "xtask": "xtask",
-    "x": "xtask"
-  },
-  "dependencies": {
-    "xtask": "workspace:^"
-  },
   "devDependencies": {
     "@biomejs/biome": "1.9.1",
     "lefthook": "1.7.15",

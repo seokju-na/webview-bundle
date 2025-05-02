@@ -1,5 +1,4 @@
 {
-  "$schema": "./xtask/dist/schema/releases.json",
   "rootChangelog": "CHANGELOG.md",
   "packages": {
     "core": {

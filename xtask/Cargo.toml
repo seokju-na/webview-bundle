@@ -1,0 +1,40 @@
+[package]
+authors     = ["Seokju Na <seokju.me@gmail.com>"]
+description = "TBD"
+edition     = "2024"
+license     = "MIT"
+name        = "xtask"
+publish     = false
+repository  = "https://github.com/seokju-na/webview-bundle"
+
+[[bin]]
+name = "xtask"
+path = "./src/main.rs"
+
+[dependencies]
+biome_console = { workspace = true }
+bpaf = { workspace = true }
+enum-iterator = { version = "2.1.0" }
+git2 = { version = "0.20.1" }
+glob = "0.3.2"
+nonempty = { version = "0.11.0" }
+project-root = "0.2.2"
+regex = { version = "1.11.1" }
+relative-path = { version = "1.9.3" }
+semver = { version = "1.0.26" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+similar = { version = "2.7.0" }
+thiserror = { workspace = true }
+time = { version = "0.3", features = ["macros"] }
+tokio = { workspace = true, features = [
+  "fs",
+  "rt",
+  "rt-multi-thread",
+  "macros",
+  "io-std",
+  "io-util",
+  "process",
+  "sync",
+] }
+toml_edit = { version = "0.22.26", features = ["serde"] }

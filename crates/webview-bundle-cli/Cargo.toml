@@ -4,7 +4,7 @@ description = "TBD"
 edition     = "2021"
 license     = "MIT"
 name        = "webview-bundle-cli"
-publish     = false
+publish     = true
 repository  = "https://github.com/seokju-na/webview-bundle"
 version     = "0.0.0"
 
