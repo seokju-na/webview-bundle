@@ -188,12 +188,16 @@ where
     });
     return Ok(());
   }
-  let mut pathspecs = targets
-    .iter()
-    .flat_map(|x| x.0.versioned_files())
-    .map(|x| x.path().to_string())
-    .collect::<Vec<_>>();
-  pathspecs.push("Cargo.toml".to_string());
+
+  let mut pathspecs = vec!["Cargo.toml".to_string()];
+  for ReleaseTarget(pkg, _, changelog) in targets.iter() {
+    for versioned_file in pkg.versioned_files() {
+      pathspecs.push(versioned_file.path().to_string());
+    }
+    if let Some(changelog) = changelog {
+      pathspecs.push(changelog.path().to_string());
+    }
+  }
 
   let mut index = repo.index()?;
   index.add_all(pathspecs, IndexAddOption::DEFAULT, None)?;

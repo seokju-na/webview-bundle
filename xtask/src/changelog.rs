@@ -28,6 +28,10 @@ impl Changelog {
     Ok(Changelog::new(path, content))
   }
 
+  pub fn path(&self) -> &RelativePathBuf {
+    &self.path
+  }
+
   pub fn has_changed(&self) -> bool {
     self.raw != self.new_content()
   }
