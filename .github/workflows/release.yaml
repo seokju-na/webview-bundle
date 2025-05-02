@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - "main"
+    tags:
+      - "release"
 permissions:
   attestations: write
   contents: write
@@ -85,16 +87,18 @@ jobs:
         run: ${{ matrix.settings.build }}
         if: ${{ !matrix.settings.docker }}
         shell: bash
+      - uses: extractions/setup-just@v3
       - name: Merge artifacts
-        run: yarn x artifacts merge
+        run: just xtask merge-artifacts
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ matrix.settings.host }}-${{ matrix.settings.target }}
           path: artifacts-merged
           if-no-files-found: error
-  release:
+  prerelease:
     runs-on: ubuntu-latest
+    if: github.ref_type == 'branch'
     needs: build
     steps:
       - name: Git checkout
@@ -113,9 +117,34 @@ jobs:
           pattern: artifacts-*
           merge-multiple: true
           path: artifacts-merged
+      - uses: extractions/setup-just@v3
       - name: Spread artifacts
-        run: yarn x artifacts spread
+        run: just xtask spread-artifacts
+      - name: Prerelease
+        run: just xtask release --prerelease=next.${{ github.run_number }} --github-token=${{ github.token }}
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag' && github.ref_name == 'release'
+    needs: build
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Setup tauri for linux
+        uses: ./.github/actions/tauri-linux-setup
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+        with:
+          github-token: ${{ github.token }}
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-*
+          merge-multiple: true
+          path: artifacts-merged
+      - uses: extractions/setup-just@v3
+      - name: Spread artifacts
+        run: just xtask spread-artifacts
       - name: Release
-        run: yarn x release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        run: just xtask release --github-token=${{ github.token }}

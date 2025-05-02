@@ -16,7 +16,7 @@ pub struct PackageConfig {
   pub versioned_files: Vec<String>,
   pub changelog: Option<String>,
   pub scopes: Vec<String>,
-  pub before_release_scripts: Option<Vec<ScriptConfig>>,
+  pub before_publish_scripts: Option<Vec<ScriptConfig>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -34,10 +34,25 @@ pub struct GitHubConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArtifactFileConfig {
+  pub source: String,
+  pub dist: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactsConfig {
+  pub dir: String,
+  pub files: Vec<ArtifactFileConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
   pub root_changelog: Option<String>,
   pub packages: HashMap<String, PackageConfig>,
   pub github: GitHubConfig,
+  pub artifacts: ArtifactsConfig,
 }
 
 impl Config {

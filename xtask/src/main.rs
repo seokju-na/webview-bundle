@@ -8,6 +8,7 @@ mod config;
 mod conventional_commit;
 mod error;
 mod exec;
+mod github;
 mod package;
 mod version;
 mod versioned_file;
@@ -39,8 +40,11 @@ async fn main() -> ExitCode {
     CliCommand::Release {
       cli_options: _,
       prerelease,
+      github_token,
       dry_run,
-    } => commands::release(root_dir, cons, prerelease, dry_run),
+    } => commands::release(root_dir, cons, prerelease, github_token, dry_run),
+    CliCommand::SpreadArtifacts { cli_options: _ } => commands::spread_artifacts(root_dir, cons),
+    CliCommand::MergeArtifacts { cli_options: _ } => commands::merge_artifacts(root_dir, cons),
   };
   match result {
     Ok(_) => ExitCode::SUCCESS,

@@ -40,8 +40,8 @@ impl Changelog {
     if !package.has_changed() || package.next_version().is_prerelease() {
       return;
     }
-    let title = format!("## {} v{}", package.name(), package.next_version());
-    let mut changes_lines = changes_lines(changes);
+    let title = Self::format_title(package);
+    let changes_lines = changes_lines(changes);
     let idx = self.lines.iter().position(|x| x == &title);
     match idx {
       Some(idx) => {
@@ -55,18 +55,37 @@ impl Changelog {
           .map(format_versioned_file_pkg_name)
           .collect::<Vec<_>>()
           .join(", ");
-        changes_lines.insert(
-          0,
-          format!(
-            r#"
-{title}
-
-This release includes packages: {pkg_names}
-"#
-          ),
-        );
-        self.lines.splice(1..1, changes_lines);
+        let content = vec![
+          "".to_string(),
+          title,
+          "".to_string(),
+          format!("This release includes packages: {}", pkg_names),
+          "".to_string(),
+        ];
+        self.lines.splice(1..1, [content, changes_lines].concat());
       }
+    }
+  }
+
+  pub fn extract_changes(&self, package: &Package) -> Option<String> {
+    let mut lines = vec![];
+    let title = Self::format_title(package);
+    let pos = self.lines.iter().position(|x| x.starts_with(&title));
+
+    if let Some(mut pos) = pos {
+      pos += 1;
+      while let Some(line) = self.lines.get(pos) {
+        if line.starts_with("## ") {
+          break;
+        }
+        lines.push(line.to_string());
+        pos += 1;
+      }
+    }
+
+    match lines.is_empty() {
+      true => None,
+      false => Some(lines.join("\n")),
     }
   }
 
@@ -79,6 +98,10 @@ This release includes packages: {pkg_names}
       content: self.new_content(),
       prev_content: Some(self.raw.to_owned()),
     }]
+  }
+
+  fn format_title(package: &Package) -> String {
+    format!("## {} v{}", package.name(), package.next_version())
   }
 
   fn new_content(&self) -> String {

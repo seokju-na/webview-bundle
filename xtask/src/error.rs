@@ -17,6 +17,10 @@ pub enum Error {
   PatternError(#[from] glob::PatternError),
   #[error(transparent)]
   GlobError(#[from] glob::GlobError),
+  #[error(transparent)]
+  Reqwest(#[from] reqwest::Error),
+  #[error("github error ({status}): {message}")]
+  GitHub { status: u16, message: String },
   #[error("cannot find head target")]
   CannotFindHeadTarget,
   #[error("fail to parse conventional commit")]

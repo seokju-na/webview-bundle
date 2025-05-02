@@ -1,14 +1,15 @@
 use crate::Error;
-use crate::actions::run_actions;
+use crate::actions::{Actions, run_actions};
 use crate::cargo::write_cargo_workspace_version;
 use crate::changelog::Changelog;
 use crate::changes::Changes;
 use crate::commands::PrereleaseOptions;
 use crate::config::Config;
+use crate::github::{GitHubClient, GitHubCreateReleasePayload};
 use crate::package::Package;
 use crate::version::BumpRule;
 use biome_console::{Console, ConsoleExt, markup};
-use git2::{IndexAddOption, ObjectType, Repository, Signature};
+use git2::{Cred, IndexAddOption, ObjectType, PushOptions, RemoteCallbacks, Repository, Signature};
 use relative_path::RelativePathBuf;
 use similar::DiffableStr;
 use std::path::Path;
@@ -18,6 +19,7 @@ pub fn release<C>(
   root_dir: &Path,
   console: Arc<Mutex<Box<C>>>,
   prerelease: Option<PrereleaseOptions>,
+  github_token: Option<String>,
   dry_run: bool,
 ) -> Result<(), Error>
 where
@@ -46,12 +48,16 @@ where
 
   if prerelease.is_none() {
     // 3. Commit changes
-    commit_changes(&repo, &config, &targets, console.clone(), dry_run)?;
+    git_commit_changes(&repo, &config, &targets, console.clone(), dry_run)?;
 
     // 4. Add git tag
-    create_git_tags(&repo, &targets, console.clone(), dry_run)?;
+    git_create_tags(&repo, &targets, console.clone(), dry_run)?;
+
+    // 5. Push
+    git_push(&repo, &github_token, console.clone(), dry_run)?;
 
     // 5. Create GitHub releases
+    create_github_releases(&config, &targets, &github_token, console.clone(), dry_run)?;
   }
 
   Ok(())
@@ -188,13 +194,25 @@ where
   C: Console + Send + Sync + 'static,
 {
   for ReleaseTarget(pkg, _, __) in targets.iter() {
+    if let Some(ref scripts) = pkg.config().before_publish_scripts {
+      let actions = scripts
+        .iter()
+        .map(|x| Actions::Command {
+          cmd: x.command.to_owned(),
+          args: x.args.to_owned().unwrap_or_default(),
+          path: RelativePathBuf::from(x.cwd.to_owned().unwrap_or_default()),
+        })
+        .collect::<Vec<_>>();
+      run_actions(pkg.name(), root_dir, console.clone(), actions, dry_run)?;
+    }
+
     let actions = pkg.publish()?;
     run_actions(pkg.name(), root_dir, console.clone(), actions, dry_run)?;
   }
   Ok(())
 }
 
-fn commit_changes<C>(
+fn git_commit_changes<C>(
   repo: &Repository,
   config: &Config,
   targets: &[ReleaseTarget],
@@ -207,7 +225,7 @@ where
   let message = "release commit [skip actions]";
   if dry_run {
     console.lock().unwrap().log(markup! {
-      <Info>"[root]"</Info>" Will commit changes with message: "<Dim>{message}</Dim>
+      <Info>"[root]"</Info>" Will commit changes with message: "{message}
     });
     return Ok(());
   }
@@ -245,7 +263,7 @@ where
   Ok(())
 }
 
-fn create_git_tags<C>(
+fn git_create_tags<C>(
   repo: &Repository,
   targets: &[ReleaseTarget],
   console: Arc<Mutex<Box<C>>>,
@@ -265,7 +283,7 @@ where
     let tag_name = tag.tag_name();
     if dry_run {
       cons.log(markup! {
-        <Info>{prefix}</Info>" Will create git tag ("{target_id}"):"<Dim>{tag_name}</Dim>
+        <Info>{prefix}</Info>" Will create git tag ("{target_id}"): "{tag_name}
       });
       continue;
     }
@@ -278,6 +296,89 @@ where
       <Dim>"  tagger name: "{tag.tagger().and_then(|x| x.name().map(|x| x.to_string())).unwrap_or_default()}</Dim>"\n"
       <Dim>"  tagger email: "{tag.tagger().and_then(|x| x.email().map(|x| x.to_string())).unwrap_or_default()}</Dim>
     });
+  }
+  Ok(())
+}
+
+fn git_push<C>(
+  repo: &Repository,
+  github_token: &Option<String>,
+  console: Arc<Mutex<Box<C>>>,
+  dry_run: bool,
+) -> Result<(), Error>
+where
+  C: Console + Send + Sync + 'static,
+{
+  let mut cons = console.lock().unwrap();
+  let mut remote = repo.find_remote("origin")?;
+  if dry_run {
+    cons.log(markup! {
+      <Info>"[root]"</Info>" Will push changes to remote: "{remote.url().unwrap_or_default()}
+    });
+    return Ok(());
+  }
+
+  let mut callbacks = RemoteCallbacks::new();
+  callbacks.credentials(|_, username, _| {
+    Cred::userpass_plaintext(
+      username.unwrap_or_default(),
+      github_token.clone().unwrap_or_default().as_ref(),
+    )
+  });
+
+  let mut push_opts = PushOptions::default();
+  push_opts.remote_callbacks(callbacks);
+  push_opts.remote_push_options(&["--tags"]);
+
+  remote.push(&["refs/heads/main:refs/heads/main"], Some(&mut push_opts))?;
+  cons.log(markup! {
+    <Success>"[root]"</Success>" Push changes to remote: "{remote.url().unwrap_or_default()}
+  });
+
+  Ok(())
+}
+
+fn create_github_releases<C>(
+  config: &Config,
+  targets: &[ReleaseTarget],
+  github_token: &Option<String>,
+  console: Arc<Mutex<Box<C>>>,
+  dry_run: bool,
+) -> Result<(), Error>
+where
+  C: Console + Send + Sync + 'static,
+{
+  for ReleaseTarget(pkg, _, changelog) in targets.iter() {
+    let mut cons = console.lock().unwrap();
+    let body = changelog.as_ref().and_then(|x| x.extract_changes(pkg));
+    let payload = GitHubCreateReleasePayload {
+      tag_name: pkg.next_versioned_git_tag().tag_name(),
+      name: Some(format!("{} v{}", pkg.name(), pkg.next_version())),
+      body,
+    };
+    if dry_run {
+      cons.log(markup! {
+        <Info>"[root]"</Info>" Will create GitHub release: "{config.github.repo.owner}"/"{config.github.repo.name}
+      });
+      for line in serde_json::to_string_pretty(&payload)?.lines() {
+        cons.log(markup! {
+          <Dim>"  "{line}</Dim>
+        });
+      }
+    } else {
+      let client = GitHubClient::new(github_token)?;
+      let release = client.create_release(
+        &config.github.repo.owner,
+        &config.github.repo.name,
+        &payload,
+      )?;
+      cons.log(markup! {
+        <Success>"[root]"</Success>" Created GitHub release: "{config.github.repo.owner}"/"{config.github.repo.name}"\n"
+        <Dim>"  id: "{release.id}</Dim>"\n"
+        <Dim>"  url: "{release.html_url}</Dim>"\n"
+        <Dim>"  tag_name: "{release.tag_name}</Dim>
+      });
+    }
   }
   Ok(())
 }

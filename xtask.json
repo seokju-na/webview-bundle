@@ -17,7 +17,7 @@
       ],
       "changelog": "packages/cli/CHANGELOG.md",
       "scopes": ["cli"],
-      "beforeReleaseScripts": [
+      "beforePublishScripts": [
         {
           "command": "yarn artifacts",
           "cwd": "packages/cli"
@@ -32,7 +32,7 @@
       ],
       "changelog": "packages/node-binding/CHANGELOG.md",
       "scopes": ["node-binding"],
-      "beforeReleaseScripts": [
+      "beforePublishScripts": [
         {
           "command": "yarn artifacts",
           "cwd": "packages/node-binding"
@@ -53,6 +53,23 @@
       "changelog": "crates/webview-bundle-tauri/CHANGELOG.md",
       "scopes": ["tauri"]
     }
+  },
+  "artifacts": {
+    "dir": "artifacts-merged",
+    "files": [
+      {
+        "source": "target/release/**/webview-bundle-cli?(.exe)",
+        "dist": "crates/webview-bundle-cli/artifacts"
+      },
+      {
+        "source": "packages/node-binding/*.node",
+        "dist": "packages/node-binding/artifacts"
+      },
+      {
+        "source": "packages/cli/*.node",
+        "dist": "packages/cli/artifacts"
+      }
+    ]
   },
   "github": {
     "repo": {
