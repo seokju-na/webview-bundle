@@ -3,9 +3,10 @@
   "private": true,
   "bin": "./dist/index.js",
   "scripts": {
-    "postinstall": "yarn out && yarn out-schema",
-    "out": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --external:esbuild --external:typescript --log-level=error",
-    "out-schema": "tsx out-schema.ts"
+    "postinstall": "yarn out",
+    "out": "yarn out:cli && yarn out:schema",
+    "out:cli": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --external:esbuild --external:typescript --log-level=error",
+    "out:schema": "tsx out-schema.ts"
   },
   "dependencies": {
     "@napi-rs/simple-git": "^0.1.19",
