@@ -56,7 +56,7 @@ where
     // 5. Push
     git_push(&repo, &github_token, console.clone(), dry_run)?;
 
-    // 5. Create GitHub releases
+    // 6. Create GitHub releases
     create_github_releases(&config, &targets, &github_token, console.clone(), dry_run)?;
   }
 
