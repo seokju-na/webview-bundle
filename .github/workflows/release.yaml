@@ -1,4 +1,4 @@
-name: Release
+name: release
 on:
   push:
     branches:
@@ -10,7 +10,7 @@ permissions:
   attestations: write
   contents: write
 concurrency:
-  group: release
+  group: release-${{ github.ref_name }}
 jobs:
   build:
     strategy:
@@ -93,12 +93,13 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts-${{ matrix.settings.host }}-${{ matrix.settings.target }}
+          name: artifacts-${{ github.ref_name }}-${{ matrix.settings.host }}-${{ matrix.settings.target }}
           path: artifacts-merged
           if-no-files-found: error
   dry-run:
     runs-on: ubuntu-latest
     if: github.ref_type == 'branch'
+    needs: build
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
@@ -113,7 +114,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: artifacts-*
+          pattern: artifacts-${{ github.ref_name }}-*
           merge-multiple: true
           path: artifacts-merged
       - uses: extractions/setup-just@v3
@@ -139,7 +140,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: artifacts-*
+          pattern: artifacts-${{ github.ref_name }}-*
           merge-multiple: true
           path: artifacts-merged
       - uses: extractions/setup-just@v3
@@ -168,7 +169,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: artifacts-*
+          pattern: artifacts-${{ github.ref_name }}-*
           merge-multiple: true
           path: artifacts-merged
       - uses: extractions/setup-just@v3
