@@ -15,12 +15,11 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           components: rustfmt
-          bins: taplo-cli
           github-token: ${{ github.token }}
       - name: Run rustfmt
         run: cargo fmt --all --check
       - name: Run taplo
-        run: taplo format --check
+        run: yarn taplo format --check
   lint:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
