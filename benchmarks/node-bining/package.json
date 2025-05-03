@@ -1,6 +1,7 @@
 {
   "name": "@benchmark/node-binding",
   "private": true,
+  "type": "module",
   "scripts": {
     "bench": "vitest bench --run"
   },
@@ -9,8 +10,8 @@
     "yazl": "^3.2.0"
   },
   "devDependencies": {
+    "@benchmark/tools": "workspace:^",
     "@types/yazl": "^2.4.5",
-    "benchmark-tools": "workspace:^",
     "vitest": "3.1.2"
   }
 }

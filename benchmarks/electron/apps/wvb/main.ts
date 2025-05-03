@@ -1,6 +1,9 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { FSLoader, protocolHandler } from '@webview-bundle/electron';
 import { BrowserWindow, app, protocol } from 'electron';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -16,7 +19,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const handler = protocolHandler({
-  loader: FSLoader.fromDir(path.join(__dirname, '../../../fixtures/next')),
+  loader: FSLoader.fromDir(path.join(dirname, '..', '..', '..', 'fixtures', 'next')),
   cache: new Map(),
 });
 

@@ -1,6 +1,9 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { FSLoader, protocolHandler } from '@webview-bundle/electron';
 import { BrowserWindow, app, protocol } from 'electron';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -27,7 +30,7 @@ async function createWindow() {
 }
 
 const handler = protocolHandler({
-  loader: FSLoader.fromDir(path.join(__dirname, '../')),
+  loader: FSLoader.fromDir(path.join(dirname, '../')),
 });
 
 app.on('ready', () => {

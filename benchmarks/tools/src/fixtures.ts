@@ -5,9 +5,9 @@ import { execa } from 'execa';
 import { Listr } from 'listr2';
 import glob from 'tiny-glob';
 
-const __dirname = fileURLToPath(import.meta.url);
-const currentPkgDir = path.resolve(__dirname, '../');
-const fixturesDir = path.resolve(__dirname, '../../../fixtures');
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+const current = path.resolve(dirname, '..');
+const fixturesDir = path.resolve(current, '..', 'fixtures');
 
 export interface FixtureInfo {
   name: string;
@@ -66,7 +66,7 @@ export async function buildFixture(name: string): Promise<boolean> {
   await execa(
     'yarn',
     ['webview-bundle', 'pack', getFixtureOutDir(name), '-o', getFixtureOutWebviewBundleFilePath(name), '--truncate'],
-    { cwd: currentPkgDir }
+    { cwd: current }
   );
   return true;
 }

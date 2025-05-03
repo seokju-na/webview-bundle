@@ -1,11 +1,17 @@
 {
   "name": "@webview-bundle/cli",
   "version": "0.0.0",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "type": "module",
   "bin": {
     "webview-bundle": "./webview-bundle.js"
   },
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "./binding.cjs",
+    "./webview-bundle.js"
+  ],
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
     "type": "git",
@@ -22,7 +28,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">= 10"
+    "node": ">= 18"
   },
   "napi": {
     "name": "cli",
@@ -40,8 +46,8 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
+    "build": "napi build --platform --release --js=binding.cjs --dts=binding.d.cts",
+    "build:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts",
     "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
