@@ -67,12 +67,12 @@ impl PackageManager for PackageJson {
   }
 
   fn publish(&self, next_version: &Version) -> Result<Vec<Actions>, Error> {
-    let mut args = str_vec!["publish", "--access=public", "--provenance=true"];
+    let mut args = str_vec!["npm", "publish", "--access=public", "--provenance=true"];
     if let Some(id) = next_version.prerelease_id() {
       args.push(format!("--tag={}", id));
     }
     Ok(vec![Actions::Command {
-      cmd: "npm".to_string(),
+      cmd: "yarn".to_string(),
       args,
       path: self.path().parent().unwrap().to_owned(),
     }])
@@ -151,8 +151,8 @@ mod tests {
     assert_eq!(
       versioned_file.publish(&next_version).unwrap(),
       vec![Actions::Command {
-        cmd: "npm".to_string(),
-        args: str_vec!["publish", "--access=public", "--provenance=true",],
+        cmd: "yarn".to_string(),
+        args: str_vec!["npm", "publish", "--access=public", "--provenance=true",],
         path: RelativePathBuf::from(""),
       }]
     )
@@ -172,8 +172,9 @@ mod tests {
     assert_eq!(
       versioned_file.publish(&next_version).unwrap(),
       vec![Actions::Command {
-        cmd: "npm".to_string(),
+        cmd: "yarn".to_string(),
         args: str_vec![
+          "npm",
           "publish",
           "--access=public",
           "--provenance=true",
