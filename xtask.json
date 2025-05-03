@@ -1,0 +1,82 @@
+{
+  "rootChangelog": "CHANGELOG.md",
+  "packages": {
+    "core": {
+      "versionedFiles": [
+        "crates/webview-bundle/Cargo.toml"
+      ],
+      "changelog": "crates/webview-bundle/CHANGELOG.md",
+      "scopes": ["core", "all"]
+    },
+    "cli": {
+      "versionedFiles": [
+        "crates/webview-bundle-cli/Cargo.toml",
+        "packages/cli/Cargo.toml",
+        "packages/cli/package.json",
+        "packages/cli/npm/*/package.json"
+      ],
+      "changelog": "packages/cli/CHANGELOG.md",
+      "scopes": ["cli", "all"],
+      "beforePublishScripts": [
+        {
+          "command": "yarn",
+          "args": ["artifacts"],
+          "cwd": "packages/cli"
+        }
+      ]
+    },
+    "node-binding": {
+      "versionedFiles": [
+        "packages/node-binding/Cargo.toml",
+        "packages/node-binding/package.json",
+        "packages/node-binding/npm/*/package.json"
+      ],
+      "changelog": "packages/node-binding/CHANGELOG.md",
+      "scopes": ["node-binding", "all"],
+      "beforePublishScripts": [
+        {
+          "command": "yarn",
+          "args": ["artifacts"],
+          "cwd": "packages/node-binding"
+        }
+      ]
+    },
+    "electron": {
+      "versionedFiles": [
+        "packages/electron/package.json"
+      ],
+      "changelog": "packages/electron/CHANGELOG.md",
+      "scopes": ["electron", "all"]
+    },
+    "tauri": {
+      "versionedFiles": [
+        "crates/webview-bundle-tauri/Cargo.toml"
+      ],
+      "changelog": "crates/webview-bundle-tauri/CHANGELOG.md",
+      "scopes": ["tauri", "all"]
+    }
+  },
+  "artifacts": {
+    "dir": "artifacts-merged",
+    "files": [
+      {
+        "source": "target/release/**/webview-bundle-cli?(.exe)",
+        "dist": "crates/webview-bundle-cli/artifacts"
+      },
+      {
+        "source": "packages/node-binding/*.node",
+        "dist": "packages/node-binding/artifacts"
+      },
+      {
+        "source": "packages/cli/*.node",
+        "dist": "packages/cli/artifacts"
+      }
+    ]
+  },
+  "github": {
+    "repo": {
+      "owner": "seokju-na",
+      "name": "webview-bundle"
+    }
+  }
+}
