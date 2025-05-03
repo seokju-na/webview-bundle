@@ -2,8 +2,8 @@ import path from 'node:path';
 import { create, encode } from '@webview-bundle/node-binding';
 import { type PortablePath, xfs } from '@yarnpkg/fslib';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { FSLoader } from './FSLoader';
-import { URI } from './URI';
+import { FSLoader } from './fs-loader.js';
+import { URI } from './uri.js';
 
 describe('FSLoader', () => {
   let tmpdir: string;

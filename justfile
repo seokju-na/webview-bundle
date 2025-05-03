@@ -46,7 +46,7 @@ format-rust:
 
 # Format JS files via Biome
 format-js:
-    yarn biome format
+    yarn biome format --write
 
 # Lint all files
 lint: lint-rust lint-js

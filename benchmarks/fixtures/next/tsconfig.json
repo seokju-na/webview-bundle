@@ -2,6 +2,8 @@
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "allowJs": true,
     "incremental": true,
     "isolatedModules": true,

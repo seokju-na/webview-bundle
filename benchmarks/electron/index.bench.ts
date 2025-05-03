@@ -11,8 +11,8 @@ function startup(mainFilePath: string): BenchFunction {
 }
 
 describe('startup', () => {
-  bench('startup/fs', startup('./dist/fs/main.js'), { iterations: 10, time: 1_000 });
-  bench('startup/webview-bundle', startup('./dist/wvb/main.js'), { iterations: 10, time: 1_000 });
+  bench('startup/fs', startup('./dist/fs/main.mjs'), { iterations: 10, time: 1_000 });
+  bench('startup/webview-bundle', startup('./dist/wvb/main.mjs'), { iterations: 10, time: 1_000 });
 });
 
 function navigation(mainFilePath: string): BenchFunction {
@@ -33,6 +33,6 @@ function navigation(mainFilePath: string): BenchFunction {
 }
 
 describe('navigation', () => {
-  bench('navigation/fs', navigation('./dist/fs/main.js'), { iterations: 10, time: 2_000 });
-  bench('navigation/webview-bundle', navigation('./dist/wvb/main.js'), { iterations: 10, time: 2_000 });
+  bench('navigation/fs', navigation('./dist/fs/main.mjs'), { iterations: 10, time: 2_000 });
+  bench('navigation/webview-bundle', navigation('./dist/wvb/main.mjs'), { iterations: 10, time: 2_000 });
 });

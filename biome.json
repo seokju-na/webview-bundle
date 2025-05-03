@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.1/schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "organizeImports": {
     "enabled": true
   },
@@ -12,6 +12,8 @@
     "ignore": [
       "./.yarn/**",
       "*.json",
+      "*.cjs",
+      "*.cts",
       "packages/cli/index.js",
       "packages/cli/index.d.ts",
       "packages/node-binding/binding.js",
@@ -41,6 +43,20 @@
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
+      },
+      "correctness": {
+        "noUnusedImports": "error",
+        "useImportExtensions": {
+          "level": "error",
+          "options": {
+            "suggestedExtensions": {
+              "ts": {
+                "module": "js",
+                "component": "jsx"
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -50,5 +66,17 @@
       "trailingCommas": "es5",
       "arrowParentheses": "asNeeded"
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": ["./benchmarks/fixtures/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useImportExtensions": "off"
+          }
+        }
+      }
+    }
+  ]
 }

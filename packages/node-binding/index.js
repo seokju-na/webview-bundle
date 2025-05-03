@@ -1,11 +1,17 @@
-const binding = require('./binding');
+import { createRequire } from 'node:module';
 
-async function decode(buf) {
+const require = createRequire(import.meta.url);
+const { Bundle: _Bundle, encode: _encode, decode: _decode, create: _create } = require('./binding.cjs');
+
+export const Bundle = _Bundle;
+export const create = _create;
+
+export async function decode(buf) {
   if (buf.length === 0) {
     throw new Error('empty buffer');
   }
   return new Promise((resolve, reject) => {
-    binding.decode(buf, (err, result) => {
+    _decode(buf, (err, result) => {
       if (err != null) {
         reject(err);
       } else {
@@ -15,9 +21,9 @@ async function decode(buf) {
   });
 }
 
-async function encode(bundle) {
+export async function encode(bundle) {
   return new Promise((resolve, reject) => {
-    binding.encode(bundle, (err, result) => {
+    _encode(bundle, (err, result) => {
       if (err != null) {
         reject(err);
       } else {
@@ -26,8 +32,3 @@ async function encode(bundle) {
     });
   });
 }
-
-module.exports.Bundle = binding.Bundle;
-module.exports.decode = decode;
-module.exports.encode = encode;
-module.exports.create = binding.create;

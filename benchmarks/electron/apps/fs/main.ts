@@ -1,10 +1,13 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { BrowserWindow, app } from 'electron';
 import serve from 'electron-serve';
 
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
 serve({
   scheme: 'app',
-  directory: path.resolve(__dirname, '../../../fixtures/next/out'),
+  directory: path.resolve(dirname, '..', '..', '..', 'fixtures', 'next', 'out'),
 });
 
 let mainWindow: BrowserWindow;

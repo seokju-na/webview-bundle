@@ -1,7 +1,6 @@
 import { Layout, Page } from '@vercel/examples-ui';
 import type { GetStaticPaths, GetStaticProps, GetStaticPropsContext } from 'next';
 import Head from 'next/head';
-import React from 'react';
 import PaginationPage from '../../components/PaginatedPage';
 import getProducts from '../../lib/getProducts';
 
