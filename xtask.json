@@ -55,6 +55,20 @@
       ],
       "changelog": "crates/webview-bundle-tauri/CHANGELOG.md",
       "scopes": ["tauri", "all"]
+    },
+    "publisher": {
+      "versionedFiles": [
+        "packages/publisher/package.json"
+      ],
+      "changelog": "packages/publisher/CHANGELOG.md",
+      "scopes": ["publisher", "all"]
+    },
+    "publisher-github": {
+      "versionedFiles": [
+        "packages/publisher-github/package.json"
+      ],
+      "changelog": "packages/publisher-github/CHANGELOG.md",
+      "scopes": ["publisher-github", "publisher", "all"]
     }
   },
   "artifacts": {
