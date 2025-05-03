@@ -1,4 +1,4 @@
-import type { GitHubClientOptions } from './github';
+import type { GitHubClientOptions } from './github.js';
 
 export interface GitHubPublisherConfig {
   repo: {

@@ -3,7 +3,6 @@ import type { OctokitOptions } from '@octokit/core';
 import { retry } from '@octokit/plugin-retry';
 import { Octokit } from '@octokit/rest';
 import type { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
-import { version } from '../package.json';
 
 export type GitHubClientOptions = OctokitOptions;
 export type GitHubClient = Octokit;
@@ -12,7 +11,7 @@ export type GitHubRelease = GetResponseDataTypeFromEndpointMethod<Octokit['rest'
 export function client(options: OctokitOptions = {}): GitHubClient {
   const RetryableOctokit = Octokit.plugin(retry);
   const client = new RetryableOctokit({
-    userAgent: `Webview Bundle/v${version}`,
+    userAgent: 'Webview Bundle Publisher',
     ...options,
   });
   return client;

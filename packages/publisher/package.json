@@ -1,20 +1,21 @@
 {
   "name": "@webview-bundle/publisher",
   "version": "0.0.0",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "module": "./esm/index.mjs",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "require": "./dist/index.js",
-        "import": "./esm/index.mjs",
-        "types": "./dist/index.d.ts"
-      }
-    }
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "ndoe": ">= 18"
   },
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
@@ -32,6 +33,11 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "xtask build-js-library ./src --platform=node --target=node20"
+    "prepack": "yarn build",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "fast-glob": "^3.3.2",
+    "tsup": "8.4.0"
   }
 }

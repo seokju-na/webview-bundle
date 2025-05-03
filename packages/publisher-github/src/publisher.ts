@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import { AlreadyPublishedError, type PublishOptions, Publisher } from '@webview-bundle/publisher';
-import type { GitHubPublisherConfig } from './GitHubPublisherConfig';
-import type { GitHubRelease } from './github';
-import * as github from './github';
+import type { GitHubPublisherConfig } from './config.js';
+import type { GitHubRelease } from './github.js';
+import * as github from './github.js';
 
 export class GitHubPublisher extends Publisher {
   readonly name = 'github';
@@ -28,7 +28,7 @@ export class GitHubPublisher extends Publisher {
       ...clientOptions,
     });
     const tag = `${tagPrefix}${version}`;
-    let release: GitHubRelease | null = null;
+    let release: GitHubRelease | undefined;
     try {
       const resp = await client.repos.getReleaseByTag({
         owner: repo.owner,

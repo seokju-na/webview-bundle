@@ -1,6 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { PublishOptions } from './PublishOptions';
+
+export interface PublishOptions {
+  /** Name of bundle. */
+  name: string;
+  /** Bundle file path. */
+  bundle: string;
+  /** Version for bundle. */
+  version: string;
+}
 
 export abstract class Publisher {
   public abstract readonly name: string;

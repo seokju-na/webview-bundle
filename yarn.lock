@@ -1079,7 +1079,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/core@npm:^6.1.2, @octokit/core@npm:^6.1.4":
+"@octokit/core@npm:^6.1.4, @octokit/core@npm:^6.1.5":
   version: 6.1.5
   resolution: "@octokit/core@npm:6.1.5"
   dependencies:
@@ -1160,7 +1160,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/plugin-retry@npm:^7.1.2":
+"@octokit/plugin-retry@npm:^7.2.1":
   version: 7.2.1
   resolution: "@octokit/plugin-retry@npm:7.2.1"
   dependencies:
@@ -1195,7 +1195,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/rest@npm:^21.0.2":
+"@octokit/rest@npm:^21.1.1":
   version: 21.1.1
   resolution: "@octokit/rest@npm:21.1.1"
   dependencies:
@@ -1207,7 +1207,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/types@npm:^13.10.0, @octokit/types@npm:^13.6.2":
+"@octokit/types@npm:^13.10.0":
   version: 13.10.0
   resolution: "@octokit/types@npm:13.10.0"
   dependencies:
@@ -1978,7 +1978,7 @@ __metadata:
     electron: "npm:^33.0.0"
     es-mime-types: "npm:^0.1.4"
     fast-glob: "npm:^3.3.2"
-    tsup: "npm:^8.4.0"
+    tsup: "npm:8.4.0"
     vitest: "npm:3.1.2"
   peerDependencies:
     electron: ">= 25"
@@ -1999,17 +1999,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@webview-bundle/publisher-github@workspace:packages/publisher-github"
   dependencies:
-    "@octokit/core": "npm:^6.1.2"
-    "@octokit/plugin-retry": "npm:^7.1.2"
-    "@octokit/rest": "npm:^21.0.2"
-    "@octokit/types": "npm:^13.6.2"
+    "@octokit/core": "npm:^6.1.5"
+    "@octokit/plugin-retry": "npm:^7.2.1"
+    "@octokit/rest": "npm:^21.1.1"
+    "@octokit/types": "npm:^14.0.0"
     "@webview-bundle/publisher": "workspace:^"
+    fast-glob: "npm:^3.3.2"
+    tsup: "npm:8.4.0"
   languageName: unknown
   linkType: soft
 
 "@webview-bundle/publisher@workspace:^, @webview-bundle/publisher@workspace:packages/publisher":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/publisher@workspace:packages/publisher"
+  dependencies:
+    fast-glob: "npm:^3.3.2"
+    tsup: "npm:8.4.0"
   languageName: unknown
   linkType: soft
 
@@ -5492,7 +5497,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsup@npm:^8.4.0":
+"tsup@npm:8.4.0":
   version: 8.4.0
   resolution: "tsup@npm:8.4.0"
   dependencies:
