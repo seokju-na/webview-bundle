@@ -49,8 +49,10 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release --js=binding.cjs --dts=binding.d.ts",
-    "build:debug": "napi build --platform --js=binding.cjs --dts=binding.d.ts",
+    "build": "yarn build:napi",
+    "build:debug": "yarn build:debug",
+    "build:napi": "napi build --platform --release --js=binding.cjs --dts=binding.d.ts",
+    "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.ts",
     "prepublishOnly": "napi prepublish --skip-gh-release"
   },
   "devDependencies": {
