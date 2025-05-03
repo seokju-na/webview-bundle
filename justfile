@@ -6,6 +6,7 @@ alias f := format
 alias l := lint
 alias b := build
 alias x := xtask
+alias tsc := typecheck
 alias bench := benchmark
 
 # Setup development environment
