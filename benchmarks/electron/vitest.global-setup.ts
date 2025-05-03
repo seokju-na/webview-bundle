@@ -1,4 +1,4 @@
-import { buildAllFixtures } from 'benchmark-tools';
+import { buildAllFixtures } from '@benchmark/tools';
 import { build } from 'esbuild';
 
 const external = ['electron', '@webview-bundle/node-binding'];
@@ -8,8 +8,8 @@ export default async function setup() {
   await Promise.all([
     build({
       entryPoints: ['./apps/fs/main.ts'],
-      outfile: './dist/fs/main.js',
-      format: 'cjs',
+      outfile: './dist/fs/main.mjs',
+      format: 'esm',
       target: 'node20',
       platform: 'node',
       bundle: true,
@@ -17,8 +17,8 @@ export default async function setup() {
     }),
     build({
       entryPoints: ['./apps/wvb/main.ts'],
-      outfile: './dist/wvb/main.js',
-      format: 'cjs',
+      outfile: './dist/wvb/main.mjs',
+      format: 'esm',
       target: 'node20',
       platform: 'node',
       bundle: true,

@@ -33,8 +33,5 @@
   "license": "MIT",
   "scripts": {
     "build": "xtask build-js-library ./src --platform=node --target=node20"
-  },
-  "devDependencies": {
-    "xtask": "workspace:^"
   }
 }

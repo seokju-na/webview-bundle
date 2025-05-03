@@ -1,22 +1,15 @@
 {
   "name": "webview-bundle-workspace",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*",
     "examples/*",
-    "benchmarks/**/*",
-    "xtask"
+    "benchmarks/**/*"
   ],
   "packageManager": "yarn@4.9.1",
-  "scripts": {
-    "xtask": "xtask",
-    "x": "xtask"
-  },
-  "dependencies": {
-    "xtask": "workspace:^"
-  },
   "devDependencies": {
-    "@biomejs/biome": "1.9.1",
+    "@biomejs/biome": "1.9.4",
     "lefthook": "1.7.15",
     "typescript": "5.8.3",
     "vitest": "3.1.2"
