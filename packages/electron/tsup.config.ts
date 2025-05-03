@@ -13,4 +13,6 @@ export default defineConfig({
   bundle: false,
   clean: true,
   dts: true,
+  platform: 'node',
+  target: 'node18',
 });
