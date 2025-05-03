@@ -17,12 +17,9 @@ test       = false
 webview-bundle-cli = { workspace = true }
 
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
-anyhow        = { workspace = true }
 biome_console = { workspace = true }
-bpaf          = { workspace = true }
 napi          = { workspace = true }
 napi-derive   = { workspace = true }
-tokio         = { workspace = true, features = ["rt", "rt-multi-thread"] }
 
 [build-dependencies]
 napi-build = { workspace = true }

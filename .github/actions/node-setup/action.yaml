@@ -15,6 +15,7 @@ runs:
       with:
         node-version: ${{ inputs.version }}
         architecture: ${{ inputs.architecture }}
+        registry-url: 'https://registry.npmjs.org'
     - run: |
         corepack enable
         corepack prepare --activate

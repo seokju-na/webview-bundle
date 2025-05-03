@@ -21,3 +21,5 @@ out
 artifacts-merged/
 *.node
 .next
+/Cargo.lock
+xtask.$schema.json
