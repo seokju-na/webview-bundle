@@ -1,24 +1,19 @@
 {
   "name": "@webview-bundle/electron",
   "version": "0.0.0",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "module": "./dist/index.mjs",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "require": "./dist/index.js",
-        "import": "./dist/index.mjs",
-        "types": "./dist/index.d.ts"
-      }
-    }
-  },
+  "files": [
+    "dist"
+  ],
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
     "type": "git",
@@ -33,9 +28,6 @@
     "email": "seokju.me@gmail.com",
     "url": "https://github.com/seokju-na"
   },
-  "files": [
-    "dist"
-  ],
   "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
@@ -46,14 +38,14 @@
   },
   "dependencies": {
     "@webview-bundle/node-binding": "workspace:^",
-    "mime-types": "^2.1.35"
+    "es-mime-types": "^0.1.4"
   },
   "devDependencies": {
     "@types/mime-types": "^2",
     "@types/node": "22.7.4",
     "@yarnpkg/fslib": "^3.1.0",
     "electron": "^33.0.0",
-    "fast-glob": "^3.3.3",
+    "fast-glob": "^3.3.2",
     "tsup": "^8.4.0",
     "vitest": "3.1.2"
   }

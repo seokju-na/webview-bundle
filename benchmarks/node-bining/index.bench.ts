@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
+import { findAllFixtureFiles, listFixtures } from '@benchmark/tools';
 import { create } from '@webview-bundle/node-binding';
-import { findAllFixtureFiles, listFixtures } from 'benchmark-tools';
 import { bench, describe } from 'vitest';
 import { ZipFile } from 'yazl';
 

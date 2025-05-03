@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { URI } from './URI';
+import { URI } from './uri.js';
 
 describe('URI', () => {
   it('parse URI string and can convert to string', () => {

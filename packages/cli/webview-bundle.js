@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
-const cli = require('./index');
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const cli = require('./binding.cjs');
 
 const [, , ...args] = process.argv;
 cli.run(args).catch(e => {

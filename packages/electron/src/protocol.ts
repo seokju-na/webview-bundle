@@ -1,9 +1,9 @@
 import path from 'node:path';
 import type { Bundle } from '@webview-bundle/node-binding';
-import type { lookup } from 'mime-types';
-import type { Cache } from './Cache';
-import type { Loader } from './Loader';
-import { URI } from './URI';
+import { lookup } from 'es-mime-types';
+import type { Cache } from './cache.js';
+import type { Loader } from './loader.js';
+import { URI } from './uri.js';
 
 export interface ProtocolHandlerConfig {
   loader: Loader;
@@ -14,9 +14,8 @@ export interface ProtocolHandlerConfig {
 }
 
 const defaultContentType = () => {
-  const { lookup: getContentType } = require('mime-types');
   return (filepath: string): string | undefined => {
-    const contentType = (getContentType as typeof lookup)(filepath) || undefined;
+    const contentType: string | undefined = lookup(filepath) || undefined;
     return contentType;
   };
 };

@@ -2,8 +2,8 @@ import nodeFs from 'node:fs/promises';
 import path from 'node:path';
 import { type Bundle, decode } from '@webview-bundle/node-binding';
 import { app } from 'electron';
-import type { Loader } from './Loader';
-import type { URI } from './URI';
+import type { Loader } from './loader.js';
+import type { URI } from './uri.js';
 
 export interface FSLike {
   readFile(path: string, options?: unknown): Promise<Buffer>;

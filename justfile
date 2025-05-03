@@ -6,6 +6,7 @@ alias f := format
 alias l := lint
 alias b := build
 alias x := xtask
+alias tsc := typecheck
 alias bench := benchmark
 
 # Setup development environment
@@ -46,7 +47,7 @@ format-rust:
 
 # Format JS files via Biome
 format-js:
-    yarn biome format
+    yarn biome format --write
 
 # Lint all files
 lint: lint-rust lint-js
