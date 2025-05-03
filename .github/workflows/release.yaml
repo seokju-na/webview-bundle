@@ -76,6 +76,8 @@ jobs:
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
           architecture: x86
+      - name: Install dependencies
+        run: yarn install
       - name: Run build (Docker)
         uses: addnab/docker-run-action@v3
         if: ${{ matrix.settings.docker }}
