@@ -4,7 +4,7 @@ import binding from '../index';
 it('parse failure', async () => {
   await expect(binding.decode(Buffer.from([]))).rejects.toThrowError(new Error('empty buffer'));
   await expect(binding.decode(Buffer.from([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))).rejects.toThrowError(
-    new Error('header magic mismatch')
+    'header magic mismatch'
   );
 });
 
@@ -17,8 +17,8 @@ it('encode empty bundle', async () => {
 
 it('file not found error', async () => {
   const bundle = new binding.Bundle();
-  await expect(bundle.readFile('index.js')).rejects.toThrowError(new Error('file not found'));
-  await expect(bundle.readFile('unknown/dir/index.html')).rejects.toThrowError(new Error('file not found'));
+  await expect(bundle.readFile('index.js')).rejects.toThrowError('file not found');
+  await expect(bundle.readFile('unknown/dir/index.html')).rejects.toThrowError('file not found');
 });
 
 it('create bundle', async () => {

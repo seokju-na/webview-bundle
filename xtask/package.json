@@ -3,9 +3,10 @@
   "private": true,
   "bin": "./dist/index.js",
   "scripts": {
-    "postinstall": "yarn out && yarn out-schema",
-    "out": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --external:esbuild --external:typescript --log-level=error",
-    "out-schema": "tsx out-schema.ts"
+    "postinstall": "yarn out",
+    "out": "yarn out:cli && yarn out:schema",
+    "out:cli": "esbuild src/index.ts --outdir=dist --bundle --platform=node --target=node22 \"--external:@napi-rs/*\" --external:esbuild --external:typescript --log-level=error",
+    "out:schema": "tsx out-schema.ts"
   },
   "dependencies": {
     "@napi-rs/simple-git": "^0.1.19",
@@ -21,7 +22,7 @@
     "minimatch": "^10.0.1",
     "semver": "^7.6.3",
     "type-fest": "^4.26.1",
-    "typescript": "5.6.2",
+    "typescript": "5.8.3",
     "zod": "3.23.8"
   },
   "devDependencies": {
@@ -29,7 +30,7 @@
     "@types/node": "22.7.4",
     "@types/semver": "^7",
     "tsx": "^4.19.2",
-    "vitest": "2.1.2",
+    "vitest": "3.1.2",
     "zod-to-json-schema": "3.23.5"
   }
 }

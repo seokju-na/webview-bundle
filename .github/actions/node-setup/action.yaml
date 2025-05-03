@@ -4,7 +4,7 @@ inputs:
   version:
     description: "Version to use. Default to '29"
     required: false
-    default: '20'
+    default: '22'
   architecture:
     description: "Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default."
     required: false

@@ -44,7 +44,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    name: test (Node.js v${{ matrix.settings.node-version }})
+    name: test (node@${{ matrix.settings.node-version }})
     strategy:
       fail-fast: false
       matrix:
