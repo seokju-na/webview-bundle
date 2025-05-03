@@ -1,8 +1,8 @@
-use crate::Error;
 use crate::actions::Actions;
 use crate::cargo::{cargo_pkg_name, cargo_pkg_version, write_cargo_version};
 use crate::version::Version;
 use crate::versioned_file::package_manager::PackageManager;
+use crate::{Error, str_vec};
 use relative_path::RelativePathBuf;
 use std::str::FromStr;
 use toml_edit::DocumentMut;
@@ -74,7 +74,7 @@ impl PackageManager for Cargo {
   fn publish(&self, _next_version: &Version) -> Result<Vec<Actions>, Error> {
     Ok(vec![Actions::Command {
       cmd: "cargo".to_string(),
-      args: vec!["publish".to_string(), "--allow-dirty".to_string()],
+      args: str_vec!["publish", "--allow-dirty"],
       path: self.path().parent().unwrap().to_owned(),
     }])
   }
@@ -156,7 +156,7 @@ version = "0.1.0"
       vec![Actions::Command {
         path: RelativePathBuf::from(""),
         cmd: "cargo".to_string(),
-        args: vec!["publish".to_string(), "--allow-dirty".to_string()],
+        args: str_vec!["publish", "--allow-dirty"],
       }]
     );
   }

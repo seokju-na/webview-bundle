@@ -1,7 +1,7 @@
-use crate::Error;
 use crate::actions::Actions;
 use crate::version::Version;
 use crate::versioned_file::package_manager::PackageManager;
+use crate::{Error, str_vec};
 use relative_path::RelativePathBuf;
 use serde::Deserialize;
 
@@ -67,7 +67,7 @@ impl PackageManager for PackageJson {
   }
 
   fn publish(&self, next_version: &Version) -> Result<Vec<Actions>, Error> {
-    let mut args = vec!["publish".to_string(), "--access=public".to_string()];
+    let mut args = str_vec!["publish", "--access=public", "--provenance=true"];
     if let Some(id) = next_version.prerelease_id() {
       args.push(format!("--tag={}", id));
     }
@@ -152,7 +152,7 @@ mod tests {
       versioned_file.publish(&next_version).unwrap(),
       vec![Actions::Command {
         cmd: "npm".to_string(),
-        args: vec!["publish".to_string(), "--access=public".to_string()],
+        args: str_vec!["publish", "--access=public", "--provenance=true",],
         path: RelativePathBuf::from(""),
       }]
     )
@@ -173,10 +173,11 @@ mod tests {
       versioned_file.publish(&next_version).unwrap(),
       vec![Actions::Command {
         cmd: "npm".to_string(),
-        args: vec![
-          "publish".to_string(),
-          "--access=public".to_string(),
-          "--tag=next".to_string()
+        args: str_vec![
+          "publish",
+          "--access=public",
+          "--provenance=true",
+          "--tag=next",
         ],
         path: RelativePathBuf::from(""),
       }]

@@ -120,12 +120,6 @@ jobs:
       - uses: extractions/setup-just@v3
       - name: Spread artifacts
         run: just xtask spread-artifacts
-      - name: Setup registry authentication
-        run: |
-          set -ex
-          npm config set provenance true
-          npm config set //registry.npmjs.org/:_authToken "$NPM_AUTH_TOKEN"
-          npm config set access public
       - name: Prerelease
         run: just xtask release --prerelease=next.${{ github.run_number }} --github-token=${{ github.token }}
         env:

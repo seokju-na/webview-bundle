@@ -9,6 +9,7 @@ mod conventional_commit;
 mod error;
 mod exec;
 mod github;
+mod macros;
 mod package;
 mod version;
 mod versioned_file;
