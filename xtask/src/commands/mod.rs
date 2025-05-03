@@ -1,5 +1,6 @@
 mod artifacts;
 mod release;
+mod schema;
 
 use crate::cli::{CliOptions, ColorsArg, cli_options};
 use bpaf::Bpaf;
@@ -7,6 +8,7 @@ use std::str::FromStr;
 
 pub use artifacts::{merge_artifacts, spread_artifacts};
 pub use release::release;
+pub use schema::extract_schema;
 
 #[derive(Debug, Clone, Bpaf)]
 #[bpaf(options)]
@@ -33,6 +35,11 @@ pub enum CliCommand {
   },
   #[bpaf(command)]
   MergeArtifacts {
+    #[bpaf(external(cli_options), hide_usage)]
+    cli_options: CliOptions,
+  },
+  #[bpaf(command)]
+  Schema {
     #[bpaf(external(cli_options), hide_usage)]
     cli_options: CliOptions,
   },
@@ -64,7 +71,8 @@ impl CliCommand {
     match self {
       CliCommand::Release { cli_options, .. }
       | CliCommand::SpreadArtifacts { cli_options, .. }
-      | CliCommand::MergeArtifacts { cli_options, .. } => Some(cli_options),
+      | CliCommand::MergeArtifacts { cli_options, .. }
+      | CliCommand::Schema { cli_options, .. } => Some(cli_options),
     }
   }
 

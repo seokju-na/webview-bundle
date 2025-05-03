@@ -1,8 +1,10 @@
+use crate::Error;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, JsonSchema, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScriptConfig {
   pub command: String,
@@ -10,7 +12,7 @@ pub struct ScriptConfig {
   pub cwd: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, JsonSchema, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PackageConfig {
   pub versioned_files: Vec<String>,
@@ -19,34 +21,34 @@ pub struct PackageConfig {
   pub before_publish_scripts: Option<Vec<ScriptConfig>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, JsonSchema, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GitHubRepoConfig {
   pub owner: String,
   pub name: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, JsonSchema, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GitHubConfig {
   pub repo: GitHubRepoConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, JsonSchema, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtifactFileConfig {
   pub source: String,
   pub dist: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, JsonSchema, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArtifactsConfig {
   pub dir: String,
   pub files: Vec<ArtifactFileConfig>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, JsonSchema, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
   pub root_changelog: Option<String>,
@@ -56,12 +58,12 @@ pub struct Config {
 }
 
 impl Config {
-  pub fn parse(content: String) -> Result<Self, crate::Error> {
+  pub fn parse(content: String) -> Result<Self, Error> {
     let config: Config = serde_json::from_str(&content)?;
     Ok(config)
   }
 
-  pub fn load(root_dir: &Path) -> Result<Self, crate::Error> {
+  pub fn load(root_dir: &Path) -> Result<Self, Error> {
     let content = std::fs::read_to_string(root_dir.join("xtask.json"))?;
     Self::parse(content)
   }

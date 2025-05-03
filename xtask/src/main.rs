@@ -46,6 +46,7 @@ async fn main() -> ExitCode {
     } => commands::release(root_dir, cons, prerelease, github_token, dry_run),
     CliCommand::SpreadArtifacts { cli_options: _ } => commands::spread_artifacts(root_dir, cons),
     CliCommand::MergeArtifacts { cli_options: _ } => commands::merge_artifacts(root_dir, cons),
+    CliCommand::Schema { cli_options: _ } => commands::extract_schema(root_dir, cons),
   };
   match result {
     Ok(_) => ExitCode::SUCCESS,
