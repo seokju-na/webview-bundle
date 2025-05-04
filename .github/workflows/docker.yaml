@@ -25,7 +25,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
-  build-debian-image:
+  build-debian:
     name: Build debian image
     runs-on: ubuntu-latest
     steps:
