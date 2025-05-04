@@ -82,7 +82,7 @@
     },
     {
       "include": [
-        "./xtask-ts"
+        "./xtask/**"
       ],
       "linter": {
         "rules": {

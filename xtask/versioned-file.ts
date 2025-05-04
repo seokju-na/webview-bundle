@@ -1,12 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import * as TOML from '@ltd/j-toml';
-import * as toml from '@std/toml';
-import taploLib from '@taplo/lib';
-import { diffLines } from 'diff';
 import glob from 'fast-glob';
 import type { PackageJson as PackageJsonType } from 'type-fest';
 import type { Action } from './action.ts';
+import { type CargoToml, editCargoTomlVersion, formatCargoToml, parseCargoToml } from './cargo-toml.ts';
 import { ROOT_DIR } from './consts.ts';
 import { type BumpRule, Version } from './version.ts';
 
@@ -59,33 +56,36 @@ export class VersionedFile {
   }
 
   get nextVersion(): Version {
-    if (this._nextVersion == null) {
-      return this.pkgManager.version.clone();
+    if (this._nextVersion != null) {
+      return this._nextVersion.clone();
     }
-    return this._nextVersion.clone();
+    return this.pkgManager.version.clone();
   }
 
   get hasChanged(): boolean {
-    return !this.version.equals(this.nextVersion);
+    if (this._nextVersion == null) {
+      return false;
+    }
+    return !this.pkgManager.version.equals(this._nextVersion);
   }
 
   bumpVersion(rule: BumpRule): void {
-    this._nextVersion = this.version;
+    this._nextVersion = this.pkgManager.version.clone();
     this._nextVersion.bump(rule);
   }
 
-  async write(): Promise<Action[]> {
+  write(): Action[] {
     if (!this.hasChanged) {
       return [];
     }
-    return await this.pkgManager.write(this.nextVersion);
+    return this.pkgManager.write(this.nextVersion);
   }
 
-  async publish(): Promise<Action[]> {
+  publish(): Action[] {
     if (!this.hasChanged) {
       return [];
     }
-    return await this.pkgManager.publish(this.nextVersion);
+    return this.pkgManager.publish(this.nextVersion);
   }
 }
 
@@ -94,8 +94,8 @@ interface PackageManager {
   readonly path: string;
   readonly version: Version;
   readonly canPublish: boolean;
-  write(nextVersion: Version): Promise<Action[]>;
-  publish(nextVersion: Version): Promise<Action[]>;
+  write(nextVersion: Version): Action[];
+  publish(nextVersion: Version): Action[];
 }
 
 class PackageJson implements PackageManager {
@@ -132,7 +132,7 @@ class PackageJson implements PackageManager {
     return this.json.private !== true;
   }
 
-  async write(nextVersion: Version): Promise<Action[]> {
+  write(nextVersion: Version): Action[] {
     const json = { ...this.json };
     json.version = nextVersion.toString();
 
@@ -147,7 +147,7 @@ class PackageJson implements PackageManager {
     ];
   }
 
-  async publish(nextVersion: Version): Promise<Action[]> {
+  publish(nextVersion: Version): Action[] {
     const args = ['npm', 'publish', '--access', 'public', '--provenance', 'true'];
     const prerelease = nextVersion.prerelease;
     if (prerelease != null) {
@@ -158,19 +158,19 @@ class PackageJson implements PackageManager {
         type: 'command',
         cmd: 'yarn',
         args,
-        path: this.path,
+        path: path.dirname(this.path),
       },
     ];
   }
 }
 
 class Cargo implements PackageManager {
-  private readonly toml: any;
+  private readonly toml: CargoToml;
   private readonly _path: string;
   private readonly raw: string;
 
   constructor(_path: string, raw: string) {
-    const parsed: any = toml.parse(raw);
+    const parsed = parseCargoToml(raw);
     if (parsed.package?.name == null) {
       throw new Error('"name" field is required in Cargo.toml');
     }
@@ -183,7 +183,7 @@ class Cargo implements PackageManager {
   }
 
   get name(): string {
-    return this.toml.package.name;
+    return this.toml.package!.name!;
   }
 
   get path(): string {
@@ -191,96 +191,37 @@ class Cargo implements PackageManager {
   }
 
   get version(): Version {
-    return Version.parse(this.toml.package.version);
+    return Version.parse(this.toml.package!.version!);
   }
 
   get canPublish(): boolean {
     return this.toml.package?.publish !== false;
   }
 
-  async write(nextVersion: Version): Promise<Action[]> {
+  write(nextVersion: Version): Action[] {
     const version = nextVersion.toString();
-
-    // const configRaw = await fs.readFile(path.join(ROOT_DIR, 'taplo.toml'), 'utf8');
-    // let config: any = toml.parse(configRaw);
-    // config = mapValues(config, val => {
-    //   if (typeof val === 'object' && val != null && !Array.isArray(val)) {
-    //     console.log(val);
-    //     return mapKeys(val, (_, key) => camelCase(key));
-    //   }
-    //   return val;
-    // });
-    // console.log(config);
-    const taplo = await taploLib.Taplo.initialize();
-    // const Taplo = new taploLib.Taplo;
-
-    // const table = TOML.parse(this.raw);
-    // console.log(table);
-
-    const edited: any = TOML.parse(this.raw);
-    edited.package.version = version;
-
-    if (edited.dependencies?.[this.name] != null) {
-      if (typeof edited.dependencies[this.name] === 'string') {
-        edited.dependencies[this.name] = version;
-      } else if (typeof edited.dependencies[this.name]?.version === 'string') {
-        edited.dependencies[this.name].version = version;
-      }
-    }
-
-    if (edited['dev-dependencies']?.[this.name] != null) {
-      if (typeof edited['dev-dependencies'][this.name] === 'string') {
-        edited['dev-dependencies'][this.name] = version;
-      } else if (typeof edited['dev-dependencies'][this.name]?.version === 'string') {
-        edited['dev-dependencies'][this.name].version = version;
-      }
-    }
-
-    if (edited.workspace?.dependencies?.[this.name] != null) {
-      if (typeof edited.workspace?.dependencies?.[this.name] === 'string') {
-        edited.workspace.dependencies[this.name] = version;
-      } else if (typeof edited.workspace.dependencies[this.name]?.version === 'string') {
-        edited.workspace.dependencies[this.name].version = version;
-      }
-    }
-
-    let content = TOML.stringify(edited) as any as string[];
-    content = content.slice(1);
-    content = content.filter((line, i) => {
-      const prevLine = content[i - 1];
-      return !(prevLine?.startsWith('[') === true && line === '');
-    });
-    const formatted = taplo
-      .format(content.join('\n'), {
-        options: {
-          alignEntries: true,
-          columnWidth: 120,
-          reorderKeys: true,
-        },
-      })
-      .replaceAll(/'/g, '"');
-
-    const diff = diffLines(this.raw, formatted);
-    console.log(diff.filter(x => x.added || x.removed));
+    const edited = parseCargoToml(this.raw);
+    editCargoTomlVersion(edited, version);
+    const content = formatCargoToml(edited);
 
     return [
       {
         type: 'write',
         path: this.path,
-        content: formatted,
+        content,
         prevContent: this.raw,
       },
     ];
   }
 
-  async publish(_nextVersion: Version): Promise<Action[]> {
+  publish(_nextVersion: Version): Action[] {
     const args = ['publish', '--allow-dirty'];
     return [
       {
         type: 'command',
         cmd: 'cargo',
         args,
-        path: this.path,
+        path: path.dirname(this.path),
       },
     ];
   }
