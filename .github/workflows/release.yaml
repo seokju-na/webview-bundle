@@ -66,6 +66,7 @@ jobs:
     env:
       DEBUG: 'napi:*'
       MACOSX_DEPLOYMENT_TARGET: '10.13'
+      NODE_OPTIONS: '--max-old-space-size=1024'
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
