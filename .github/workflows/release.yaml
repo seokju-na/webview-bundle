@@ -52,6 +52,9 @@ jobs:
             target: aarch64-pc-windows-msvc
             build: yarn workspaces foreach -At run build:napi --target aarch64-pc-windows-msvc
     runs-on: ${{ matrix.settings.host }}
+    env:
+      DEBUG: 'napi:*'
+      MACOSX_DEPLOYMENT_TARGET: '10.13'
     steps:
       - name: Git checkout
         uses: actions/checkout@v4

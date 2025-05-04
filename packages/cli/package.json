@@ -46,11 +46,8 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "yarn build:napi",
-    "build:debug": "yarn build:debug",
     "build:napi": "napi build --platform --release --js=binding.cjs --dts=binding.d.cts",
-    "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts",
-    "prepublishOnly": "napi prepublish --skip-gh-release"
+    "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts"
   },
   "devDependencies": {
     "@napi-rs/cli": "2.18.4",
