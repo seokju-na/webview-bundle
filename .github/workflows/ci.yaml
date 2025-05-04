@@ -16,8 +16,11 @@ jobs:
         with:
           components: rustfmt
           github-token: ${{ github.token }}
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
       - name: Run rustfmt
         run: cargo fmt --all --check
+      - run: yarn install
       - name: Run taplo
         run: yarn taplo format --check
   lint:
