@@ -59,7 +59,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ action.actor }}
+          username: ${{ github.actor }}
           password: ${{ github.token }}
       - name: Install latest libc++-dev for cross build
         uses: addnab/docker-run-action@v3
