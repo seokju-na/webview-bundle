@@ -71,7 +71,6 @@ jobs:
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
-        if: ${{ !matrix.settings.docker }}
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         if: ${{ !matrix.settings.docker }}
@@ -105,6 +104,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
       - name: Setup tauri for linux
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
@@ -132,6 +133,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
       - name: Setup tauri for linux
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
@@ -162,6 +165,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
       - name: Setup tauri for linux
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
