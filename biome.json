@@ -69,9 +69,7 @@
   },
   "overrides": [
     {
-      "include": [
-        "./benchmarks/fixtures/**"
-      ],
+      "include": ["./benchmarks/fixtures/**"],
       "linter": {
         "rules": {
           "correctness": {
@@ -81,9 +79,7 @@
       }
     },
     {
-      "include": [
-        "./xtask/**"
-      ],
+      "include": ["./xtask/**"],
       "linter": {
         "rules": {
           "correctness": {
