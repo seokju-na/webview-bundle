@@ -31,28 +31,28 @@ jobs:
             build: yarn workspaces foreach -At run build:napi --target aarch64-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
+            docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian
             build: |-
               rustup toolchain install stable &&
               yarn &&
               yarn workspaces foreach -At run build:napi --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
             build: |-
               rustup toolchain install stable &&
               yarn &&
               yarn workspaces foreach -At run build:napi --target x86_64-unknown-linux-musl
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
+            docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian-aarch64
             build: |-
               rustup toolchain install stable &&
               yarn &&
               yarn workspaces foreach -At run build:napi --target aarch64-unknown-linux-gnu
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
             build: |-
               set -e &&
               rustup toolchain install stable &&
