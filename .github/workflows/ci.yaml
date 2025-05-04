@@ -36,31 +36,98 @@ jobs:
       - name: Run biome
         run: yarn biome check
   test:
-    runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    name: test (node@${{ matrix.settings.node-version }})
+    name: test (${{ matrix.settings.host }}, ${{ matrix.settings.target }})
     strategy:
       fail-fast: false
       matrix:
         settings:
-          - node-version: '18'
-          - node-version: '20'
-          - node-version: '22'
+          - host: macos-13
+            target: x86_64-apple-darwin
+            build: |-
+              yarn workspaces foreach -At run build:napi --target x86_64-apple-darwin &&
+              yarn workspaces foreach -Apt run build
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            build: |-
+              yarn workspaces foreach -At run build:napi --target aarch64-apple-darwin &&
+              yarn workspaces foreach -Apt run build
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+            build: |-
+              yarn workspaces foreach -At run build:napi --target x86_64-pc-windows-msvc &&
+              yarn workspaces foreach -Apt run build
+          - host: windows-latest
+            target: aarch64-pc-windows-msvc
+            build: |-
+              yarn workspaces foreach -At run build:napi --target aarch64-pc-windows-msvc &&
+              yarn workspaces foreach -Apt run build
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
+            build: |-
+              rustup toolchain install stable &&
+              yarn &&
+              yarn workspaces foreach -At run build:napi --target x86_64-unknown-linux-gnu &&
+              yarn workspaces foreach -Apt run build &&
+              yarn vitest run
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            build: |-
+              rustup toolchain install stable &&
+              yarn &&
+              yarn workspaces foreach -At run build:napi --target x86_64-unknown-linux-musl &&
+              yarn workspaces foreach -Apt run build &&
+              yarn vitest run
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
+            build: |-
+              rustup toolchain install stable &&
+              yarn &&
+              yarn workspaces foreach -At run build:napi --target aarch64-unknown-linux-gnu &&
+              yarn workspaces foreach -Apt run build
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            build: |-
+              set -e &&
+              rustup toolchain install stable &&
+              rustup target add aarch64-unknown-linux-musl &&
+              yarn &&
+              yarn workspaces foreach -At run build:napi --target aarch64-unknown-linux-musl &&
+              yarn workspaces foreach -Apt run build
+    runs-on: ${{ matrix.settings.host }}
+    env:
+      DEBUG: 'napi:*'
+      MACOSX_DEPLOYMENT_TARGET: '10.13'
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js v${{ matrix.settings.node-version }}
+      - name: Setup Node.js
         uses: ./.github/actions/node-setup
-        with:
-          version: ${{ matrix.settings.node-version }}
+        if: ${{ !matrix.settings.docker }}
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
+        if: ${{ !matrix.settings.docker }}
         with:
           github-token: ${{ github.token }}
+          targets: ${{ matrix.settings.target }}
       - run: yarn install
+        if: ${{ !matrix.settings.docker }}
       - name: Run build
-        run: yarn workspaces foreach -Apt run build
+        if: ${{ !matrix.settings.docker }}
+        run: ${{ matrix.settings.build }}
+      - name: Run build & vitest
+        uses: addnab/docker-run-action@v3
+        if: ${{ matrix.settings.docker }}
+        with:
+          image: ${{ matrix.settings.docker }}
+          options: '--user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build'
+          run: ${{ matrix.settings.build }}
       - name: Run vitest
+        if: ${{ !matrix.settings.docker && matrix.settings.host != 'windows-latest' }}
         run: yarn vitest run
   lint-rust:
     runs-on: ubuntu-latest
@@ -93,6 +160,8 @@ jobs:
             target: x86_64-unknown-linux-musl
           - host: windows-latest
             target: x86_64-pc-windows-msvc
+          - host: windows-latest
+            target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.settings.host }}
     steps:
       - name: Git checkout
