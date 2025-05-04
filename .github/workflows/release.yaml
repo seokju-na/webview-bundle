@@ -104,6 +104,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
       - name: Setup tauri for linux
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
@@ -131,6 +133,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
       - name: Setup tauri for linux
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
@@ -161,6 +165,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
       - name: Setup tauri for linux
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
