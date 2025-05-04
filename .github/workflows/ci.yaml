@@ -62,11 +62,6 @@ jobs:
             build: |-
               yarn workspaces foreach -At run build:napi --target i686-pc-windows-msvc &&
               yarn workspaces foreach -Apt run build
-          - host: windows-latest
-            target: aarch64-pc-windows-msvc
-            build: |-
-              yarn workspaces foreach -At run build:napi --target aarch64-pc-windows-msvc &&
-              yarn workspaces foreach -Apt run build
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
@@ -107,24 +102,18 @@ jobs:
     env:
       DEBUG: 'napi:*'
       MACOSX_DEPLOYMENT_TARGET: '10.13'
-      NODE_OPTIONS: '--max-old-space-size=1024'
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
-        if: ${{ !matrix.settings.docker && matrix.settings.target != 'i686-pc-windows-msvc' }}
+        if: ${{ !matrix.settings.docker }}
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         if: ${{ !matrix.settings.docker }}
         with:
           github-token: ${{ github.token }}
           targets: ${{ matrix.settings.target }}
-      - name: Setup Node.js for x86
-        uses: ./.github/actions/node-setup
-        if: matrix.settings.target == 'i686-pc-windows-msvc'
-        with:
-          architecture: x86
       - run: yarn install
         if: ${{ !matrix.settings.docker }}
       - name: Run build
