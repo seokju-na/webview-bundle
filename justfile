@@ -75,4 +75,4 @@ benchmark: build
 
 # Run xtask
 xtask *ARGS:
-    ./xtask-ts/cli.ts {{ ARGS }}
+    ./xtask/cli.ts {{ ARGS }}
