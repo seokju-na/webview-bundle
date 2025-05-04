@@ -71,7 +71,6 @@ jobs:
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
-        if: ${{ !matrix.settings.docker }}
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         if: ${{ !matrix.settings.docker }}
