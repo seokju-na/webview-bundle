@@ -15,7 +15,6 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           components: rustfmt
-          github-token: ${{ github.token }}
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
       - run: yarn install
@@ -112,7 +111,6 @@ jobs:
         uses: ./.github/actions/rust-setup
         if: ${{ !matrix.settings.docker }}
         with:
-          github-token: ${{ github.token }}
           targets: ${{ matrix.settings.target }}
       - run: yarn install
         if: ${{ !matrix.settings.docker }}
@@ -141,7 +139,6 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           components: clippy
-          github-token: ${{ github.token }}
       - name: Run clippy
         run: cargo clippy
   test-rust:
@@ -171,7 +168,5 @@ jobs:
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
-        with:
-          github-token: ${{ github.token }}
       - name: Run cargo test
         run: cargo test --workspace
