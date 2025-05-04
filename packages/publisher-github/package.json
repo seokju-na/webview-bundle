@@ -1,0 +1,50 @@
+{
+  "name": "@webview-bundle/publisher-github",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "ndoe": ">= 18"
+  },
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/publisher-github"
+  },
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "license": "MIT",
+  "scripts": {
+    "prepack": "yarn build",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@octokit/core": "^6.1.5",
+    "@octokit/plugin-retry": "^7.2.1",
+    "@octokit/rest": "^21.1.1",
+    "@octokit/types": "^14.0.0",
+    "@webview-bundle/publisher": "workspace:^"
+  },
+  "devDependencies": {
+    "fast-glob": "^3.3.2",
+    "tsup": "8.4.0"
+  }
+}

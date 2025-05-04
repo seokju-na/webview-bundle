@@ -1086,7 +1086,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/core@npm:^6.1.4":
+"@octokit/core@npm:^6.1.4, @octokit/core@npm:^6.1.5":
   version: 6.1.5
   resolution: "@octokit/core@npm:6.1.5"
   dependencies:
@@ -1164,6 +1164,19 @@ __metadata:
   peerDependencies:
     "@octokit/core": ">=6"
   checksum: 10c0/0dd5fcdc01ac82abeab26fa32fd1c504732918bc70ad8e16924dd4d155dfd4bc8b57f2326c5012276885b9d59be3eb1e8d0b2576f5915a3b3343f26359cdba5e
+  languageName: node
+  linkType: hard
+
+"@octokit/plugin-retry@npm:^7.2.1":
+  version: 7.2.1
+  resolution: "@octokit/plugin-retry@npm:7.2.1"
+  dependencies:
+    "@octokit/request-error": "npm:^6.1.8"
+    "@octokit/types": "npm:^14.0.0"
+    bottleneck: "npm:^2.15.3"
+  peerDependencies:
+    "@octokit/core": ">=6"
+  checksum: 10c0/0cac8aa32bfe9612cbaba36f51382c69c882ef7927e1deb4b166fe664959887e952205adbf8b9ff461e0128ac3e1bd807ca58e38041a55ddb3214397584f0406
   languageName: node
   linkType: hard
 
@@ -2037,6 +2050,29 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@webview-bundle/publisher-github@workspace:packages/publisher-github":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/publisher-github@workspace:packages/publisher-github"
+  dependencies:
+    "@octokit/core": "npm:^6.1.5"
+    "@octokit/plugin-retry": "npm:^7.2.1"
+    "@octokit/rest": "npm:^21.1.1"
+    "@octokit/types": "npm:^14.0.0"
+    "@webview-bundle/publisher": "workspace:^"
+    fast-glob: "npm:^3.3.2"
+    tsup: "npm:8.4.0"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/publisher@workspace:^, @webview-bundle/publisher@workspace:packages/publisher":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/publisher@workspace:packages/publisher"
+  dependencies:
+    fast-glob: "npm:^3.3.2"
+    tsup: "npm:8.4.0"
+  languageName: unknown
+  linkType: soft
+
 "@yarnpkg/fslib@npm:^3.1.0":
   version: 3.1.0
   resolution: "@yarnpkg/fslib@npm:3.1.0"
@@ -2217,6 +2253,13 @@ __metadata:
   version: 3.2.0
   resolution: "boolean@npm:3.2.0"
   checksum: 10c0/6a0dc9668f6f3dda42a53c181fcbdad223169c8d87b6c4011b87a8b14a21770efb2934a778f063d7ece17280f8c06d313c87f7b834bb1dd526a867ffcd00febf
+  languageName: node
+  linkType: hard
+
+"bottleneck@npm:^2.15.3":
+  version: 2.19.5
+  resolution: "bottleneck@npm:2.19.5"
+  checksum: 10c0/b0f72e45b2e0f56a21ba720183f16bef8e693452fb0495d997fa354e42904353a94bd8fd429868e6751bc85e54b6755190519eed5a0ae0a94a5185209ae7c6d0
   languageName: node
   linkType: hard
 
@@ -5686,7 +5729,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsup@npm:^8.4.0":
+"tsup@npm:8.4.0, tsup@npm:^8.4.0":
   version: 8.4.0
   resolution: "tsup@npm:8.4.0"
   dependencies:
