@@ -1,3 +1,5 @@
+exclude = ["node_modules/**", "target/**", ".yarn/**/*"]
+
 [formatting]
 align_entries = true
 column_width  = 120

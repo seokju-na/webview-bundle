@@ -11,9 +11,6 @@ alias bench := benchmark
 
 # Setup development environment
 setup:
-    # Install Rust-related tools
-    cargo install taplo-cli --locked
-
     # Setup Node.js environment
     corepack enable
     corepack prepare --activate
@@ -39,7 +36,7 @@ format: format-toml format-rust format-js
 
 # Format TOML files
 format-toml:
-    taplo format
+    yarn taplo format
 
 # Format Rust files
 format-rust:
@@ -78,4 +75,4 @@ benchmark: build
 
 # Run xtask
 xtask *ARGS:
-    cargo run -p xtask --bin xtask --quiet -- {{ ARGS }}
+    ./xtask/cli.ts {{ ARGS }}

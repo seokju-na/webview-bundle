@@ -13,8 +13,6 @@ name = "webview-bundle-cli"
 path = "./src/main.rs"
 
 [dependencies]
-webview-bundle = { workspace = true }
-
 anyhow             = { workspace = true }
 async-walkdir      = "2.0.0"
 biome_console      = { workspace = true }
@@ -25,6 +23,7 @@ pathdiff           = "0.2.1"
 tokio              = { workspace = true, features = ["fs", "rt", "rt-multi-thread", "macros", "io-std", "io-util"] }
 tracing            = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["json"] }
+webview-bundle     = { workspace = true }
 
 [dev-dependencies]
 rand = "0.8.5"

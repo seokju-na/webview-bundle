@@ -34,21 +34,22 @@
     "name": "cli",
     "triples": {
       "additional": [
+        "x86_64-apple-darwin",
         "aarch64-apple-darwin",
-        "aarch64-unknown-linux-gnu",
-        "aarch64-unknown-linux-musl",
+        "x86_64-pc-windows-msvc",
         "aarch64-pc-windows-msvc",
+        "x86_64-unknown-linux-gnu",
         "x86_64-unknown-linux-musl",
-        "i686-pc-windows-msvc"
+        "aarch64-unknown-linux-gnu",
+        "aarch64-unknown-linux-musl"
       ]
     },
     "npmClient": "yarn"
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release --js=binding.cjs --dts=binding.d.cts",
-    "build:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts",
-    "prepublishOnly": "napi prepublish --skip-gh-release"
+    "build:napi": "napi build --platform --release --js=binding.cjs --dts=binding.d.cts",
+    "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts"
   },
   "devDependencies": {
     "@napi-rs/cli": "2.18.4",

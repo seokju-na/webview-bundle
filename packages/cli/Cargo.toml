@@ -14,12 +14,10 @@ doctest    = false
 test       = false
 
 [dependencies]
+biome_console      = { workspace = true }
+napi               = { workspace = true }
+napi-derive        = { workspace = true }
 webview-bundle-cli = { workspace = true }
-
-# Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
-biome_console = { workspace = true }
-napi          = { workspace = true }
-napi-derive   = { workspace = true }
 
 [build-dependencies]
 napi-build = { workspace = true }

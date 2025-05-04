@@ -29,5 +29,3 @@ runs:
         key: ${{ runner.os }}-node${{ inputs.version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-node${{ inputs.version }}-yarn-
-    - run: yarn install
-      shell: bash
