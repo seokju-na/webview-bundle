@@ -53,6 +53,11 @@ jobs:
               yarn workspaces foreach -At run build:napi --target aarch64-apple-darwin &&
               yarn workspaces foreach -Apt run build
           - host: windows-latest
+            target: x86_64-pc-windows-msvc
+            build: |-
+              yarn workspaces foreach -At run build:napi --target x86_64-pc-windows-msvc &&
+              yarn workspaces foreach -Apt run build
+          - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: |-
               yarn workspaces foreach -At run build:napi --target aarch64-pc-windows-msvc &&
