@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/binding-darwin-x64",
+  "name": "@webview-bundle/node-binding-darwin-x64",
   "version": "0.1.0",
   "os": [
     "darwin"

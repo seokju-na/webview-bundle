@@ -51,6 +51,16 @@
     "build:napi": "napi build --platform --release --js=binding.cjs --dts=binding.d.cts",
     "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts"
   },
+  "optionalDependencies": {
+    "@webview-bundle/cli-darwin-arm64": "workspace:^",
+    "@webview-bundle/cli-darwin-x64": "workspace:^",
+    "@webview-bundle/cli-linux-arm64-gnu": "workspace:^",
+    "@webview-bundle/cli-linux-arm64-musl": "workspace:^",
+    "@webview-bundle/cli-linux-x64-gnu": "workspace:^",
+    "@webview-bundle/cli-linux-x64-musl": "workspace:^",
+    "@webview-bundle/cli-win32-arm64-msvc": "workspace:^",
+    "@webview-bundle/cli-win32-x64-msvc": "workspace:^"
+  },
   "devDependencies": {
     "@napi-rs/cli": "2.18.4",
     "@types/node": "22.7.4",
