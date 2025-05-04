@@ -76,8 +76,7 @@ jobs:
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
           architecture: x86
-      - name: Install dependencies
-        run: yarn install
+      - run: yarn install
       - name: Run build (Docker)
         uses: addnab/docker-run-action@v3
         if: ${{ matrix.settings.docker }}
@@ -91,7 +90,7 @@ jobs:
         shell: bash
       - uses: extractions/setup-just@v3
       - name: Merge artifacts
-        run: just xtask merge-artifacts
+        run: just xtask artifacts merge
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -109,6 +108,7 @@ jobs:
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
+      - run: yarn install
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         with:
@@ -121,7 +121,7 @@ jobs:
           path: artifacts-merged
       - uses: extractions/setup-just@v3
       - name: Spread artifacts
-        run: just xtask spread-artifacts
+        run: just xtask artifacts spread
       - name: Prerelease
         run: just xtask release --dry-run
   prerelease:
@@ -135,6 +135,7 @@ jobs:
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
+      - run: yarn install
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         with:
@@ -147,7 +148,7 @@ jobs:
           path: artifacts-merged
       - uses: extractions/setup-just@v3
       - name: Spread artifacts
-        run: just xtask spread-artifacts
+        run: just xtask artifacts spread
       - name: Prerelease
         run: just xtask release --prerelease=next.${{ github.run_number }} --github-token=${{ github.token }}
         env:
@@ -164,6 +165,7 @@ jobs:
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
+      - run: yarn install
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         with:
@@ -176,7 +178,7 @@ jobs:
           path: artifacts-merged
       - uses: extractions/setup-just@v3
       - name: Spread artifacts
-        run: just xtask spread-artifacts
+        run: just xtask artifacts spread
       - name: Release
         run: just xtask release --github-token=${{ github.token }}
         env:

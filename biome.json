@@ -77,6 +77,25 @@
           }
         }
       }
+    },
+    {
+      "include": ["./xtask/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useImportExtensions": {
+              "level": "error",
+              "options": {
+                "suggestedExtensions": {
+                  "ts": {
+                    "module": "ts"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
