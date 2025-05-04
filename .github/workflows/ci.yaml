@@ -161,8 +161,6 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
           - host: windows-latest
-            target: i686-pc-windows-msvc
-          - host: windows-latest
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.settings.host }}
     steps:
