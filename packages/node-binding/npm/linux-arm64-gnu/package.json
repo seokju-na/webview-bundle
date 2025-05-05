@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/binding-linux-arm64-gnu",
+  "name": "@webview-bundle/node-binding-linux-arm64-gnu",
   "version": "0.1.0",
   "os": [
     "linux"

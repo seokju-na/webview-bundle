@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/binding-linux-x64-musl",
+  "name": "@webview-bundle/node-binding-linux-x64-musl",
   "version": "0.1.0",
   "os": [
     "linux"

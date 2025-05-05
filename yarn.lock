@@ -2010,13 +2010,86 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@webview-bundle/cli-darwin-arm64@workspace:^, @webview-bundle/cli-darwin-arm64@workspace:packages/cli/npm/darwin-arm64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-darwin-arm64@workspace:packages/cli/npm/darwin-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-darwin-x64@workspace:^, @webview-bundle/cli-darwin-x64@workspace:packages/cli/npm/darwin-x64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-darwin-x64@workspace:packages/cli/npm/darwin-x64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-arm64-gnu@workspace:^, @webview-bundle/cli-linux-arm64-gnu@workspace:packages/cli/npm/linux-arm64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-arm64-gnu@workspace:packages/cli/npm/linux-arm64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-arm64-musl@workspace:^, @webview-bundle/cli-linux-arm64-musl@workspace:packages/cli/npm/linux-arm64-musl":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-arm64-musl@workspace:packages/cli/npm/linux-arm64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-x64-gnu@workspace:^, @webview-bundle/cli-linux-x64-gnu@workspace:packages/cli/npm/linux-x64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-x64-gnu@workspace:packages/cli/npm/linux-x64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-x64-musl@workspace:^, @webview-bundle/cli-linux-x64-musl@workspace:packages/cli/npm/linux-x64-musl":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-x64-musl@workspace:packages/cli/npm/linux-x64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-win32-arm64-msvc@workspace:^, @webview-bundle/cli-win32-arm64-msvc@workspace:packages/cli/npm/win32-arm64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-win32-arm64-msvc@workspace:packages/cli/npm/win32-arm64-msvc"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-win32-x64-msvc@workspace:^, @webview-bundle/cli-win32-x64-msvc@workspace:packages/cli/npm/win32-x64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-win32-x64-msvc@workspace:packages/cli/npm/win32-x64-msvc"
+  languageName: unknown
+  linkType: soft
+
 "@webview-bundle/cli@workspace:^, @webview-bundle/cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/cli@workspace:packages/cli"
   dependencies:
     "@napi-rs/cli": "npm:2.18.4"
     "@types/node": "npm:22.7.4"
+    "@webview-bundle/cli-darwin-arm64": "workspace:^"
+    "@webview-bundle/cli-darwin-x64": "workspace:^"
+    "@webview-bundle/cli-linux-arm64-gnu": "workspace:^"
+    "@webview-bundle/cli-linux-arm64-musl": "workspace:^"
+    "@webview-bundle/cli-linux-x64-gnu": "workspace:^"
+    "@webview-bundle/cli-linux-x64-musl": "workspace:^"
+    "@webview-bundle/cli-win32-arm64-msvc": "workspace:^"
+    "@webview-bundle/cli-win32-x64-msvc": "workspace:^"
     vitest: "npm:3.1.2"
+  dependenciesMeta:
+    "@webview-bundle/cli-darwin-arm64":
+      optional: true
+    "@webview-bundle/cli-darwin-x64":
+      optional: true
+    "@webview-bundle/cli-linux-arm64-gnu":
+      optional: true
+    "@webview-bundle/cli-linux-arm64-musl":
+      optional: true
+    "@webview-bundle/cli-linux-x64-gnu":
+      optional: true
+    "@webview-bundle/cli-linux-x64-musl":
+      optional: true
+    "@webview-bundle/cli-win32-arm64-msvc":
+      optional: true
+    "@webview-bundle/cli-win32-x64-msvc":
+      optional: true
   bin:
     webview-bundle: ./webview-bundle.js
   languageName: unknown
@@ -2040,13 +2113,86 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@webview-bundle/node-binding-darwin-arm64@workspace:^, @webview-bundle/node-binding-darwin-arm64@workspace:packages/node-binding/npm/darwin-arm64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-darwin-arm64@workspace:packages/node-binding/npm/darwin-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding-darwin-x64@workspace:^, @webview-bundle/node-binding-darwin-x64@workspace:packages/node-binding/npm/darwin-x64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-darwin-x64@workspace:packages/node-binding/npm/darwin-x64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding-linux-arm64-gnu@workspace:^, @webview-bundle/node-binding-linux-arm64-gnu@workspace:packages/node-binding/npm/linux-arm64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-linux-arm64-gnu@workspace:packages/node-binding/npm/linux-arm64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding-linux-arm64-musl@workspace:^, @webview-bundle/node-binding-linux-arm64-musl@workspace:packages/node-binding/npm/linux-arm64-musl":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-linux-arm64-musl@workspace:packages/node-binding/npm/linux-arm64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding-linux-x64-gnu@workspace:^, @webview-bundle/node-binding-linux-x64-gnu@workspace:packages/node-binding/npm/linux-x64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-linux-x64-gnu@workspace:packages/node-binding/npm/linux-x64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding-linux-x64-musl@workspace:^, @webview-bundle/node-binding-linux-x64-musl@workspace:packages/node-binding/npm/linux-x64-musl":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-linux-x64-musl@workspace:packages/node-binding/npm/linux-x64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding-win32-arm64-msvc@workspace:^, @webview-bundle/node-binding-win32-arm64-msvc@workspace:packages/node-binding/npm/win32-arm64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-win32-arm64-msvc@workspace:packages/node-binding/npm/win32-arm64-msvc"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/node-binding-win32-x64-msvc@workspace:^, @webview-bundle/node-binding-win32-x64-msvc@workspace:packages/node-binding/npm/win32-x64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/node-binding-win32-x64-msvc@workspace:packages/node-binding/npm/win32-x64-msvc"
+  languageName: unknown
+  linkType: soft
+
 "@webview-bundle/node-binding@workspace:^, @webview-bundle/node-binding@workspace:packages/node-binding":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/node-binding@workspace:packages/node-binding"
   dependencies:
     "@napi-rs/cli": "npm:2.18.4"
     "@types/node": "npm:22.7.4"
+    "@webview-bundle/node-binding-darwin-arm64": "workspace:^"
+    "@webview-bundle/node-binding-darwin-x64": "workspace:^"
+    "@webview-bundle/node-binding-linux-arm64-gnu": "workspace:^"
+    "@webview-bundle/node-binding-linux-arm64-musl": "workspace:^"
+    "@webview-bundle/node-binding-linux-x64-gnu": "workspace:^"
+    "@webview-bundle/node-binding-linux-x64-musl": "workspace:^"
+    "@webview-bundle/node-binding-win32-arm64-msvc": "workspace:^"
+    "@webview-bundle/node-binding-win32-x64-msvc": "workspace:^"
     vitest: "npm:3.1.2"
+  dependenciesMeta:
+    "@webview-bundle/node-binding-darwin-arm64":
+      optional: true
+    "@webview-bundle/node-binding-darwin-x64":
+      optional: true
+    "@webview-bundle/node-binding-linux-arm64-gnu":
+      optional: true
+    "@webview-bundle/node-binding-linux-arm64-musl":
+      optional: true
+    "@webview-bundle/node-binding-linux-x64-gnu":
+      optional: true
+    "@webview-bundle/node-binding-linux-x64-musl":
+      optional: true
+    "@webview-bundle/node-binding-win32-arm64-msvc":
+      optional: true
+    "@webview-bundle/node-binding-win32-x64-msvc":
+      optional: true
   languageName: unknown
   linkType: soft
 

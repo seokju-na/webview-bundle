@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/binding-win32-x64-msvc",
+  "name": "@webview-bundle/node-binding-win32-x64-msvc",
   "version": "0.1.0",
   "os": [
     "win32"
