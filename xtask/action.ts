@@ -51,6 +51,7 @@ async function runCommandAction(action: Extract<Action, { type: 'command' }>, { 
     cwd: path.join(ROOT_DIR, action.path),
     stdout: [stdout, 'inherit'],
     stderr: [stderr, 'inherit'],
+    reject: false,
   });
   if (exitCode !== 0) {
     throw new Error(`[${name}] command failed with exit code: ${exitCode}`);

@@ -214,14 +214,19 @@ class Cargo implements PackageManager {
     ];
   }
 
-  publish(_nextVersion: Version): Action[] {
-    const args = ['publish', '--allow-dirty'];
+  publish(nextVersion: Version): Action[] {
     return [
       {
         type: 'command',
         cmd: 'cargo',
-        args,
-        path: path.dirname(this.path),
+        args: ['publish', '--allow-dirty', '-p', this.name],
+        path: '',
+      },
+      {
+        type: 'command',
+        cmd: 'cargo',
+        args: ['update', `${this.name}@${this.version.toString()}`, '--precise', nextVersion.toString()],
+        path: '',
       },
     ];
   }
