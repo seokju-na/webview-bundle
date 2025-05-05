@@ -4,6 +4,7 @@ import * as TOML from '@ltd/j-toml';
 import taploLib from '@taplo/lib';
 import { camelCase, mapKeys, mapValues } from 'es-toolkit';
 import { ROOT_DIR } from './consts.ts';
+import type { Version } from './version.ts';
 
 const taplo = await taploLib.Taplo.initialize();
 const taploConfigRaw = await fs.readFile(path.join(ROOT_DIR, 'taplo.toml'), 'utf8');
@@ -38,32 +39,33 @@ export function parseCargoToml(raw: string): CargoToml {
   return TOML.parse(raw);
 }
 
-export function editCargoTomlVersion(toml: CargoToml, version: string, dep?: string): void {
+export function editCargoTomlVersion(toml: CargoToml, version: Version, dep?: string): void {
+  const ver = version.prerelease != null ? `=${version.toString()}` : version.toString();
   if (dep != null) {
     if (toml.dependencies?.[dep] != null) {
       if (typeof toml.dependencies[dep] === 'string') {
-        toml.dependencies[dep] = version;
+        toml.dependencies[dep] = ver;
       } else if (typeof toml.dependencies[dep]?.version === 'string') {
-        toml.dependencies[dep].version = version;
+        toml.dependencies[dep].version = ver;
       }
     }
     if (toml['dev-dependencies']?.[dep] != null) {
       if (typeof toml['dev-dependencies'][dep] === 'string') {
-        toml['dev-dependencies'][dep] = version;
+        toml['dev-dependencies'][dep] = ver;
       } else if (typeof toml['dev-dependencies'][dep]?.version === 'string') {
-        toml['dev-dependencies'][dep].version = version;
+        toml['dev-dependencies'][dep].version = ver;
       }
     }
     if (toml.workspace?.dependencies?.[dep] != null) {
       if (typeof toml.workspace?.dependencies?.[dep] === 'string') {
-        toml.workspace.dependencies[dep] = version;
+        toml.workspace.dependencies[dep] = ver;
       } else if (typeof toml.workspace.dependencies[dep]?.version === 'string') {
-        toml.workspace.dependencies[dep].version = version;
+        toml.workspace.dependencies[dep].version = ver;
       }
     }
   } else {
     toml.package ??= {};
-    toml.package.version = version;
+    toml.package.version = version.toString();
   }
 }
 

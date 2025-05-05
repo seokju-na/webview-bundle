@@ -118,7 +118,7 @@ export class ReleaseCommand extends Command {
         if (versionedFile.type !== 'Cargo.toml') {
           continue;
         }
-        editCargoTomlVersion(toml, versionedFile.nextVersion.toString(), versionedFile.name);
+        editCargoTomlVersion(toml, versionedFile.nextVersion, versionedFile.name);
       }
     }
     await runActions(

@@ -199,9 +199,8 @@ class Cargo implements PackageManager {
   }
 
   write(nextVersion: Version): Action[] {
-    const version = nextVersion.toString();
     const edited = parseCargoToml(this.raw);
-    editCargoTomlVersion(edited, version);
+    editCargoTomlVersion(edited, nextVersion);
     const content = formatCargoToml(edited);
 
     return [
@@ -214,29 +213,13 @@ class Cargo implements PackageManager {
     ];
   }
 
-  publish(nextVersion: Version): Action[] {
+  publish(_nextVersion: Version): Action[] {
     return [
       {
         type: 'command',
         cmd: 'cargo',
         args: ['publish', '--allow-dirty', '-p', this.name],
         path: '',
-      },
-      {
-        type: 'command',
-        cmd: 'cargo',
-        args: [
-          '+nightly',
-          'update',
-          `${this.name}@${this.version.toString()}`,
-          '--precise',
-          nextVersion.toString(),
-          '-Z',
-          'unstable-options',
-          '--breaking',
-        ],
-        path: '',
-        ignoreError: true,
       },
     ];
   }
