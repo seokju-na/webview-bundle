@@ -43,23 +43,23 @@ export class ArtifactsNapiCommand extends Command {
   private resolveNodeFilepath(filepath: string) {
     const dirname = path.dirname(filepath);
     const filename = path.basename(filepath);
-    const [name, arch] = filename.split('.');
-    switch (arch) {
-      case 'darwin-x64':
+    const [name, arch, ext] = filename.split('.');
+    switch (`${arch}.${ext}`) {
+      case 'darwin-x64.node':
         return path.join(dirname, `${name}-x86_64-apple-darwin`, filename);
-      case 'darwin-arm64':
+      case 'darwin-arm64.node':
         return path.join(dirname, `${name}-aarch64-apple-darwin`, filename);
-      case 'win32-x64':
+      case 'win32-x64-msvc.node':
         return path.join(dirname, `${name}-x86_64-pc-windows-msvc`, filename);
-      case 'win32-arm64-msvc':
+      case 'win32-arm64-msvc.node':
         return path.join(dirname, `${name}-aarch64-pc-windows-msvc`, filename);
-      case 'linux-x64-musl':
+      case 'linux-x64-musl.node':
         return path.join(dirname, `${name}-x86_64-unknown-linux-musl`, filename);
-      case 'linux-x64-gnu':
+      case 'linux-x64-gnu.node':
         return path.join(dirname, `${name}-x86_64-unknown-linux-gnu`, filename);
-      case 'linux-arm64-musl':
+      case 'linux-arm64-musl.node':
         return path.join(dirname, `${name}-aarch64-unknown-linux-musl`, filename);
-      case 'linux-arm64-gnu':
+      case 'linux-arm64-gnu.node':
         return path.join(dirname, `${name}-aarch64-unknown-linux-gnu`, filename);
       default:
         throw new Error(`unknown file: ${filepath}`);
