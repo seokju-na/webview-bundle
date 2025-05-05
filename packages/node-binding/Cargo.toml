@@ -10,11 +10,9 @@ doctest    = false
 test       = false
 
 [dependencies]
+napi           = { workspace = true }
+napi-derive    = { workspace = true }
 webview-bundle = { workspace = true }
-
-# Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
-napi        = { workspace = true }
-napi-derive = { workspace = true }
 
 [build-dependencies]
 napi-build = { workspace = true }
