@@ -27,9 +27,9 @@ impl Default for Version {
 }
 
 impl Version {
-  pub const fn bytes(&self) -> &[u8; 1] {
+  pub const fn bytes(&self) -> [u8; 1] {
     match self {
-      Version::Version1 => &[0x01],
+      Version::Version1 => [0x01],
     }
   }
 }

@@ -57,7 +57,7 @@ export a;
     assert_eq!(bundle.descriptors.len(), 1);
     assert_eq!(
       bundle.descriptors.get("index.js").unwrap(),
-      &FileDescriptorData::new(1, 1)
+      &FileDescriptorData::new(0, 35)
     );
   }
 }

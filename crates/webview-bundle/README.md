@@ -6,7 +6,7 @@
 <thead>
 <tr>
   <th colspan="5">Header</th>
-  <th colspan="2">Data</th>
+  <th>Data</th>
   <th>Footer</th>
 </tr>
 </thead>
@@ -18,7 +18,6 @@
   <td>F. Descriptors</td>
   <td>H. Checksum</td>
   <td>Data</td>
-  <td>D. Checksum</td>
   <td>C. Checksum</td>
 </tr>
 <tr>
@@ -28,7 +27,6 @@
   <td>(...)</td>
   <td>4 bytes</td>
   <td>(...)</td>
-  <td>4 bytes</td>
   <td>4 bytes</td>
 </tr>
 </tbody>
@@ -45,7 +43,7 @@
     - version1: `0x01`
 - **File Descriptors Size (4 bytes)**
   - 4 bytes unsigned big endian value (`u32`)
-  - Indicates the size of the File Descriptors field to be read next. 
+  - Indicates the size of the File Descriptors field to be read next.
 - **File Descriptors**
   - This field has dynamic bytes size which is determined by the value of the File Descriptors Size field, and value is big endian format.
   - Format of file descriptors should be `HashMap` formatted:
@@ -60,9 +58,6 @@
 - **Data**
   - This field has dynamic bytes size which can be determined each file offset and length from File Descriptors.
   - The content of data is compressed with [lz4 block format](https://github.com/lz4/lz4/blob/dev/doc/lz4_Block_format.md).
-- **Data checksum (4 bytes)**
-  - Data checksum verifies that the full data data has been decoded correctly.
-  - The checksum is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the original (decoded) data as input.
 
 ### Footer
 

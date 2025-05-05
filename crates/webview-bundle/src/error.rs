@@ -24,8 +24,6 @@ pub enum Error {
   InvalidVersion,
   #[error("header checksum mismatch")]
   HeaderChecksumMismatch,
-  #[error("data checksum mismatch")]
-  DataChecksumMismatch,
   #[error("content checksum mismatch")]
   ContentChecksumMismatch,
   #[error("file not found")]
