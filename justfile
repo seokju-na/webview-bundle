@@ -82,3 +82,13 @@ benchmark: build
 # Run xtask
 xtask *ARGS:
     ./xtask/cli.ts {{ ARGS }}
+
+# Prerelease
+prerelease:
+    git tag -a prerelease -m "prerelease" --force
+    git push origin prerelease --force
+
+# Release
+release:
+    git tag -a release -m "release" --force
+    git push origin release --force
