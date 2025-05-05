@@ -39,7 +39,7 @@ pub(crate) async fn extract(console: &mut dyn Console, data: ExtractCommandData)
   for (path, data) in bundle.descriptors().iter() {
     let file_size = human_bytes(data.length as f64);
     console.log(markup! {
-      "    "{path}" "<Dim>"("{file_size}")"</Dim>
+      "    - "{path}" "<Dim>"("{file_size}")"</Dim>
     });
   }
 
