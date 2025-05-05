@@ -227,6 +227,7 @@ class Cargo implements PackageManager {
         cmd: 'cargo',
         args: ['update', `${this.name}@${this.version.toString()}`, '--precise', nextVersion.toString()],
         path: '',
+        ignoreError: true,
       },
     ];
   }
