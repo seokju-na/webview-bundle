@@ -6,14 +6,26 @@ pub enum Error {
   Compress(#[from] lz4_flex::block::CompressError),
   #[error(transparent)]
   Decompress(#[from] lz4_flex::block::DecompressError),
-  #[error(transparent)]
-  Encode(#[from] bincode::error::EncodeError),
-  #[error(transparent)]
-  Decode(#[from] bincode::error::DecodeError),
-  #[error("header magic mismatch")]
-  InvalidMagic,
+  #[error("encode error: {message}")]
+  Encode {
+    #[source]
+    error: bincode::error::EncodeError,
+    message: String,
+  },
+  #[error("decode error: {message}")]
+  Decode {
+    #[source]
+    error: bincode::error::DecodeError,
+    message: String,
+  },
+  #[error("invalid magic number")]
+  InvalidMagicNum,
   #[error("invalid version format")]
   InvalidVersion,
+  #[error("header checksum mismatch")]
+  HeaderChecksumMismatch,
+  #[error("content checksum mismatch")]
+  ContentChecksumMismatch,
   #[error("file not found")]
   FileNotFound,
 }

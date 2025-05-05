@@ -97,7 +97,8 @@ function dryRunWriteAction(action: Extract<Action, { type: 'write' }>, { name = 
         changeLineNo += 1;
         const lineStr = String(changeLineNo).padStart(3, ' ');
         const color = change.added ? colors.success : colors.error;
-        console.log(`  ${colors.dim(lineStr)}|${color(line)}`);
+        const diffPrefix = change.added ? '+' : '-';
+        console.log(`  ${colors.dim(lineStr)}|${diffPrefix}${color(line)}`);
       }
       modified = change.count;
     }

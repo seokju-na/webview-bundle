@@ -18,28 +18,27 @@ setup:
 
     # Pre-requirements
     yarn lefthook install
-    yarn workspace xtask run out
 
 # Test all files
-test: test-rust test-js
+test: test-rs test-js
 
 # Test JS files
-test-js: build
+test-js: build-napi build-js
     yarn vitest run
 
 # Test Rust files
-test-rust:
+test-rs:
     cargo test --workspace --no-fail-fast
 
 # Format all files
-format: format-toml format-rust format-js
+format: format-toml format-rs format-js
 
 # Format TOML files
 format-toml:
     yarn taplo format
 
 # Format Rust files
-format-rust:
+format-rs:
     cargo fmt --all
 
 # Format JS files via Biome
@@ -47,14 +46,14 @@ format-js:
     yarn biome format --write
 
 # Lint all files
-lint: lint-rust lint-js
+lint: lint-rs lint-js
 
 # Lint JS files via Biome
 lint-js:
     yarn biome check
 
 # Lint Rust files via Clippy
-lint-rust:
+lint-rs:
     cargo clippy --workspace
 
 # Typechecking with TSC
@@ -62,12 +61,19 @@ typecheck:
     tsc --noEmit
 
 # Build as release mode
-build:
-    yarn workspaces foreach -Apt run build
+build: build-rs build-napi build-js
 
-# Build as debug mode
-build-debug:
-    yarn workspaces foreach -Apt run build:debug
+# Build NAPI modules
+build-napi:
+    yarn workspaces foreach -Ap run build:napi
+
+# Build Rust workspaces
+build-rs:
+    cargo build --workspace
+
+# Build JS packages
+build-js:
+    yarn workspaces foreach -Apt run build
 
 # Run benchmarks
 benchmark: build

@@ -33,13 +33,13 @@ pub(crate) async fn extract(console: &mut dyn Console, data: ExtractCommandData)
 
   console.log(markup! {
     "Webview bundle info: `"{file_path.to_string_lossy()}"`\n"
-    "  Version: "{bundle.version().to_string()}"\n"
-    "  Files:"
+    "  "<Info>"Version:"</Info>" "{bundle.version().to_string()}"\n"
+    "  "<Info>"Files:"</Info>
   });
-  for descriptor in bundle.descriptors() {
-    let file_size = human_bytes(descriptor.size() as f64);
+  for (path, data) in bundle.descriptors().iter() {
+    let file_size = human_bytes(data.length as f64);
     console.log(markup! {
-      "    "{descriptor.path()}" "<Dim>"("{file_size}")"</Dim>
+      "    - "{path}" "<Dim>"("{file_size}")"</Dim>
     });
   }
 
@@ -61,8 +61,8 @@ pub(crate) async fn extract(console: &mut dyn Console, data: ExtractCommandData)
     return Err(anyhow!("Outdir already exists."));
   }
 
-  for descriptor in bundle.descriptors() {
-    extract_file(&outdir, &bundle, descriptor.path()).await?;
+  for path in bundle.descriptors().keys() {
+    extract_file(&outdir, &bundle, path).await?;
   }
 
   console.log(markup! {
