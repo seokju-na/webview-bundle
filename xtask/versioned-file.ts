@@ -225,7 +225,16 @@ class Cargo implements PackageManager {
       {
         type: 'command',
         cmd: 'cargo',
-        args: ['update', `${this.name}@${this.version.toString()}`, '--precise', nextVersion.toString()],
+        args: [
+          '+nightly',
+          'update',
+          `${this.name}@${this.version.toString()}`,
+          '--precise',
+          nextVersion.toString(),
+          '-Z',
+          'unstable-options',
+          '--breaking',
+        ],
         path: '',
         ignoreError: true,
       },

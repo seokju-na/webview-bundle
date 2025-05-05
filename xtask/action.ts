@@ -38,6 +38,9 @@ async function runWriteAction(action: Extract<Action, { type: 'write' }>, { name
   await fs.mkdir(path.dirname(filepath), { recursive: true });
   await fs.writeFile(filepath, action.content, 'utf8');
   console.log(`${colors.success(`[${name}]`)} write file: ${action.path}`);
+  if (action.prevContent != null) {
+    logDiff(action.prevContent, action.content);
+  }
 }
 
 async function runCommandAction(action: Extract<Action, { type: 'command' }>, { name = 'root' }: ActionContext) {
@@ -47,6 +50,8 @@ async function runCommandAction(action: Extract<Action, { type: 'command' }>, { 
   const stderr = function* (line: string) {
     yield `${colors.info(`[${name}]`)} ${line}`;
   };
+  console.log(`${colors.info(`[${name}]`)} run command: ${action.cmd} ${action.args.join(' ')}`);
+  console.log(`  ${colors.dim(`path: ${action.path}`)}`);
   const { exitCode } = await (execa as ExecaArrayLong)(action.cmd, action.args, {
     cwd: path.join(ROOT_DIR, action.path),
     stdout: [stdout, 'inherit'],
@@ -80,29 +85,33 @@ function dryRunWriteAction(action: Extract<Action, { type: 'write' }>, { name = 
   const prefix = colors.info(`[${name}]`);
   console.log(`${prefix} will write file: ${path}`);
   if (prevContent != null) {
-    const diff = diffLines(prevContent, content);
-    let modified: number | undefined;
-    let lineNo = 0;
-    for (const change of diff) {
-      if (!change.added && !change.removed) {
-        if (modified != null) {
-          lineNo += modified;
-          modified = undefined;
-        }
-        lineNo += change.count ?? 0;
-        continue;
+    logDiff(prevContent, content);
+  }
+}
+
+function logDiff(prevContent: string, content: string) {
+  const diff = diffLines(prevContent, content);
+  let modified: number | undefined;
+  let lineNo = 0;
+  for (const change of diff) {
+    if (!change.added && !change.removed) {
+      if (modified != null) {
+        lineNo += modified;
+        modified = undefined;
       }
-      let changeLineNo = lineNo;
-      const lines = change.value.trimEnd().split('\n');
-      for (const line of lines) {
-        changeLineNo += 1;
-        const lineStr = String(changeLineNo).padStart(3, ' ');
-        const color = change.added ? colors.success : colors.error;
-        const diffPrefix = change.added ? '+' : '-';
-        console.log(`  ${colors.dim(lineStr)}|${diffPrefix}${color(line)}`);
-      }
-      modified = change.count;
+      lineNo += change.count ?? 0;
+      continue;
     }
+    let changeLineNo = lineNo;
+    const lines = change.value.trimEnd().split('\n');
+    for (const line of lines) {
+      changeLineNo += 1;
+      const lineStr = String(changeLineNo).padStart(3, ' ');
+      const color = change.added ? colors.success : colors.error;
+      const diffPrefix = change.added ? '+' : '-';
+      console.log(`  ${colors.dim(lineStr)}|${diffPrefix}${color(line)}`);
+    }
+    modified = change.count;
   }
 }
 
