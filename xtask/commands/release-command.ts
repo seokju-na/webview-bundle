@@ -51,7 +51,7 @@ export class ReleaseCommand extends Command {
       if (this.prerelease == null) {
         this.gitCommitChanges(repo, config, targets, rootCargoChanged, rootChangelogChanged);
         this.gitCreateTags(repo, targets);
-        await this.gitPush(repo);
+        await this.gitPush(repo, targets);
         await this.createGitHubReleases(config, targets);
       }
 
@@ -228,7 +228,7 @@ export class ReleaseCommand extends Command {
     }
   }
 
-  private async gitPush(repo: Repository) {
+  private async gitPush(repo: Repository, targets: ReleaseTarget[]) {
     const remote = repo.getRemote('origin');
     if (this.dryRun) {
       console.log(`${colors.info('[root]')} will push to: ${remote.url()}`);
@@ -238,13 +238,18 @@ export class ReleaseCommand extends Command {
       console.log(`${colors.warn('[root]')} no github token found. skip push.`);
       return;
     }
-    await remote.push(['refs/heads/main:refs/heads/main'], {
-      credential: {
-        type: 'Plain',
-        password: this.githubToken,
-      },
-      remoteOptions: ['--tags'],
-    });
+    await remote.push(
+      [
+        'refs/heads/main:refs/heads/main',
+        ...targets.map(x => x.package.nextVersionedGitTag.tagRef).map(tagRef => `${tagRef}:${tagRef}`),
+      ],
+      {
+        credential: {
+          type: 'Plain',
+          password: this.githubToken,
+        },
+      }
+    );
     console.log(`${colors.success('[root]')} push changes to remote: ${remote.url()}`);
   }
 
