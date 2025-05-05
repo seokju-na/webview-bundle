@@ -37,7 +37,7 @@ pub(crate) async fn pack(console: &mut dyn Console, data: PackCommandData) -> Re
     console.log(markup! {
       "Target file: "{file.relative_path.to_string_lossy()}
     });
-    builder = builder.add_file(file.relative_path, &file.data);
+    builder = builder.add_file(file.relative_path.to_str().unwrap(), &file.data);
   }
   let bundle = builder.build();
   let mut outfile_path = outfile

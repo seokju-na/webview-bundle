@@ -1,13 +1,12 @@
-use crate::bundle::FileDescriptor;
+use crate::bundle::{FileDescriptorData, FileDescriptors};
 use crate::{Bundle, Version};
 use lz4_flex::compress_prepend_size;
-use std::path::Path;
 
 #[derive(Default, Clone)]
 pub struct Builder {
   version: Option<Version>,
-  offset: u64,
-  descriptors: Vec<FileDescriptor>,
+  offset: u32,
+  descriptors: FileDescriptors,
   data: Vec<u8>,
 }
 
@@ -21,16 +20,14 @@ impl Builder {
     self
   }
 
-  pub fn add_file<P: AsRef<Path>>(mut self, path: P, data: &[u8]) -> Self {
+  pub fn add_file(mut self, path: &str, data: &[u8]) -> Self {
     let compressed = compress_prepend_size(data);
-    let length = compressed.len() as u64;
-    let descriptor = FileDescriptor {
-      path: path.as_ref().to_string_lossy().to_string(),
-      offset: self.offset,
-      length,
-    };
+    let length = compressed.len() as u32;
+    self.descriptors.insert(
+      path.to_string(),
+      FileDescriptorData::new(self.offset, length),
+    );
     self.offset += length;
-    self.descriptors.push(descriptor);
     self.data.extend_from_slice(&compressed);
     self
   }
@@ -51,14 +48,16 @@ mod tests {
 
   #[test]
   fn build() {
-    let path = Path::new("index.js");
     let data = r#"
 const a = 10;
 export a;
     "#;
-    let bundle = Builder::new().add_file(path, data.as_bytes()).build();
+    let bundle = Builder::new().add_file("index.js", data.as_bytes()).build();
     assert_eq!(bundle.version(), &Version::Version1);
     assert_eq!(bundle.descriptors.len(), 1);
-    assert_eq!(bundle.descriptors.first().unwrap().path, "index.js");
+    assert_eq!(
+      bundle.descriptors.get("index.js").unwrap(),
+      &FileDescriptorData::new(1, 1)
+    );
   }
 }

@@ -1,4 +1,4 @@
-use crate::bundle::{Bundle, FileDescriptor, Version, HEADER_MAGIC_BYTES};
+use crate::bundle::{Bundle, FileDescriptors, Version, HEADER_MAGIC_BYTES};
 use bincode::{config, encode_to_vec};
 use std::io::Write;
 
@@ -40,10 +40,13 @@ impl<W: Write> Encoder<W> {
     Ok(())
   }
 
-  fn write_file_descriptors(&mut self, descriptors: &Vec<FileDescriptor>) -> crate::Result<()> {
+  fn write_file_descriptors(&mut self, descriptors: &FileDescriptors) -> crate::Result<()> {
     let mut encoded: Vec<u8> = vec![];
     let config = config::standard().with_big_endian();
-    let bytes = encode_to_vec(descriptors, config)?;
+    let bytes = encode_to_vec(descriptors, config).map_err(|e| crate::Error::Encode {
+      error: e,
+      message: "fail to encode file descriptors".to_string(),
+    })?;
     let bytes_len = (bytes.len() as u32).to_be_bytes();
     encoded.extend_from_slice(&bytes_len);
     encoded.extend_from_slice(&bytes);
@@ -55,21 +58,20 @@ impl<W: Write> Encoder<W> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use std::path::Path;
 
   #[test]
   fn encode_ok() {
-    let path = Path::new("index.js");
     let file = r#"const a = 10;"#;
-    let bundle = Bundle::builder().add_file(path, file.as_bytes()).build();
+    let bundle = Bundle::builder()
+      .add_file("index.js", file.as_bytes())
+      .build();
     let mut write = Vec::new();
     encode(&bundle, &mut write).unwrap();
     assert_eq!(
       write,
       [
-        240, 159, 140, 144, 240, 159, 142, 129, 118, 49, 0, 0, 0, 0, 0, 12, 1, 8, 105, 110, 100,
-        101, 120, 46, 106, 115, 0, 18, 13, 0, 0, 0, 208, 99, 111, 110, 115, 116, 32, 97, 32, 61,
-        32, 49, 48, 59
+        240, 159, 140, 144, 240, 159, 142, 129, 1, 0, 0, 0, 12, 1, 8, 105, 110, 100, 101, 120, 46,
+        106, 115, 18, 18, 13, 0, 0, 0, 208, 99, 111, 110, 115, 116, 32, 97, 32, 61, 32, 49, 48, 59
       ]
     );
   }
