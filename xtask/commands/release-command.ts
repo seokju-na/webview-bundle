@@ -230,8 +230,19 @@ export class ReleaseCommand extends Command {
 
   private async gitPush(repo: Repository, targets: ReleaseTarget[]) {
     const remote = repo.getRemote('origin');
+    const refspecs = [
+      'refs/heads/main:refs/heads/main',
+      ...targets.map(x => x.package.nextVersionedGitTag.tagRef).map(tagRef => `${tagRef}:${tagRef}`),
+    ];
+    const logRefspecs = () => {
+      for (const refspec of refspecs) {
+        const [src, dest] = refspec.split(':');
+        console.log(colors.dim(`  - ${src} -> ${dest}`));
+      }
+    };
     if (this.dryRun) {
       console.log(`${colors.info('[root]')} will push to: ${remote.url()}`);
+      logRefspecs();
       return;
     }
     if (this.githubToken == null) {
@@ -251,6 +262,7 @@ export class ReleaseCommand extends Command {
       }
     );
     console.log(`${colors.success('[root]')} push changes to remote: ${remote.url()}`);
+    logRefspecs();
   }
 
   private async createGitHubReleases(config: Config, targets: ReleaseTarget[]) {
