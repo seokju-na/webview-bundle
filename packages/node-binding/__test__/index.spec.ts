@@ -4,14 +4,14 @@ import { Bundle, create, decode, encode } from '../index.js';
 it('parse failure', async () => {
   await expect(decode(Buffer.from([]))).rejects.toThrowError(new Error('empty buffer'));
   await expect(decode(Buffer.from([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))).rejects.toThrowError(
-    'header magic mismatch'
+    'invalid magic number'
   );
 });
 
 it('encode empty bundle', async () => {
   const bundle = new Bundle();
   await expect(encode(bundle)).resolves.toEqual(
-    Buffer.from([0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 0x8e, 0x81, 0x76, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00])
+    Buffer.from([240, 159, 140, 144, 240, 159, 142, 129, 1, 0, 0, 0, 1, 0, 93, 190, 64, 6, 3, 142, 7, 8])
   );
 });
 

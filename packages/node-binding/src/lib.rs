@@ -23,7 +23,7 @@ impl JsBundle {
   pub async fn read_file(&self, path: String) -> Result<Buffer> {
     let data = self
       .inner
-      .read_file(path)
+      .read_file(&path)
       .map_err(|e| Error::new(Status::GenericFailure, e))?;
     Ok(Buffer::from(data))
   }
