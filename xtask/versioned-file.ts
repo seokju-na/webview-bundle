@@ -69,6 +69,10 @@ export class VersionedFile {
     return !this.pkgManager.version.equals(this._nextVersion);
   }
 
+  get canPublish(): boolean {
+    return this.pkgManager.canPublish;
+  }
+
   bumpVersion(rule: BumpRule): void {
     this._nextVersion = this.pkgManager.version.clone();
     this._nextVersion.bump(rule);
@@ -82,7 +86,7 @@ export class VersionedFile {
   }
 
   publish(): Action[] {
-    if (!this.hasChanged) {
+    if (!this.hasChanged || !this.canPublish) {
       return [];
     }
     return this.pkgManager.publish(this.nextVersion);
@@ -148,9 +152,6 @@ class PackageJson implements PackageManager {
   }
 
   publish(nextVersion: Version): Action[] {
-    if (!this.canPublish) {
-      return [];
-    }
     const args = ['npm', 'publish', '--access', 'public', '--provenance', 'true'];
     const prerelease = nextVersion.prerelease;
     if (prerelease != null) {
