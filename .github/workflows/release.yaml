@@ -123,7 +123,7 @@ jobs:
       - uses: extractions/setup-just@v3
       - name: Spread artifacts
         run: just xtask artifacts spread
-      - name: Prerelease
+      - name: Dry Run
         run: just xtask release --dry-run
   prerelease:
     runs-on: ubuntu-latest

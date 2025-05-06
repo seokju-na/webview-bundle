@@ -1,6 +1,6 @@
 import { Option } from 'clipanion';
-import colorSupport from 'color-support';
 import kleur from 'kleur';
+import supportsColor from 'supports-color';
 import { isEnum } from 'typanion';
 
 export function enableColor(): void {
@@ -12,8 +12,7 @@ export function disableColor(): void {
 }
 
 export function autoColor(): void {
-  const support = colorSupport();
-  kleur.enabled = support !== false && support.level > 0;
+  kleur.enabled = supportsColor.stdout !== false && supportsColor.stdout.level > 0;
 }
 
 const COLOR_MODES = ['on', 'off', 'auto'] as const;
