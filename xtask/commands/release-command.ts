@@ -74,7 +74,19 @@ export class ReleaseCommand extends Command {
           {
             type: 'command',
             cmd: 'yarn',
-            args: ['config', 'set', 'npmRegistries["//registry.npmjs.org"].npmAuthToken', this.npmToken],
+            args: ['config', 'set', '-H', 'npmRegistries["https://registry.npmjs.org"].npmAuthToken', this.npmToken],
+            path: '',
+          },
+          {
+            type: 'command',
+            cmd: 'yarn',
+            args: ['config', 'set', '-H', 'npmRegistries["https://registry.npmjs.org"].npmAlwaysAuth', 'true'],
+            path: '',
+          },
+          {
+            type: 'command',
+            cmd: 'yarn',
+            args: ['config', 'set', '-H', 'npmPublishRegistry', 'https://registry.npmjs.org'],
             path: '',
           },
         ],
