@@ -152,10 +152,10 @@ class PackageJson implements PackageManager {
   }
 
   publish(nextVersion: Version): Action[] {
-    const args = ['npm', 'publish', '--access', 'public', '--provenance', 'true'];
+    const args = ['npm', 'publish', '--access=public', '--provenance=true'];
     const prerelease = nextVersion.prerelease;
     if (prerelease != null) {
-      args.push('--tag', prerelease.id);
+      args.push(`--tag=${prerelease.id}`);
     }
     return [
       {
