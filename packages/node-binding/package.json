@@ -56,14 +56,14 @@
     "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.ts"
   },
   "optionalDependencies": {
-    "@webview-bundle/node-binding-darwin-arm64": "workspace:^",
-    "@webview-bundle/node-binding-darwin-x64": "workspace:^",
-    "@webview-bundle/node-binding-linux-arm64-gnu": "workspace:^",
-    "@webview-bundle/node-binding-linux-arm64-musl": "workspace:^",
-    "@webview-bundle/node-binding-linux-x64-gnu": "workspace:^",
-    "@webview-bundle/node-binding-linux-x64-musl": "workspace:^",
-    "@webview-bundle/node-binding-win32-arm64-msvc": "workspace:^",
-    "@webview-bundle/node-binding-win32-x64-msvc": "workspace:^"
+    "@webview-bundle/node-binding-darwin-arm64": "workspace:*",
+    "@webview-bundle/node-binding-darwin-x64": "workspace:*",
+    "@webview-bundle/node-binding-linux-arm64-gnu": "workspace:*",
+    "@webview-bundle/node-binding-linux-arm64-musl": "workspace:*",
+    "@webview-bundle/node-binding-linux-x64-gnu": "workspace:*",
+    "@webview-bundle/node-binding-linux-x64-musl": "workspace:*",
+    "@webview-bundle/node-binding-win32-arm64-msvc": "workspace:*",
+    "@webview-bundle/node-binding-win32-x64-msvc": "workspace:*"
   },
   "devDependencies": {
     "@napi-rs/cli": "2.18.4",
