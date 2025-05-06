@@ -148,6 +148,9 @@ class PackageJson implements PackageManager {
   }
 
   publish(nextVersion: Version): Action[] {
+    if (!this.canPublish) {
+      return [];
+    }
     const args = ['npm', 'publish', '--access', 'public', '--provenance', 'true'];
     const prerelease = nextVersion.prerelease;
     if (prerelease != null) {
