@@ -11,6 +11,20 @@
   "files": [
     "binding.linux-x64-musl.node"
   ],
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/node-binding/npm/linux-x64-musl"
+  },
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
   "license": "MIT",
   "engines": {
     "node": ">= 10"
