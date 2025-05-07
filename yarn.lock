@@ -2600,6 +2600,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ci-info@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "ci-info@npm:4.2.0"
+  checksum: 10c0/37a2f4b6a213a5cf835890eb0241f0d5b022f6cfefde58a69e9af8e3a0e71e06d6ad7754b0d4efb9cd2613e58a7a33996d71b56b0d04242722e86666f3f3d058
+  languageName: node
+  linkType: hard
+
 "clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
@@ -6304,6 +6311,7 @@ __metadata:
     "@types/diff": "npm:^7"
     "@types/node": "npm:22.7.4"
     "@types/semver": "npm:^7"
+    ci-info: "npm:^4.2.0"
     clipanion: "npm:^4.0.0-rc.4"
     diff: "npm:^7.0.0"
     es-git: "npm:^0.3.0"

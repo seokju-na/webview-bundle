@@ -1,3 +1,4 @@
+import CI from 'ci-info';
 import { Option } from 'clipanion';
 import kleur from 'kleur';
 import supportsColor from 'supports-color';
@@ -12,7 +13,7 @@ export function disableColor(): void {
 }
 
 export function autoColor(): void {
-  kleur.enabled = supportsColor.stdout !== false && supportsColor.stdout.level > 0;
+  kleur.enabled = CI.GITHUB_ACTIONS ? true : supportsColor.stdout !== false && supportsColor.stdout.level > 0;
 }
 
 const COLOR_MODES = ['on', 'off', 'auto'] as const;
