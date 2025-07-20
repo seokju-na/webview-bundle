@@ -1,23 +1,23 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": [
-      "./.yarn/**",
-      "*.json",
-      "*.cjs",
-      "*.cts",
-      "packages/cli/index.js",
-      "packages/cli/index.d.ts",
-      "packages/node-binding/binding.js",
-      "packages/node-binding/binding.d.ts"
+    "includes": [
+      "**/*.ts",
+      "**/*.cts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.cjs",
+      "**/*.json",
+      "!.yarn/**",
+      "!**/*.json",
+      "!**/binding.cjs",
+      "!**/binding.d.cts"
     ]
   },
   "formatter": {
@@ -36,7 +36,8 @@
         "noArrayIndexKey": "off"
       },
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "noCommonJs": "error"
       },
       "a11y": {
         "noSvgWithoutTitle": "off"
@@ -49,12 +50,7 @@
         "useImportExtensions": {
           "level": "error",
           "options": {
-            "suggestedExtensions": {
-              "ts": {
-                "module": "js",
-                "component": "jsx"
-              }
-            }
+            "forceJsExtensions": true
           }
         }
       }
@@ -69,28 +65,27 @@
   },
   "overrides": [
     {
-      "include": ["./benchmarks/fixtures/**"],
+      "includes": ["benchmarks/fixtures/**"],
       "linter": {
         "rules": {
           "correctness": {
             "useImportExtensions": "off"
+          },
+          "style": {
+            "noCommonJs": "off"
           }
         }
       }
     },
     {
-      "include": ["./xtask/**"],
+      "includes": ["xtask/**"],
       "linter": {
         "rules": {
           "correctness": {
             "useImportExtensions": {
               "level": "error",
               "options": {
-                "suggestedExtensions": {
-                  "ts": {
-                    "module": "ts"
-                  }
-                }
+                "forceJsExtensions": false
               }
             }
           }

@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { AlreadyPublishedError, type PublishOptions, Publisher } from '@webview-bundle/publisher';
+import { AlreadyPublishedError, Publisher, type PublishOptions } from '@webview-bundle/publisher';
 import type { GitHubPublisherConfig } from './config.js';
 import type { GitHubRelease } from './github.js';
 import * as github from './github.js';

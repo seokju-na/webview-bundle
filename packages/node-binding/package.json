@@ -52,8 +52,8 @@
   },
   "scripts": {
     "artifacts": "just xtask artifacts napi packages/node-binding && napi artifacts",
-    "build:napi": "napi build --platform --release --js=binding.cjs --dts=binding.d.ts",
-    "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.ts"
+    "build:napi": "napi build --platform --release --js=binding.cjs --dts=binding.d.cts",
+    "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts"
   },
   "optionalDependencies": {
     "@webview-bundle/node-binding-darwin-arm64": "workspace:*",

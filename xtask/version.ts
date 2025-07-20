@@ -1,4 +1,4 @@
-import { type SemVer, parse } from 'semver';
+import { parse, type SemVer } from 'semver';
 
 export interface PrereleaseData {
   id: string;

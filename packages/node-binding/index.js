@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const { Bundle: _Bundle, encode: _encode, decode: _decode, create: _create } = require('./binding.cjs');
+const nodeRequire = createRequire(import.meta.url);
+const { Bundle: _Bundle, encode: _encode, decode: _decode, create: _create } = nodeRequire('./binding.cjs');
 
 export const Bundle = _Bundle;
 export const create = _create;

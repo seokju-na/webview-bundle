@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import cli from '../binding.cjs';
+import cli from '../binding.cjs.js';
 
 it('can run cli', async () => {
   await cli.run([]);
