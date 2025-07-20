@@ -1,5 +1,8 @@
+import { createRequire } from 'node:module';
 import { expect, it } from 'vitest';
-import cli from '../binding.cjs.js';
+
+const nodeRequire = createRequire(import.meta.url);
+const cli = nodeRequire('../binding.cjs');
 
 it('can run cli', async () => {
   await cli.run([]);
