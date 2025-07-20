@@ -58,7 +58,7 @@ lint-rs:
 
 # Typechecking with TSC
 typecheck:
-    tsc --noEmit
+    yarn workspaces foreach -Apt run typecheck
 
 # Build as release mode
 build: build-rs build-napi build-js

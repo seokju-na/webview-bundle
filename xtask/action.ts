@@ -1,9 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { diffLines } from 'diff';
-import { execa } from 'execa';
-// @ts-ignore
-import type { ExecaArrayLong } from 'execa/types/methods/main-async.js';
+import { runCommand } from './child_process.ts';
 import { colors } from './console.ts';
 import { ROOT_DIR } from './consts.ts';
 
@@ -44,19 +42,11 @@ async function runWriteAction(action: Extract<Action, { type: 'write' }>, { name
 }
 
 async function runCommandAction(action: Extract<Action, { type: 'command' }>, { name = 'root' }: ActionContext) {
-  const stdout = function* (line: string) {
-    yield `${colors.info(`[${name}]`)} ${line}`;
-  };
-  const stderr = function* (line: string) {
-    yield `${colors.info(`[${name}]`)} ${line}`;
-  };
   console.log(`${colors.info(`[${name}]`)} run command: ${action.cmd} ${action.args.join(' ')}`);
   console.log(`  ${colors.dim(`path: ${action.path}`)}`);
-  const { exitCode } = await (execa as ExecaArrayLong)(action.cmd, action.args, {
+  const { exitCode } = await runCommand(action.cmd, action.args, {
     cwd: path.join(ROOT_DIR, action.path),
-    stdout: [stdout, 'inherit'],
-    stderr: [stderr, 'inherit'],
-    reject: false,
+    prefix: `${colors.info(`[${name}}`)} `,
   });
   if (action.ignoreError !== true && exitCode !== 0) {
     throw new Error(`[${name}] command failed with exit code: ${exitCode}`);

@@ -3,6 +3,7 @@ import { Cli } from 'clipanion';
 import { ArtifactsMergeCommand } from './commands/artifacts-merge-command.ts';
 import { ArtifactsNapiCommand } from './commands/artifacts-napi-command.ts';
 import { ArtifactsSpreadCommand } from './commands/artifacts-spread-command.ts';
+import { AttwCommand } from './commands/attw-command.ts';
 import { ReleaseCommand } from './commands/release-command.ts';
 
 const [node, app, ...args] = process.argv;
@@ -17,4 +18,5 @@ cli.register(ReleaseCommand);
 cli.register(ArtifactsSpreadCommand);
 cli.register(ArtifactsMergeCommand);
 cli.register(ArtifactsNapiCommand);
+cli.register(AttwCommand);
 cli.runExit(args);
