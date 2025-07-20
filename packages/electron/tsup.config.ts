@@ -1,16 +1,10 @@
-import glob from 'fast-glob';
 import { defineConfig } from 'tsup';
 
-const entry = await glob('src/**/*.ts', {
-  onlyFiles: true,
-  ignore: ['**/*.test.ts', '**/*.spec.ts'],
-});
-
 export default defineConfig({
-  entry,
-  format: ['esm'],
+  entry: ['./src/index.ts'],
+  format: ['esm', 'cjs'],
   splitting: false,
-  bundle: false,
+  bundle: true,
   clean: true,
   dts: true,
   platform: 'node',

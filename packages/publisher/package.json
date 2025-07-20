@@ -2,17 +2,25 @@
   "name": "@webview-bundle/publisher",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./package.json": "./package.json"
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+      },
+      "./package.json": "./package.json"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "engines": {
     "ndoe": ">= 18"
@@ -34,10 +42,11 @@
   "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
-    "build": "tsup"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "fast-glob": "^3.3.2",
-    "tsup": "8.4.0"
+    "tsup": "8.4.0",
+    "typescript": "5.8.3"
   }
 }

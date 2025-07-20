@@ -10,6 +10,7 @@
   ],
   "packageManager": "yarn@4.9.2",
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.2",
     "@biomejs/biome": "2.1.2",
     "@taplo/cli": "0.7.0",
     "lefthook": "1.7.15",
