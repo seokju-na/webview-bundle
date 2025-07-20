@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/useImportExtensions: .
 const { Bundle, encode: _encode, decode: _decode, create } = require('./binding.cjs');
 
 async function decode(buf) {
