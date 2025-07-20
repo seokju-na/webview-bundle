@@ -14,8 +14,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": true
+    "resolveJsonModule": true
   },
   "exclude": ["./benchmarks"]
 }

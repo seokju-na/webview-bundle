@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BrowserWindow, app } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import serve from 'electron-serve';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));

@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Octokit } from '@octokit/rest';
 import { Command, Option } from 'clipanion';
-import { type Repository, openRepository } from 'es-git';
+import { openRepository, type Repository } from 'es-git';
 import { isNotNil } from 'es-toolkit';
 import { type Action, runActions } from '../action.ts';
 import { editCargoTomlVersion, formatCargoToml, parseCargoToml } from '../cargo-toml.ts';
