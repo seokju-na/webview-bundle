@@ -170,3 +170,26 @@ jobs:
         uses: ./.github/actions/rust-setup
       - name: Run cargo test
         run: cargo test --workspace
+  typecheck:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
+      - run: yarn install
+      - name: Run typecheck
+        run: yarn workspaces foreach -Apt run typecheck
+  attw:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
+      - run: yarn install
+      - uses: extractions/setup-just@v3
+      - name: Run attw
+        run: just xtask attw
