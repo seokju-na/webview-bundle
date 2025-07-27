@@ -24,7 +24,7 @@
     "supports-color": "^10.0.0",
     "typanion": "^3.14.0",
     "type-fest": "^4.40.1",
-    "zod": "^3.24.3"
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/color-support": "^1",

@@ -3,14 +3,25 @@ import path from 'node:path';
 import { type Bundle, decode } from '@webview-bundle/node-binding';
 import { app } from 'electron';
 import type { Loader } from './loader.js';
-import type { URI } from './uri.js';
 
 export interface FSLike {
   readFile(path: string, options?: unknown): Promise<Buffer>;
 }
 
-export interface FSLoaderConfig {
-  resolveFilepath(uri: URI): string;
+export interface FilePathResolverParams {
+  baseDir: string;
+  name: string;
+}
+
+export type FilePathResolver = (params: FilePathResolverParams) => string;
+
+export const defaultFilePathResolver: FilePathResolver = ({ baseDir, name }) => {
+  const filename = name.endsWith('.wvb') ? name : `${name}.wvb`;
+  return path.join(baseDir, filename);
+};
+
+export interface FSLoaderOptions {
+  filePathResolver?: FilePathResolver;
   fs?: FSLike | (() => FSLike) | Promise<FSLike>;
 }
 
@@ -20,52 +31,45 @@ const defaultFS = (): FSLike => {
 
 export class FSLoader implements Loader {
   private _fs: FSLike | null = null;
+  private readonly options: FSLoaderOptions;
 
-  static fromDir(dir: string, extraDir?: string[], options?: Omit<FSLoaderConfig, 'resolveFilepath'>) {
-    const resolveFilepath = (uri: URI): string => {
-      const filename = uri.host.endsWith('.wvb') ? uri.host : `${uri.host}.wvb`;
-      if (extraDir != null && extraDir.length > 0) {
-        return path.join(dir, ...extraDir, filename);
-      }
-      return path.join(dir, filename);
-    };
-    return new FSLoader({ ...options, resolveFilepath });
+  static fromDir(dir: string, options?: FSLoaderOptions): FSLoader {
+    return new FSLoader(dir, options);
   }
 
-  static fromHomeDir(extraDir?: string[], options?: Omit<FSLoaderConfig, 'resolveFilepath'>) {
-    return FSLoader.fromDir(app.getPath('home'), extraDir, options);
+  static fromHomeDir(options?: FSLoaderOptions): FSLoader {
+    return FSLoader.fromDir(app.getPath('home'), options);
   }
 
-  static fromAppDataDir(extraDir?: string[], options?: Omit<FSLoaderConfig, 'resolveFilepath'>) {
-    return FSLoader.fromDir(app.getPath('appData'), extraDir, options);
+  static fromAppDataDir(options?: FSLoaderOptions): FSLoader {
+    return FSLoader.fromDir(app.getPath('appData'), options);
   }
 
-  static fromUserDataDir(extraDir?: string[], options?: Omit<FSLoaderConfig, 'resolveFilepath'>) {
-    return FSLoader.fromDir(app.getPath('userData'), extraDir, options);
+  static fromUserDataDir(options?: FSLoaderOptions): FSLoader {
+    return FSLoader.fromDir(app.getPath('userData'), options);
   }
 
-  constructor(private readonly config: FSLoaderConfig) {}
-
-  getBundleName(uri: URI): string {
-    const { resolveFilepath } = this.config;
-    const filepath = resolveFilepath(uri);
-    return path.basename(filepath);
+  constructor(
+    public readonly baseDir: string,
+    options?: FSLoaderOptions
+  ) {
+    this.options = options ?? {};
   }
 
-  async load(uri: URI): Promise<Bundle> {
-    const { resolveFilepath } = this.config;
-    const filepath = resolveFilepath(uri);
+  async load(name: string): Promise<Bundle> {
+    const { filePathResolver = defaultFilePathResolver } = this.options;
     const fs = await this.loadFS();
+    const filepath = filePathResolver({ baseDir: this.baseDir, name });
     const buf = await fs.readFile(filepath);
     const bundle = await decode(buf);
     return bundle;
   }
 
-  private async loadFS() {
+  private async loadFS(): Promise<FSLike> {
     if (this._fs != null) {
       return this._fs;
     }
-    const { fs = defaultFS } = this.config;
+    const { fs = defaultFS } = this.options;
     if (typeof fs === 'function') {
       this._fs = fs();
     } else {

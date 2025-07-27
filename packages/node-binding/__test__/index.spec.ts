@@ -17,12 +17,12 @@ it('encode empty bundle', async () => {
 
 it('file not found error', async () => {
   const bundle = new Bundle();
-  await expect(bundle.readFile('index.js')).rejects.toThrowError('file not found');
-  await expect(bundle.readFile('unknown/dir/index.html')).rejects.toThrowError('file not found');
+  await expect(bundle.readFileData('index.js')).rejects.toThrowError('file not found');
+  await expect(bundle.readFileData('unknown/dir/index.html')).rejects.toThrowError('file not found');
 });
 
 it('create bundle', async () => {
   const data = Buffer.from('export const A = 10;', 'utf8');
   const bundle = await create([{ path: 'index.js', data }]);
-  await expect(bundle.readFile('index.js')).resolves.toEqual(data);
+  await expect(bundle.readFileData('index.js')).resolves.toEqual(data);
 });

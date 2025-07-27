@@ -11,20 +11,10 @@
     },
     "cli": {
       "versionedFiles": [
-        "crates/webview-bundle-cli/Cargo.toml",
-        "packages/cli/Cargo.toml",
-        "packages/cli/package.json",
-        "packages/cli/npm/*/package.json"
+        "packages/cli/package.json"
       ],
       "changelog": "packages/cli/CHANGELOG.md",
-      "scopes": ["cli", "all"],
-      "beforePublishScripts": [
-        {
-          "command": "yarn",
-          "args": ["artifacts"],
-          "cwd": "packages/cli"
-        }
-      ]
+      "scopes": ["cli", "all"]
     },
     "node-binding": {
       "versionedFiles": [
@@ -58,17 +48,17 @@
     },
     "publisher": {
       "versionedFiles": [
-        "packages/publisher/package.json"
+        "packages/deployer/package.json"
       ],
-      "changelog": "packages/publisher/CHANGELOG.md",
-      "scopes": ["publisher", "all"]
+      "changelog": "packages/deployer/CHANGELOG.md",
+      "scopes": ["deployer", "all"]
     },
     "publisher-github": {
       "versionedFiles": [
-        "packages/publisher-github/package.json"
+        "packages/deployer-github/package.json"
       ],
-      "changelog": "packages/publisher-github/CHANGELOG.md",
-      "scopes": ["publisher-github", "publisher", "all"]
+      "changelog": "packages/deployer-github/CHANGELOG.md",
+      "scopes": ["deployer-github", "deployer", "all"]
     }
   },
   "artifacts": {

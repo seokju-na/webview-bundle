@@ -1,0 +1,59 @@
+{
+  "name": "@webview-bundle/deployer-aws",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "ndoe": ">= 16"
+  },
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/deployer-aws"
+  },
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "license": "MIT",
+  "scripts": {
+    "prepack": "yarn build",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3",
+    "@aws-sdk/client-cloudfront-keyvaluestore": "^3",
+    "@aws-sdk/client-s3": "^3",
+    "@smithy/types": "^4",
+    "@webview-bundle/deployer": "workspace:^"
+  },
+  "devDependencies": {
+    "tsdown": "0.12.9",
+    "typescript": "5.8.3"
+  }
+}

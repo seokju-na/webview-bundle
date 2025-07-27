@@ -1,0 +1,62 @@
+{
+  "name": "@webview-bundle/cli-deployer",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./meta": "./src/meta/index.ts",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+      },
+      "./meta": {
+        "import": "./dist/meta/index.js",
+        "require": "./dist/meta/index.cjs"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">= 20"
+  },
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/cli-deployer"
+  },
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "license": "MIT",
+  "scripts": {
+    "prepack": "yarn build",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "gunshi": "*"
+  },
+  "devDependencies": {
+    "gunshi": "0.26.3",
+    "tsdown": "0.12.9",
+    "typescript": "5.8.3"
+  }
+}

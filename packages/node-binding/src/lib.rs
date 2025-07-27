@@ -5,6 +5,22 @@ use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ErrorStrategy, ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
 
+#[napi(object)]
+#[derive(Clone)]
+pub struct BundleFile {
+  pub path: String,
+  pub data: Buffer,
+}
+
+impl From<webview_bundle::BundleFile> for BundleFile {
+  fn from(value: webview_bundle::BundleFile) -> Self {
+    Self {
+      path: value.path,
+      data: Buffer::from(value.data),
+    }
+  }
+}
+
 #[napi(js_name = "Bundle")]
 pub struct JsBundle {
   inner: webview_bundle::Bundle,
@@ -20,12 +36,30 @@ impl JsBundle {
   }
 
   #[napi]
-  pub async fn read_file(&self, path: String) -> Result<Buffer> {
-    let data = self
+  pub async fn read_all_files(&self) -> Result<Vec<BundleFile>> {
+    let files = self
+      .inner
+      .read_all_files()
+      .map_err(|e| Error::new(Status::GenericFailure, e))?
+      .into_iter()
+      .map(BundleFile::from)
+      .collect::<Vec<_>>();
+    Ok(files)
+  }
+
+  #[napi]
+  pub async fn read_file(&self, path: String) -> Result<BundleFile> {
+    let file = self
       .inner
       .read_file(&path)
       .map_err(|e| Error::new(Status::GenericFailure, e))?;
-    Ok(Buffer::from(data))
+    Ok(BundleFile::from(file))
+  }
+
+  #[napi]
+  pub async fn read_file_data(&self, path: String) -> Result<Buffer> {
+    let file = self.read_file(path).await?;
+    Ok(file.data)
   }
 }
 
@@ -74,15 +108,8 @@ pub fn encode(bundle: &JsBundle, callback: JsFunction) -> Result<()> {
   Ok(())
 }
 
-#[napi(object)]
-#[derive(Clone)]
-pub struct File {
-  pub path: String,
-  pub data: Buffer,
-}
-
 pub struct BundleBuilder {
-  files: Vec<File>,
+  files: Vec<BundleFile>,
 }
 
 impl Task for BundleBuilder {
@@ -104,6 +131,6 @@ impl Task for BundleBuilder {
 }
 
 #[napi]
-pub fn create(files: Vec<File>) -> AsyncTask<BundleBuilder> {
+pub fn create(files: Vec<BundleFile>) -> AsyncTask<BundleBuilder> {
   AsyncTask::new(BundleBuilder { files })
 }
