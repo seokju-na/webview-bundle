@@ -1,0 +1,132 @@
+import util from 'node:util';
+import {
+  type LogLevel as AllLogLevel,
+  configure,
+  getConsoleSink,
+  getLogger as getLoggerApi,
+  type Logger as LoggerType,
+  type LogRecord,
+} from '@logtape/logtape';
+import { Option } from 'clipanion';
+import { isEnum } from 'typanion';
+import { colors } from './console.js';
+
+const LOG_LEVELS = ['debug', 'info', 'error', 'warning'] as const;
+export type LogLevel = (typeof LOG_LEVELS)[number];
+
+export const LogLevelOption = Option.String('--log-level', 'info', {
+  description: 'Set the log level for output. Default: "info"',
+  validator: isEnum(LOG_LEVELS),
+  env: 'LOG_LEVEL',
+});
+
+export const LogVerboseOption = Option.Boolean('--log-verbose', false, {
+  description: 'Enable verbose logging. Default: false',
+});
+
+export interface ConfigureLoggerOptions {
+  /** @default 'debug' */
+  level?: LogLevel;
+  /** @default false */
+  verbose?: boolean;
+}
+
+function levelColor(level: AllLogLevel, message: string): string {
+  switch (level) {
+    case 'debug':
+    case 'trace':
+      return colors.debug(message);
+    case 'info':
+      return colors.bold(colors.info(message));
+    case 'warning':
+      return colors.bold(colors.warn(message));
+    case 'error':
+    case 'fatal':
+      return colors.bold(colors.error(message));
+  }
+}
+
+const levelAbbreviations: Record<AllLogLevel, string> = {
+  trace: 'TRC',
+  debug: 'DBG',
+  info: 'INF',
+  warning: 'WRN',
+  error: 'ERR',
+  fatal: 'FTL',
+};
+
+const padZero = (n: number): string => (n < 10 ? `0${n}` : `${n}`);
+const padThree = (n: number): string => (n < 10 ? `00${n}` : n < 100 ? `0${n}` : `${n}`);
+
+function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp);
+  const yyyy = date.getUTCFullYear();
+  const MM = padZero(date.getUTCMonth() + 1);
+  const dd = padZero(date.getUTCDate());
+  const hh = padZero(date.getUTCHours());
+  const mm = padZero(date.getUTCMinutes());
+  const sss = padThree(date.getUTCSeconds());
+  return `${yyyy}-${MM}-${dd} ${hh}:${mm}:${sss} +00:00`;
+}
+
+function formatCategory(category: readonly string[]): string {
+  return category.join('/');
+}
+
+function formatValue(value: unknown, verbose: boolean): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'object' && value != null) {
+    if (value instanceof Error) {
+      if (verbose && value.stack != null) {
+        return colors.bold(colors.error(`\n${value.stack}\n`));
+      }
+      return colors.bold(colors.error(`${value.name}: ${value.message}`));
+    }
+    return colors.bold(colors.debug(util.inspect('%O', value)));
+  }
+  return colors.bold(String(value));
+}
+
+export async function configureLogger(options?: ConfigureLoggerOptions) {
+  const { level = 'debug', verbose = false } = options ?? {};
+  await configure({
+    sinks: {
+      console: getConsoleSink({
+        formatter(record: LogRecord): readonly unknown[] {
+          const { category, message, level, timestamp } = record;
+          const levelMsg = levelColor(record.level, `[${levelAbbreviations[level]}]`);
+          let prefixMsg = levelMsg;
+          if (verbose) {
+            const timestampMsg = levelColor(record.level, `[${formatTimestamp(timestamp)}]`);
+            prefixMsg = `${timestampMsg}${prefixMsg}`;
+
+            const categoryMsg = levelColor(record.level, `[${formatCategory(category)}]`);
+            prefixMsg = `${prefixMsg}${categoryMsg}`;
+          }
+          const formattedMsg = message.map(x => formatValue(x, verbose)).join('');
+          return [prefixMsg, formattedMsg];
+        },
+      }),
+    },
+    loggers: [
+      {
+        category: ['webview-bundle'],
+        sinks: ['console'],
+        lowestLevel: level,
+      },
+      {
+        category: ['logtape'],
+        sinks: ['console'],
+        lowestLevel: 'error',
+      },
+    ],
+  });
+}
+
+export type Logger = LoggerType;
+
+export function getLogger(...categories: string[]): Logger {
+  return getLoggerApi(['webview-bundle', ...categories]);
+}

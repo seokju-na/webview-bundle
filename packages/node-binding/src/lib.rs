@@ -36,6 +36,11 @@ impl JsBundle {
   }
 
   #[napi]
+  pub fn version(&self) -> String {
+    self.inner.version().to_string()
+  }
+
+  #[napi]
   pub async fn read_all_files(&self) -> Result<Vec<BundleFile>> {
     let files = self
       .inner

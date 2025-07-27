@@ -13,6 +13,7 @@ export declare function create(files: Array<BundleFile>): Promise<unknown>
 export type JsBundle = Bundle
 export declare class Bundle {
   constructor()
+  version(): string
   readAllFiles(): Promise<Array<BundleFile>>
   readFile(path: string): Promise<BundleFile>
   readFileData(path: string): Promise<Buffer>

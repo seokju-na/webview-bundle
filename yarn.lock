@@ -3800,18 +3800,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webview-bundle/cli-deployer@workspace:packages/cli-deployer":
-  version: 0.0.0-use.local
-  resolution: "@webview-bundle/cli-deployer@workspace:packages/cli-deployer"
-  dependencies:
-    gunshi: "npm:0.26.3"
-    tsdown: "npm:0.12.9"
-    typescript: "npm:5.8.3"
-  peerDependencies:
-    gunshi: "*"
-  languageName: unknown
-  linkType: soft
-
 "@webview-bundle/cli@workspace:^, @webview-bundle/cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/cli@workspace:packages/cli"
@@ -4077,13 +4065,6 @@ __metadata:
   version: 5.0.2
   resolution: "arg@npm:5.0.2"
   checksum: 10c0/ccaf86f4e05d342af6666c569f844bec426595c567d32a8289715087825c2ca7edd8a3d204e4d2fb2aa4602e09a57d0c13ea8c9eea75aac3dbb4af5514e6800e
-  languageName: node
-  linkType: hard
-
-"args-tokens@npm:^0.20.1":
-  version: 0.20.1
-  resolution: "args-tokens@npm:0.20.1"
-  checksum: 10c0/18f2c7b464eb98ce200385267ffb034a335f4b11f5ca411475818c7c812c27376d653a270854a0af41540428e2603ab14031a7b13aff3d545c2ea63fa03c91b7
   languageName: node
   linkType: hard
 
@@ -5677,15 +5658,6 @@ __metadata:
   version: 4.2.11
   resolution: "graceful-fs@npm:4.2.11"
   checksum: 10c0/386d011a553e02bc594ac2ca0bd6d9e4c22d7fa8cfbfc448a6d148c59ea881b092db9dbe3547ae4b88e55f1b01f7c4a2ecc53b310c042793e63aa44cf6c257f2
-  languageName: node
-  linkType: hard
-
-"gunshi@npm:0.26.3":
-  version: 0.26.3
-  resolution: "gunshi@npm:0.26.3"
-  dependencies:
-    args-tokens: "npm:^0.20.1"
-  checksum: 10c0/a0635d8599f3290f3b29438621323f05c9f4148eba1bdc4243bf85a70f7e2f7a93199bd7f5e9e0188aa0bedbff3d51d7f49b070f6f1e68bd459d33184bd8b4ad
   languageName: node
   linkType: hard
 

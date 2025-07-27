@@ -33,7 +33,8 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noEmptyInterface": "off",
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "noConfusingVoidType": "off"
       },
       "style": {
         "noNonNullAssertion": "off",

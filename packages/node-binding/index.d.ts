@@ -5,6 +5,7 @@ export interface BundleFile {
 
 export declare class Bundle {
   constructor();
+  version(): string;
   readAllFiles(): Promise<Array<BundleFile>>;
   readFile(path: string): Promise<BundleFile>;
   readFileData(path: string): Promise<Buffer>;

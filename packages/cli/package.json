@@ -12,7 +12,7 @@
     "CHANGELOG.md"
   ],
   "engines": {
-    "node": ">= 20"
+    "node": ">= 16"
   },
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
