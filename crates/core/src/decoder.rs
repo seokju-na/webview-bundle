@@ -1,6 +1,6 @@
 use crate::bundle::{
   Bundle, FileDescriptors, Version, FILE_DESCRIPTORS_SIZE_BYTES_LENGTH, HEADER_MAGIC_BYTES,
-  VERSION_BYTES_LENGTH,
+  VERSION_BYTES_LEN,
 };
 use bincode::{config, decode_from_slice};
 use std::hash::Hasher;
@@ -50,7 +50,7 @@ impl<'a, T: AsRef<[u8]>> Decoder<'a, T> {
   }
 
   fn read_version(&mut self) -> crate::Result<Version> {
-    let mut buf = [0u8; VERSION_BYTES_LENGTH];
+    let mut buf = [0u8; VERSION_BYTES_LEN];
     self.c.read_exact(&mut buf)?;
     if buf == Version::Version1.bytes() {
       return Ok(Version::Version1);

@@ -1,12 +1,22 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FSLoader, registerProtocol } from '@webview-bundle/electron';
+import { webviewBundle } from '@webview-bundle/electron';
 import { app, BrowserWindow } from 'electron';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const loader = FSLoader.fromDir(path.join(dirname, '../'));
+// const loader = FSLoader.fromDir(path.join(dirname, '../'));
 
-registerProtocol({ scheme: 'app', loader });
+webviewBundle({
+  protocol: {
+    scheme: 'app',
+    privileges: {},
+  },
+  updater: {
+    remotesBaseUrl: 'https://wvb.mycdn.com',
+  },
+});
+
+// registerProtocol({ scheme: 'app', loader });
 
 async function createWindow() {
   const mainWindow = new BrowserWindow({

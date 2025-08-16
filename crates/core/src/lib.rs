@@ -3,6 +3,9 @@ mod bundle;
 mod decoder;
 mod encoder;
 mod error;
+mod index;
+mod reader;
+mod version;
 
 pub(crate) type Result<T> = std::result::Result<T, Error>;
 

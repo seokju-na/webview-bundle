@@ -13,7 +13,7 @@ export class IpcError extends Error {
   }
 
   constructor({ code, message }: IpcErrorPayload) {
-    super(message != null ? `${code}: ${message}` : message);
+    super(message != null ? `${code}: ${message}` : code);
     this.name = 'IpcError';
     this.code = code;
   }
