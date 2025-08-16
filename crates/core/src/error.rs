@@ -18,14 +18,14 @@ pub enum Error {
     error: bincode::error::DecodeError,
     message: String,
   },
+  #[error(transparent)]
+  Http(#[from] http::Error),
   #[error("invalid magic number")]
   InvalidMagicNum,
   #[error("invalid version format")]
   InvalidVersion,
-  #[error("header checksum mismatch")]
-  HeaderChecksumMismatch,
-  #[error("content checksum mismatch")]
-  ContentChecksumMismatch,
-  #[error("file not found")]
-  FileNotFound,
+  #[error("invalid checksum")]
+  InvalidChecksum,
+  #[error("checksum mismatch")]
+  ChecksumMismatch,
 }

@@ -1,10 +1,14 @@
+use crate::checksum::{get_checksum, make_checksum, CHECKSUM_BYTES_LEN};
+use crate::header::Header;
+use crate::reader::Reader;
+use crate::writer::Writer;
 use bincode::de::Decoder;
 use bincode::enc::Encoder;
 use bincode::error::{DecodeError, EncodeError};
-use bincode::{Decode, Encode};
+use bincode::{config, decode_from_slice, encode_to_vec, Decode, Encode};
 use http::{HeaderMap, HeaderName, HeaderValue};
 use std::collections::HashMap;
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -64,29 +68,34 @@ impl<T> Decode<T> for IndexEntry {
 }
 
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct Index(pub(crate) HashMap<String, IndexEntry>);
+pub(crate) struct IndexEntryMap(pub(crate) HashMap<String, IndexEntry>);
 
-impl Encode for Index {
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct Index {
+  entries: IndexEntryMap,
+}
+
+impl Encode for IndexEntryMap {
   fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
     self.0.encode(encoder)
   }
 }
 
-impl<T> Decode<T> for Index {
+impl<T> Decode<T> for IndexEntryMap {
   fn decode<D: Decoder>(decoder: &mut D) -> Result<Self, DecodeError> {
     let map = HashMap::<String, IndexEntry>::decode(decoder)?;
-    Ok(Index(map))
+    Ok(IndexEntryMap(map))
   }
 }
 
-impl Deref for Index {
+impl Deref for IndexEntryMap {
   type Target = HashMap<String, IndexEntry>;
   fn deref(&self) -> &Self::Target {
     &self.0
   }
 }
 
-impl DerefMut for Index {
+impl DerefMut for IndexEntryMap {
   fn deref_mut(&mut self) -> &mut Self::Target {
     &mut self.0
   }
@@ -98,23 +107,133 @@ impl Index {
     path: S,
     entry: IndexEntry,
   ) -> Option<IndexEntry> {
-    self.0.insert(path.into(), entry)
+    self.entries.insert(path.into(), entry)
   }
 
   pub fn get_entry(&self, path: &str) -> Option<&IndexEntry> {
-    self.0.get(path)
+    self.entries.get(path)
   }
 
   pub fn get_entry_mut(&mut self, path: &str) -> Option<&mut IndexEntry> {
-    self.0.get_mut(path)
+    self.entries.get_mut(path)
   }
 
   pub fn remove_entry(&mut self, path: &str) -> Option<IndexEntry> {
-    self.0.remove(path)
+    self.entries.remove(path)
   }
 
   pub fn contains_path(&self, path: &str) -> bool {
-    self.0.contains_key(path)
+    self.entries.contains_key(path)
+  }
+}
+
+pub struct IndexWriter<W: Write> {
+  w: W,
+}
+
+impl<W: Write> IndexWriter<W> {
+  pub fn new(w: W) -> Self {
+    Self { w }
+  }
+
+  pub fn write_index(&mut self, index: &Index) -> crate::Result<Vec<u8>> {
+    let config = config::standard().with_big_endian();
+    let bytes = encode_to_vec(&index.entries, config).map_err(|e| crate::Error::Encode {
+      error: e,
+      message: "fail to encode index".to_string(),
+    })?;
+    self.w.write_all(&bytes)?;
+    Ok(bytes)
+  }
+
+  pub fn write_checksum(&mut self, checksum: u32) -> crate::Result<Vec<u8>> {
+    let bytes = checksum.to_be_bytes().to_vec();
+    self.w.write_all(&bytes)?;
+    Ok(bytes)
+  }
+}
+
+impl<W: Write> Writer<Index> for IndexWriter<W> {
+  fn write(&mut self, index: &Index) -> crate::Result<()> {
+    let mut bytes = vec![];
+    bytes.extend(self.write_index(index)?);
+    let checksum = make_checksum(&bytes);
+    self.write_checksum(checksum)?;
+    Ok(())
+  }
+}
+
+pub struct IndexReader<R: Read + Seek> {
+  r: R,
+  header: Header,
+  options: IndexReaderOptions,
+}
+
+pub struct IndexReaderOptions {
+  pub verify_checksum: bool,
+}
+
+impl Default for IndexReaderOptions {
+  fn default() -> Self {
+    Self {
+      verify_checksum: true,
+    }
+  }
+}
+
+impl<R: Read + Seek> IndexReader<R> {
+  pub fn new(r: R, header: Header) -> Self {
+    Self::new_with_options(r, header, Default::default())
+  }
+
+  pub fn new_with_options(r: R, header: Header, options: IndexReaderOptions) -> Self {
+    Self { r, header, options }
+  }
+
+  pub fn read_index(&mut self) -> crate::Result<Index> {
+    self.r.seek(SeekFrom::Start(Header::end_offset()))?;
+    let mut buf = vec![0u8; self.header.index_size() as usize];
+    self.r.read_exact(&mut buf)?;
+    let config = config::standard().with_big_endian();
+    let (entries, _): (IndexEntryMap, _) =
+      decode_from_slice(&buf, config).map_err(|e| crate::Error::Decode {
+        error: e,
+        message: "fail to decode index".to_string(),
+      })?;
+    Ok(Index { entries })
+  }
+
+  pub fn read_checksum(&mut self) -> crate::Result<u32> {
+    let offset = Header::end_offset() + self.header.index_size() as u64;
+    self.r.seek(SeekFrom::Start(offset))?;
+    let mut buf = vec![0u8; CHECKSUM_BYTES_LEN];
+    self.r.read_exact(&mut buf)?;
+    let checksum = get_checksum(&buf);
+    Ok(checksum)
+  }
+
+  fn verify_checksum(&mut self, checksum: u32) -> crate::Result<()> {
+    self.r.seek(SeekFrom::Start(Header::end_offset()))?;
+    let total_len = self.header.index_size();
+    let mut total = vec![0u8; total_len as usize];
+    self.r.read_exact(&mut total)?;
+
+    let expected_checksum = make_checksum(&total);
+    if checksum != expected_checksum {
+      return Err(crate::Error::InvalidChecksum);
+    }
+    Ok(())
+  }
+}
+
+impl<R: Read + Seek> Reader<Index> for IndexReader<R> {
+  fn read(&mut self) -> crate::Result<Index> {
+    let index = self.read_index()?;
+    let checksum = self.read_checksum()?;
+    if self.options.verify_checksum {
+      self.verify_checksum(checksum)?;
+    }
+    Ok(index)
   }
 }
 
