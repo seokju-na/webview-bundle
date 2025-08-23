@@ -1,3 +1,4 @@
+mod builder;
 mod bundle;
 mod checksum;
 mod error;
@@ -9,4 +10,5 @@ mod writer;
 
 pub(crate) type Result<T> = std::result::Result<T, Error>;
 
+pub use bundle::{Bundle, BundleManifest, BundleReader, BundleResponse, BundleWriter};
 pub use error::Error;

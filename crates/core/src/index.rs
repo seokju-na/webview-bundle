@@ -75,6 +75,18 @@ pub struct Index {
   entries: IndexEntryMap,
 }
 
+impl Index {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  pub fn new_with_capacity(capacity: usize) -> Self {
+    Self {
+      entries: IndexEntryMap(HashMap::with_capacity(capacity)),
+    }
+  }
+}
+
 impl Encode for IndexEntryMap {
   fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
     self.0.encode(encoder)
@@ -154,12 +166,12 @@ impl<W: Write> IndexWriter<W> {
 }
 
 impl<W: Write> Writer<Index> for IndexWriter<W> {
-  fn write(&mut self, index: &Index) -> crate::Result<()> {
+  fn write(&mut self, index: &Index) -> crate::Result<usize> {
     let mut bytes = vec![];
     bytes.extend(self.write_index(index)?);
     let checksum = make_checksum(&bytes);
     self.write_checksum(checksum)?;
-    Ok(())
+    Ok(bytes.len())
   }
 }
 
@@ -191,7 +203,7 @@ impl<R: Read + Seek> IndexReader<R> {
   }
 
   pub fn read_index(&mut self) -> crate::Result<Index> {
-    self.r.seek(SeekFrom::Start(Header::end_offset()))?;
+    self.r.seek(SeekFrom::Start(Header::END_OFFSET))?;
     let mut buf = vec![0u8; self.header.index_size() as usize];
     self.r.read_exact(&mut buf)?;
     let config = config::standard().with_big_endian();
@@ -204,7 +216,7 @@ impl<R: Read + Seek> IndexReader<R> {
   }
 
   pub fn read_checksum(&mut self) -> crate::Result<u32> {
-    let offset = Header::end_offset() + self.header.index_size() as u64;
+    let offset = Header::END_OFFSET + self.header.index_size() as u64;
     self.r.seek(SeekFrom::Start(offset))?;
     let mut buf = vec![0u8; CHECKSUM_BYTES_LEN];
     self.r.read_exact(&mut buf)?;
@@ -213,7 +225,7 @@ impl<R: Read + Seek> IndexReader<R> {
   }
 
   fn verify_checksum(&mut self, checksum: u32) -> crate::Result<()> {
-    self.r.seek(SeekFrom::Start(Header::end_offset()))?;
+    self.r.seek(SeekFrom::Start(Header::END_OFFSET))?;
     let total_len = self.header.index_size();
     let mut total = vec![0u8; total_len as usize];
     self.r.read_exact(&mut total)?;

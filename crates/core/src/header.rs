@@ -4,8 +4,8 @@ use crate::version::{Version, VERSION_BYTES_LEN};
 use crate::writer::Writer;
 use std::io::{Read, Seek, SeekFrom, Write};
 
-pub(crate) const MAGIC_BYTES_LEN: usize = 8;
-pub(crate) const INDEX_SIZE_BYTES_LEN: usize = 4;
+const MAGIC_BYTES_LEN: usize = 8;
+const MAGIC_BYTES: [u8; MAGIC_BYTES_LEN] = [0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 0x8e, 0x81];
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Header {
@@ -15,40 +15,24 @@ pub struct Header {
 }
 
 impl Header {
-  #[inline]
-  pub fn magic() -> [u8; MAGIC_BYTES_LEN] {
-    // 🌐🎁
-    [0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 0x8e, 0x81]
+  pub const MAGIC_OFFSET: u64 = 0;
+  pub const VERSION_OFFSET: u64 = MAGIC_BYTES_LEN as u64;
+  pub const INDEX_SIZE_OFFSET: u64 = Self::VERSION_OFFSET + VERSION_BYTES_LEN as u64;
+  pub const INDEX_SIZE_BYTES_LEN: usize = 4;
+  pub const CHECKSUM_OFFSET: u64 = Self::INDEX_SIZE_OFFSET + Self::INDEX_SIZE_BYTES_LEN as u64;
+  pub const END_OFFSET: u64 = Self::CHECKSUM_OFFSET + CHECKSUM_BYTES_LEN as u64;
+
+  pub fn header_end_offset(&self) -> u64 {
+    Self::END_OFFSET
   }
 
-  #[inline]
-  pub fn magic_offset() -> u64 {
-    0
-  }
-
-  #[inline]
-  pub fn version_offset() -> u64 {
-    MAGIC_BYTES_LEN as u64
-  }
-
-  #[inline]
-  pub fn index_size_offset() -> u64 {
-    Self::version_offset() + VERSION_BYTES_LEN as u64
-  }
-
-  #[inline]
-  pub fn checksum_offset() -> u64 {
-    Self::index_size_offset() + INDEX_SIZE_BYTES_LEN as u64
-  }
-
-  #[inline]
-  pub fn end_offset() -> u64 {
-    Self::checksum_offset() + CHECKSUM_BYTES_LEN as u64
+  pub fn index_end_offset(&self) -> u64 {
+    self.header_end_offset() + self.index_size as u64 + CHECKSUM_BYTES_LEN as u64
   }
 
   pub fn new(version: Version, index_size: u32) -> Self {
     Self {
-      magic: Header::magic(),
+      magic: MAGIC_BYTES,
       version,
       index_size,
     }
@@ -73,7 +57,7 @@ impl<W: Write> HeaderWriter<W> {
   }
 
   pub fn write_magic(&mut self) -> crate::Result<Vec<u8>> {
-    let bytes = Header::magic().to_vec();
+    let bytes = MAGIC_BYTES.to_vec();
     self.w.write_all(&bytes)?;
     Ok(bytes)
   }
@@ -98,7 +82,7 @@ impl<W: Write> HeaderWriter<W> {
 }
 
 impl<W: Write> Writer<Header> for HeaderWriter<W> {
-  fn write(&mut self, header: &Header) -> crate::Result<()> {
+  fn write(&mut self, header: &Header) -> crate::Result<usize> {
     let mut bytes = vec![];
     bytes.extend(self.write_magic()?);
     bytes.extend(self.write_version(header.version)?);
@@ -106,7 +90,7 @@ impl<W: Write> Writer<Header> for HeaderWriter<W> {
 
     let checksum = make_checksum(&bytes);
     self.write_checksum(checksum)?;
-    Ok(())
+    Ok(bytes.len())
   }
 }
 
@@ -137,17 +121,17 @@ impl<R: Read + Seek> HeaderReader<R> {
   }
 
   pub fn read_magic(&mut self) -> crate::Result<[u8; MAGIC_BYTES_LEN]> {
-    self.r.seek(SeekFrom::Start(Header::magic_offset()))?;
+    self.r.seek(SeekFrom::Start(Header::MAGIC_OFFSET))?;
     let mut buf = [0u8; MAGIC_BYTES_LEN];
     self.r.read_exact(&mut buf)?;
-    if buf != Header::magic() {
+    if buf != MAGIC_BYTES {
       return Err(crate::Error::InvalidMagicNum);
     }
     Ok(buf)
   }
 
   pub fn read_version(&mut self) -> crate::Result<Version> {
-    self.r.seek(SeekFrom::Start(Header::version_offset()))?;
+    self.r.seek(SeekFrom::Start(Header::VERSION_OFFSET))?;
     let mut buf = [0u8; VERSION_BYTES_LEN];
     self.r.read_exact(&mut buf)?;
     if buf == Version::Version1.bytes() {
@@ -157,15 +141,15 @@ impl<R: Read + Seek> HeaderReader<R> {
   }
 
   pub fn read_index_size(&mut self) -> crate::Result<u32> {
-    self.r.seek(SeekFrom::Start(Header::index_size_offset()))?;
-    let mut buf = [0u8; INDEX_SIZE_BYTES_LEN];
+    self.r.seek(SeekFrom::Start(Header::INDEX_SIZE_OFFSET))?;
+    let mut buf = [0u8; Header::INDEX_SIZE_BYTES_LEN];
     self.r.read_exact(&mut buf)?;
     let size = u32::from_be_bytes(AsRef::<[u8]>::as_ref(&buf).try_into().unwrap());
     Ok(size)
   }
 
   pub fn read_checksum(&mut self) -> crate::Result<u32> {
-    self.r.seek(SeekFrom::Start(Header::checksum_offset()))?;
+    self.r.seek(SeekFrom::Start(Header::CHECKSUM_OFFSET))?;
     let mut buf = vec![0u8; CHECKSUM_BYTES_LEN];
     self.r.read_exact(&mut buf)?;
     let checksum = get_checksum(&buf);
@@ -173,9 +157,9 @@ impl<R: Read + Seek> HeaderReader<R> {
   }
 
   fn verify_checksum(&mut self, checksum: u32) -> crate::Result<()> {
-    self.r.seek(SeekFrom::Start(Header::magic_offset()))?;
+    self.r.seek(SeekFrom::Start(Header::MAGIC_OFFSET))?;
 
-    let total_len = Header::checksum_offset();
+    let total_len = Header::CHECKSUM_OFFSET;
     let mut total = vec![0u8; total_len as usize];
     self.r.read_exact(&mut total)?;
 
