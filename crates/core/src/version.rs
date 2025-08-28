@@ -30,3 +30,23 @@ impl Display for Version {
     f.write_str(s)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn default() {
+    assert_eq!(Version::default(), Version::Version1);
+  }
+
+  #[test]
+  fn bytes() {
+    assert_eq!(Version::Version1.bytes(), [0x01]);
+  }
+
+  #[test]
+  fn display() {
+    assert_eq!(format!("{}", Version::Version1), "v1");
+  }
+}

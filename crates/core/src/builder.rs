@@ -1,5 +1,7 @@
 use crate::checksum::{make_checksum, CHECKSUM_BYTES_LEN};
-use crate::index::{Index, IndexEntry};
+use crate::header::HeaderWriterOptions;
+use crate::index::{Index, IndexEntry, IndexWriterOptions};
+use crate::version::Version;
 use http::HeaderMap;
 use lz4_flex::compress_prepend_size;
 use std::collections::HashMap;
@@ -31,9 +33,75 @@ impl BundleEntry {
   }
 }
 
+impl From<&[u8]> for BundleEntry {
+  fn from(data: &[u8]) -> Self {
+    Self::new(data, None)
+  }
+}
+
+impl From<Vec<u8>> for BundleEntry {
+  fn from(data: Vec<u8>) -> Self {
+    Self::new(&data, None)
+  }
+}
+
+impl From<(&[u8], Option<HeaderMap>)> for BundleEntry {
+  fn from((data, headers): (&[u8], Option<HeaderMap>)) -> Self {
+    Self::new(data, headers)
+  }
+}
+
+impl From<(Vec<u8>, Option<HeaderMap>)> for BundleEntry {
+  fn from((data, headers): (Vec<u8>, Option<HeaderMap>)) -> Self {
+    Self::new(&data, headers)
+  }
+}
+
+impl From<(&[u8], HeaderMap)> for BundleEntry {
+  fn from((data, headers): (&[u8], HeaderMap)) -> Self {
+    Self::new(data, Some(headers))
+  }
+}
+
+impl From<(Vec<u8>, HeaderMap)> for BundleEntry {
+  fn from((data, headers): (Vec<u8>, HeaderMap)) -> Self {
+    Self::new(&data, Some(headers))
+  }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct BundleBuilderOptions {
+  pub header_options: HeaderWriterOptions,
+  pub index_options: IndexWriterOptions,
+  pub data_checksum_seed: u32,
+}
+
+impl BundleBuilderOptions {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  pub fn header_options(mut self, options: HeaderWriterOptions) -> Self {
+    self.header_options = options;
+    self
+  }
+
+  pub fn index_options(mut self, options: IndexWriterOptions) -> Self {
+    self.index_options = options;
+    self
+  }
+
+  pub fn data_checksum_seed(mut self, seed: u32) -> Self {
+    self.data_checksum_seed = seed;
+    self
+  }
+}
+
 #[derive(Debug, Default)]
 pub struct BundleBuilder {
   entries: HashMap<String, BundleEntry>,
+  version: Version,
+  options: BundleBuilderOptions,
 }
 
 impl BundleBuilder {
@@ -44,7 +112,28 @@ impl BundleBuilder {
   pub fn new_with_capacity(capacity: usize) -> Self {
     Self {
       entries: HashMap::with_capacity(capacity),
+      ..Self::default()
     }
+  }
+
+  pub fn new_with_options(options: BundleBuilderOptions) -> Self {
+    Self {
+      options,
+      ..Self::default()
+    }
+  }
+
+  pub fn version(&self) -> Version {
+    self.version
+  }
+
+  pub fn options(&self) -> &BundleBuilderOptions {
+    &self.options
+  }
+
+  pub fn set_options(&mut self, options: BundleBuilderOptions) -> &mut Self {
+    self.options = options;
+    self
   }
 
   pub fn entries(&self) -> &HashMap<String, BundleEntry> {
@@ -94,7 +183,7 @@ impl BundleBuilder {
   pub fn build_data(&self) -> Vec<u8> {
     let mut data = vec![];
     for entry in self.entries().values() {
-      let checksum = make_checksum(entry.data());
+      let checksum = make_checksum(self.options.data_checksum_seed, entry.data());
       data.extend_from_slice(entry.data());
       data.extend_from_slice(&checksum.to_be_bytes());
     }

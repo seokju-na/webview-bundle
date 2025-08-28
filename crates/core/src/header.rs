@@ -9,12 +9,12 @@ const MAGIC_BYTES: [u8; MAGIC_BYTES_LEN] = [0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Header {
-  magic: [u8; MAGIC_BYTES_LEN],
   version: Version,
   index_size: u32,
 }
 
 impl Header {
+  pub const MAGIC: [u8; MAGIC_BYTES_LEN] = MAGIC_BYTES;
   pub const MAGIC_OFFSET: u64 = 0;
   pub const VERSION_OFFSET: u64 = MAGIC_BYTES_LEN as u64;
   pub const INDEX_SIZE_OFFSET: u64 = Self::VERSION_OFFSET + VERSION_BYTES_LEN as u64;
@@ -22,17 +22,12 @@ impl Header {
   pub const CHECKSUM_OFFSET: u64 = Self::INDEX_SIZE_OFFSET + Self::INDEX_SIZE_BYTES_LEN as u64;
   pub const END_OFFSET: u64 = Self::CHECKSUM_OFFSET + CHECKSUM_BYTES_LEN as u64;
 
-  pub fn header_end_offset(&self) -> u64 {
-    Self::END_OFFSET
-  }
-
   pub fn index_end_offset(&self) -> u64 {
-    self.header_end_offset() + self.index_size as u64 + CHECKSUM_BYTES_LEN as u64
+    Self::END_OFFSET + self.index_size as u64 + CHECKSUM_BYTES_LEN as u64
   }
 
   pub fn new(version: Version, index_size: u32) -> Self {
     Self {
-      magic: MAGIC_BYTES,
       version,
       index_size,
     }
@@ -47,13 +42,42 @@ impl Header {
   }
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct HeaderWriterOptions {
+  pub checksum_seed: u32,
+}
+
+impl HeaderWriterOptions {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  pub fn checksum_seed(mut self, seed: u32) -> Self {
+    self.checksum_seed = seed;
+    self
+  }
+}
+
 pub struct HeaderWriter<W: Write> {
   w: W,
+  options: HeaderWriterOptions,
 }
 
 impl<W: Write> HeaderWriter<W> {
   pub fn new(w: W) -> Self {
-    Self { w }
+    Self {
+      w,
+      options: Default::default(),
+    }
+  }
+
+  pub fn new_with_options(w: W, options: HeaderWriterOptions) -> Self {
+    Self { w, options }
+  }
+
+  pub fn set_options(&mut self, options: HeaderWriterOptions) -> &mut Self {
+    self.options = options;
+    self
   }
 
   pub fn write_magic(&mut self) -> crate::Result<Vec<u8>> {
@@ -88,27 +112,37 @@ impl<W: Write> Writer<Header> for HeaderWriter<W> {
     bytes.extend(self.write_version(header.version)?);
     bytes.extend(self.write_index_size(header.index_size)?);
 
-    let checksum = make_checksum(&bytes);
-    self.write_checksum(checksum)?;
+    let checksum = make_checksum(self.options.checksum_seed, &bytes);
+    bytes.extend(self.write_checksum(checksum)?);
     Ok(bytes.len())
+  }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct HeaderReaderOptions {
+  pub checksum_seed: u32,
+  pub verify_checksum: bool,
+}
+
+impl HeaderReaderOptions {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  pub fn checksum_seed(mut self, seed: u32) -> Self {
+    self.checksum_seed = seed;
+    self
+  }
+
+  pub fn verify_checksum(mut self, verify: bool) -> Self {
+    self.verify_checksum = verify;
+    self
   }
 }
 
 pub struct HeaderReader<R: Read + Seek> {
   r: R,
   options: HeaderReaderOptions,
-}
-
-pub struct HeaderReaderOptions {
-  pub verify_checksum: bool,
-}
-
-impl Default for HeaderReaderOptions {
-  fn default() -> Self {
-    Self {
-      verify_checksum: true,
-    }
-  }
 }
 
 impl<R: Read + Seek> HeaderReader<R> {
@@ -118,6 +152,11 @@ impl<R: Read + Seek> HeaderReader<R> {
 
   pub fn new_with_options(r: R, options: HeaderReaderOptions) -> Self {
     Self { r, options }
+  }
+
+  pub fn set_options(&mut self, options: HeaderReaderOptions) -> &mut Self {
+    self.options = options;
+    self
   }
 
   pub fn read_magic(&mut self) -> crate::Result<[u8; MAGIC_BYTES_LEN]> {
@@ -163,9 +202,9 @@ impl<R: Read + Seek> HeaderReader<R> {
     let mut total = vec![0u8; total_len as usize];
     self.r.read_exact(&mut total)?;
 
-    let expected_checksum = make_checksum(&total);
+    let expected_checksum = make_checksum(self.options.checksum_seed, &total);
     if checksum != expected_checksum {
-      return Err(crate::Error::InvalidChecksum);
+      return Err(crate::Error::InvalidHeaderChecksum);
     }
     Ok(())
   }

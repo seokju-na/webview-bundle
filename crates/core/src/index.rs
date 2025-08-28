@@ -139,13 +139,37 @@ impl Index {
   }
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct IndexWriterOptions {
+  pub checksum_seed: u32,
+}
+
+impl IndexWriterOptions {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  pub fn checksum_seed(mut self, seed: u32) -> Self {
+    self.checksum_seed = seed;
+    self
+  }
+}
+
 pub struct IndexWriter<W: Write> {
   w: W,
+  options: IndexWriterOptions,
 }
 
 impl<W: Write> IndexWriter<W> {
   pub fn new(w: W) -> Self {
-    Self { w }
+    Self {
+      w,
+      options: Default::default(),
+    }
+  }
+
+  pub fn new_with_options(w: W, options: IndexWriterOptions) -> Self {
+    Self { w, options }
   }
 
   pub fn write_index(&mut self, index: &Index) -> crate::Result<Vec<u8>> {
@@ -169,8 +193,8 @@ impl<W: Write> Writer<Index> for IndexWriter<W> {
   fn write(&mut self, index: &Index) -> crate::Result<usize> {
     let mut bytes = vec![];
     bytes.extend(self.write_index(index)?);
-    let checksum = make_checksum(&bytes);
-    self.write_checksum(checksum)?;
+    let checksum = make_checksum(self.options.checksum_seed, &bytes);
+    bytes.extend(self.write_checksum(checksum)?);
     Ok(bytes.len())
   }
 }
@@ -181,15 +205,25 @@ pub struct IndexReader<R: Read + Seek> {
   options: IndexReaderOptions,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct IndexReaderOptions {
+  pub checksum_seed: u32,
   pub verify_checksum: bool,
 }
 
-impl Default for IndexReaderOptions {
-  fn default() -> Self {
-    Self {
-      verify_checksum: true,
-    }
+impl IndexReaderOptions {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  pub fn checksum_seed(mut self, seed: u32) -> Self {
+    self.checksum_seed = seed;
+    self
+  }
+
+  pub fn verify_checksum(mut self, verify: bool) -> Self {
+    self.verify_checksum = verify;
+    self
   }
 }
 
@@ -230,9 +264,9 @@ impl<R: Read + Seek> IndexReader<R> {
     let mut total = vec![0u8; total_len as usize];
     self.r.read_exact(&mut total)?;
 
-    let expected_checksum = make_checksum(&total);
+    let expected_checksum = make_checksum(self.options.checksum_seed, &total);
     if checksum != expected_checksum {
-      return Err(crate::Error::InvalidChecksum);
+      return Err(crate::Error::InvalidIndexChecksum);
     }
     Ok(())
   }

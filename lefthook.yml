@@ -7,7 +7,7 @@ pre-commit:
       stage_fixed: true
     format:taplo:
       glob: "*.toml"
-      run: taplo fmt --colors=never {staged_files}
+      run: yarn taplo fmt --colors=never {staged_files}
       stage_fixed: true
     format:biome:
       glob: "*.{js,ts,jsx,tsx,cjs,mjs,cts,mts}"

@@ -4,6 +4,8 @@ on:
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
+env:
+  LEFTHOOK: 0
 jobs:
   format:
     runs-on: ubuntu-latest

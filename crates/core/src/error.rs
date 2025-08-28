@@ -24,8 +24,10 @@ pub enum Error {
   InvalidMagicNum,
   #[error("invalid version format")]
   InvalidVersion,
-  #[error("invalid checksum")]
-  InvalidChecksum,
+  #[error("invalid header checksum")]
+  InvalidHeaderChecksum,
+  #[error("invalid index checksum")]
+  InvalidIndexChecksum,
   #[error("checksum mismatch")]
   ChecksumMismatch,
 }

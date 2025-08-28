@@ -16,9 +16,6 @@ setup:
     corepack prepare --activate
     yarn
 
-    # Pre-requirements
-    yarn lefthook install
-
 # Test all files
 test: test-rs test-js
 

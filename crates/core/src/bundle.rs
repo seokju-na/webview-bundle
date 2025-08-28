@@ -5,7 +5,8 @@ use crate::index::{Index, IndexEntry, IndexReader, IndexWriter};
 use crate::reader::Reader;
 use crate::version::Version;
 use crate::writer::Writer;
-use http::Response;
+use http::{header, HeaderValue, Response, StatusCode};
+use lz4_flex::decompress_size_prepended;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 
 pub type BundleResponse = Response<Vec<u8>>;
@@ -26,7 +27,7 @@ impl BundleManifest {
   }
 
   pub fn reader<R: Read + Seek>(&self, reader: R) -> BundleDataReader<R> {
-    BundleDataReader::new(reader, self.header)
+    BundleDataReader::new(reader)
   }
 
   pub fn response<R: Read + Seek>(
@@ -39,12 +40,16 @@ impl BundleManifest {
     }
     let entry = self.index.get_entry(path).unwrap();
     let mut reader = self.reader(reader);
-    let body = reader.read_entry(entry)?;
+    let body = reader.read_entry_data(entry)?;
     let mut response = Response::builder();
     if let Some(headers) = response.headers_mut() {
       headers.clone_from(&entry.headers);
+      if !headers.contains_key(header::CONTENT_LENGTH) {
+        let content_length = body.len() as u32;
+        headers.append(header::CONTENT_LENGTH, HeaderValue::from(content_length));
+      }
     }
-    let response = response.status(200).body(body)?;
+    let response = response.status(StatusCode::OK).body(body)?;
     Ok(Some(response))
   }
 }
@@ -75,27 +80,27 @@ impl Bundle {
   }
 }
 
-struct BundleDataReader<R: Read + Seek> {
+pub struct BundleDataReader<R: Read + Seek> {
   r: R,
-  header: Header,
 }
 
 impl<R: Read + Seek> BundleDataReader<R> {
-  pub fn new(r: R, header: Header) -> Self {
-    Self { r, header }
+  pub fn new(r: R) -> Self {
+    Self { r }
   }
 
-  pub fn read_entry(&mut self, entry: &IndexEntry) -> crate::Result<Vec<u8>> {
-    self
-      .r
-      .seek(SeekFrom::Start(self.header.index_end_offset()))?;
-    let mut buf = vec![0u8; entry.len() as usize];
+  pub fn read_entry_data(&mut self, entry: &IndexEntry) -> crate::Result<Vec<u8>> {
+    let offset = entry.offset() as u64;
+    let len = entry.len() as usize;
+    self.r.seek(SeekFrom::Start(offset))?;
+    let mut buf = vec![0u8; len];
     self.r.read_exact(&mut buf)?;
-    Ok(buf)
+    let decompressed = decompress_size_prepended(&buf)?;
+    Ok(decompressed)
   }
 
   pub fn read_entry_checksum(&mut self, entry: &IndexEntry) -> crate::Result<u32> {
-    let offset = self.header.index_end_offset() + entry.offset() as u64 + entry.len() as u64;
+    let offset = entry.offset() as u64 + entry.len() as u64;
     self.r.seek(SeekFrom::Start(offset))?;
     let mut buf = vec![0u8; CHECKSUM_BYTES_LEN];
     self.r.read_exact(&mut buf)?;
@@ -167,16 +172,98 @@ impl<W: Write> Writer<BundleBuilder> for BundleWriter<W> {
   fn write(&mut self, builder: &BundleBuilder) -> crate::Result<usize> {
     let mut index_bytes = vec![];
     let index = builder.build_index();
-    let index_size = IndexWriter::new(Cursor::new(&mut index_bytes)).write(&index)?;
+    let index_bytes_len = IndexWriter::new_with_options(
+      Cursor::new(&mut index_bytes),
+      builder.options().index_options,
+    )
+    .write(&index)?;
+    let index_size = index_bytes_len - CHECKSUM_BYTES_LEN;
 
-    let header = Header::new(Version::Version1, index_size as u32);
-    let header_size = HeaderWriter::new(&mut self.w).write(&header)?;
+    let header = Header::new(builder.version(), index_size as u32);
+    let header_len = HeaderWriter::new_with_options(&mut self.w, builder.options().header_options)
+      .write(&header)?;
     self.w.write_all(&index_bytes)?;
 
     let data_bytes = builder.build_data();
-    let data_size = data_bytes.len();
+    let data_len = data_bytes.len();
     self.w.write_all(&data_bytes)?;
 
-    Ok(header_size + index_size + data_size)
+    Ok(header_len + index_bytes_len + data_len)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use http::{header, HeaderMap};
+
+  const INDEX_HTML: &str = r#"<!DOCTYPE html>
+<html>
+<head>
+  <title>test</title>
+</head>
+<body>
+  <h1>Hello World</h1>
+</body>
+</html>
+"#;
+  const INDEX_JS: &str = r#"console.log('Hello World');"#;
+
+  #[test]
+  fn manifest() {
+    let mut builder = Bundle::builder();
+    let mut headers = HeaderMap::new();
+    headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
+    builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
+    let mut data = vec![];
+    let mut writer = BundleWriter::new(Cursor::new(&mut data));
+    let size = writer.write(&builder).unwrap();
+    assert_eq!(size, 162);
+    let mut reader = BundleReader::new(Cursor::new(&data));
+    let manifest: BundleManifest = reader.read().unwrap();
+    assert_eq!(manifest.header.version(), Version::Version1);
+    assert_eq!(manifest.header.index_size(), 39);
+
+    let html_entry = manifest.index.get_entry("/index.html").unwrap();
+    assert_eq!(
+      html_entry.headers.get(header::CONTENT_TYPE).unwrap(),
+      "text/html"
+    );
+    assert_eq!(html_entry.offset(), 0);
+    assert_eq!(html_entry.len(), 98);
+  }
+
+  #[test]
+  fn responses() {
+    let mut builder = Bundle::builder();
+    let mut headers = HeaderMap::new();
+    headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
+    builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
+    builder.insert_entry("/index.js", INDEX_JS.as_bytes());
+    let mut data = vec![];
+    let mut writer = BundleWriter::new(Cursor::new(&mut data));
+    let size = writer.write(&builder).unwrap();
+    assert_eq!(size, 212);
+    let mut reader = BundleReader::new(Cursor::new(&data));
+    let bundle: Bundle = reader.read().unwrap();
+
+    let html = bundle.response("/index.html").unwrap().unwrap();
+    assert_eq!(html.status(), 200);
+    assert_eq!(html.headers().len(), 2);
+    assert_eq!(
+      html.headers().get(header::CONTENT_TYPE).unwrap(),
+      "text/html"
+    );
+    assert_eq!(html.headers().get(header::CONTENT_LENGTH).unwrap(), "106");
+    assert_eq!(html.body(), INDEX_HTML.as_bytes());
+
+    let js = bundle.response("/index.js").unwrap().unwrap();
+    assert_eq!(js.status(), 200);
+    assert_eq!(js.headers().len(), 1);
+    assert_eq!(js.headers().get(header::CONTENT_LENGTH).unwrap(), "27");
+    assert_eq!(js.body(), INDEX_JS.as_bytes());
+
+    // Not found
+    assert!(bundle.response("/not_found.html").unwrap().is_none());
   }
 }

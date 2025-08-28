@@ -3,11 +3,13 @@ authors     = ["Seokju Na <seokju.me@gmail.com>"]
 description = "TBD"
 edition     = "2021"
 license     = "MIT"
-name        = "webview-bundle-updater"
+name        = "webview-bundle-loader"
 repository  = "https://github.com/seokju-na/webview-bundle"
 version     = "0.0.0"
 
+[lib]
+bench   = false
+doctest = false
+
 [dependencies]
-thiserror      = { workspace = true }
-tokio          = { workspace = true }
 webview-bundle = { workspace = true }

@@ -12,6 +12,8 @@ permissions:
   id-token: write
 concurrency:
   group: release-${{ github.ref_name }}
+env:
+  LEFTHOOK: 0
 jobs:
   build-napi:
     strategy:
