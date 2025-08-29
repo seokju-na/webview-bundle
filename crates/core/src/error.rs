@@ -1,10 +1,10 @@
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-  #[error(transparent)]
+  #[error("io error: {0}")]
   Io(#[from] std::io::Error),
-  #[error(transparent)]
+  #[error("compress error: {0}")]
   Compress(#[from] lz4_flex::block::CompressError),
-  #[error(transparent)]
+  #[error("decompress error: {0}")]
   Decompress(#[from] lz4_flex::block::DecompressError),
   #[error("encode error: {message}")]
   Encode {
@@ -18,7 +18,7 @@ pub enum Error {
     error: bincode::error::DecodeError,
     message: String,
   },
-  #[error(transparent)]
+  #[error("http error: {0}")]
   Http(#[from] http::Error),
   #[error("invalid magic number")]
   InvalidMagicNum,

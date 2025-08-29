@@ -3,30 +3,32 @@ members  = ["crates/*", "packages/node-binding", "examples/tauri-simple"]
 resolver = "2"
 
 [workspace.dependencies]
-anyhow                = "1"
-async-trait           = "0.1.83"
-bincode               = "2.0.1"
-biome_console         = "0.5.8"
-bpaf                  = { version = "0.9.14", features = ["derive"] }
-http                  = { version = "1" }
-lz4_flex              = "0.11.3"
-mime_guess            = "2.0.5"
-napi                  = { version = "2.16.11", default-features = false, features = ["napi4", "async"] }
-napi-build            = "2.1.3"
-napi-derive           = "2.16.12"
-serde                 = { version = "1", features = ["derive"] }
-serde_json            = "1"
-tauri                 = "2"
-tauri-build           = "2"
-tauri-plugin          = { version = "2", features = ["build"] }
-thiserror             = "2"
-tokio                 = "1.40.0"
-tracing               = { version = "0.1.40", default-features = false, features = ["std"] }
-tracing-subscriber    = "0.3.18"
-twox-hash             = "2.1.0"
-webview-bundle        = { version = "0.0.0", path = "./crates/core" }
-webview-bundle-loader = { version = "0.0.0", path = "./crates/loader" }
-webview-bundle-tauri  = { version = "0.0.0", path = "./crates/tauri" }
+anyhow                  = "1"
+async-trait             = "0.1.83"
+bincode                 = "2.0.1"
+biome_console           = "0.5.8"
+bpaf                    = { version = "0.9.14", features = ["derive"] }
+bytes                   = { version = "1" }
+http                    = { version = "1" }
+lz4_flex                = "0.11.3"
+mime_guess              = "2.0.5"
+napi                    = { version = "2.16.11", default-features = false, features = ["napi4", "async"] }
+napi-build              = "2.1.3"
+napi-derive             = "2.16.12"
+reqwest                 = { version = "0.12" }
+serde                   = { version = "1", features = ["derive"] }
+serde_json              = "1"
+tauri                   = "2"
+tauri-build             = "2"
+tauri-plugin            = { version = "2", features = ["build"] }
+thiserror               = "2"
+tokio                   = "1.40.0"
+tracing                 = { version = "0.1.40", default-features = false, features = ["std"] }
+tracing-subscriber      = "0.3.18"
+twox-hash               = "2.1.0"
+webview-bundle          = { version = "0.0.0", path = "./crates/core" }
+webview-bundle-protocol = { version = "0.0.0", path = "./crates/protocol" }
+webview-bundle-tauri    = { version = "0.0.0", path = "./crates/tauri" }
 
 [profile.release]
 lto   = true

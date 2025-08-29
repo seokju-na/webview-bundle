@@ -3,7 +3,7 @@ authors     = ["Seokju Na <seokju.me@gmail.com>"]
 description = "TBD"
 edition     = "2021"
 license     = "MIT"
-name        = "webview-bundle-loader"
+name        = "webview-bundle-protocol"
 repository  = "https://github.com/seokju-na/webview-bundle"
 version     = "0.0.0"
 
@@ -12,4 +12,8 @@ bench   = false
 doctest = false
 
 [dependencies]
+bytes          = { workspace = true }
+reqwest        = { workspace = true }
+thiserror      = { workspace = true }
+tokio          = { workspace = true, features = ["fs", "io-util"] }
 webview-bundle = { workspace = true }
