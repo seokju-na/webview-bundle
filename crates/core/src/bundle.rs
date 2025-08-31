@@ -1,5 +1,5 @@
 use crate::builder::BundleBuilder;
-use crate::checksum::{get_checksum, CHECKSUM_BYTES_LEN};
+use crate::checksum::{parse_checksum, CHECKSUM_LEN};
 use crate::header::{Header, HeaderReader, HeaderWriter};
 use crate::index::{Index, IndexEntry, IndexReader, IndexWriter};
 use crate::reader::Reader;
@@ -26,10 +26,6 @@ impl BundleManifest {
     &self.index
   }
 
-  pub fn reader<R: Read + Seek>(&self, reader: R) -> BundleDataReader<R> {
-    BundleDataReader::new(reader)
-  }
-
   pub fn response<R: Read + Seek>(
     &self,
     reader: R,
@@ -39,7 +35,7 @@ impl BundleManifest {
       return Ok(None);
     }
     let entry = self.index.get_entry(path).unwrap();
-    let mut reader = self.reader(reader);
+    let mut reader = BundleDataReader::new(reader);
     let body = reader.read_entry_data(entry)?;
     let mut response = Response::builder();
     if let Some(headers) = response.headers_mut() {
@@ -80,7 +76,7 @@ impl Bundle {
   }
 }
 
-pub struct BundleDataReader<R: Read + Seek> {
+pub(crate) struct BundleDataReader<R: Read + Seek> {
   r: R,
 }
 
@@ -102,9 +98,9 @@ impl<R: Read + Seek> BundleDataReader<R> {
   pub fn read_entry_checksum(&mut self, entry: &IndexEntry) -> crate::Result<u32> {
     let offset = entry.offset() as u64 + entry.len() as u64;
     self.r.seek(SeekFrom::Start(offset))?;
-    let mut buf = vec![0u8; CHECKSUM_BYTES_LEN];
+    let mut buf = vec![0u8; CHECKSUM_LEN];
     self.r.read_exact(&mut buf)?;
-    let checksum = get_checksum(&buf);
+    let checksum = parse_checksum(&buf);
     Ok(checksum)
   }
 }
@@ -177,7 +173,7 @@ impl<W: Write> Writer<BundleBuilder> for BundleWriter<W> {
       builder.options().index_options,
     )
     .write(&index)?;
-    let index_size = index_bytes_len - CHECKSUM_BYTES_LEN;
+    let index_size = index_bytes_len - CHECKSUM_LEN;
 
     let header = Header::new(builder.version(), index_size as u32);
     let header_len = HeaderWriter::new_with_options(&mut self.w, builder.options().header_options)

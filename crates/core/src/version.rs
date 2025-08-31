@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-pub(crate) const VERSION_BYTES_LEN: usize = 1;
+pub(crate) const VERSION_LEN: usize = 1;
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Version {
@@ -15,7 +15,7 @@ impl Default for Version {
 }
 
 impl Version {
-  pub const fn bytes(&self) -> [u8; VERSION_BYTES_LEN] {
+  pub const fn bytes(&self) -> [u8; VERSION_LEN] {
     match self {
       Version::Version1 => [0x01],
     }

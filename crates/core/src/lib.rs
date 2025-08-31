@@ -5,7 +5,6 @@ mod error;
 mod header;
 mod index;
 mod reader;
-mod router;
 mod version;
 mod writer;
 
@@ -16,6 +15,8 @@ pub use bundle::*;
 pub use error::Error;
 pub use header::*;
 pub use index::*;
+pub use reader::*;
 pub use version::*;
+pub use writer::*;
 
 pub use http;

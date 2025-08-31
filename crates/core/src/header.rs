@@ -1,11 +1,15 @@
-use crate::checksum::{get_checksum, make_checksum, CHECKSUM_BYTES_LEN};
+use crate::checksum::{make_checksum, parse_checksum, write_checksum, CHECKSUM_LEN};
 use crate::reader::Reader;
-use crate::version::{Version, VERSION_BYTES_LEN};
+use crate::version::{Version, VERSION_LEN};
 use crate::writer::Writer;
 use std::io::{Read, Seek, SeekFrom, Write};
 
-const MAGIC_BYTES_LEN: usize = 8;
-const MAGIC_BYTES: [u8; MAGIC_BYTES_LEN] = [0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 0x8e, 0x81];
+#[cfg(feature = "async")]
+use crate::reader::AsyncReader;
+#[cfg(feature = "async")]
+use crate::writer::AsyncWriter;
+#[cfg(feature = "async")]
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Header {
@@ -14,16 +18,17 @@ pub struct Header {
 }
 
 impl Header {
-  pub const MAGIC: [u8; MAGIC_BYTES_LEN] = MAGIC_BYTES;
+  pub const MAGIC_LEN: usize = 8;
+  pub const MAGIC: [u8; Header::MAGIC_LEN] = [0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 0x8e, 0x81];
   pub const MAGIC_OFFSET: u64 = 0;
-  pub const VERSION_OFFSET: u64 = MAGIC_BYTES_LEN as u64;
-  pub const INDEX_SIZE_OFFSET: u64 = Self::VERSION_OFFSET + VERSION_BYTES_LEN as u64;
+  pub const VERSION_OFFSET: u64 = Header::MAGIC_LEN as u64;
+  pub const INDEX_SIZE_OFFSET: u64 = Self::VERSION_OFFSET + VERSION_LEN as u64;
   pub const INDEX_SIZE_BYTES_LEN: usize = 4;
   pub const CHECKSUM_OFFSET: u64 = Self::INDEX_SIZE_OFFSET + Self::INDEX_SIZE_BYTES_LEN as u64;
-  pub const END_OFFSET: u64 = Self::CHECKSUM_OFFSET + CHECKSUM_BYTES_LEN as u64;
+  pub const END_OFFSET: u64 = Self::CHECKSUM_OFFSET + CHECKSUM_LEN as u64;
 
   pub fn index_end_offset(&self) -> u64 {
-    Self::END_OFFSET + self.index_size as u64 + CHECKSUM_BYTES_LEN as u64
+    Self::END_OFFSET + self.index_size as u64 + CHECKSUM_LEN as u64
   }
 
   pub fn new(version: Version, index_size: u32) -> Self {
@@ -40,6 +45,18 @@ impl Header {
   pub fn index_size(&self) -> u32 {
     self.index_size
   }
+}
+
+fn write_magic() -> Vec<u8> {
+  Header::MAGIC.to_vec()
+}
+
+fn write_version(version: Version) -> Vec<u8> {
+  version.bytes().to_vec()
+}
+
+fn write_index_size(index_size: u32) -> Vec<u8> {
+  index_size.to_be_bytes().to_vec()
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -81,25 +98,25 @@ impl<W: Write> HeaderWriter<W> {
   }
 
   pub fn write_magic(&mut self) -> crate::Result<Vec<u8>> {
-    let bytes = MAGIC_BYTES.to_vec();
+    let bytes = write_magic();
     self.w.write_all(&bytes)?;
     Ok(bytes)
   }
 
   pub fn write_version(&mut self, version: Version) -> crate::Result<Vec<u8>> {
-    let bytes = version.bytes().to_vec();
+    let bytes = write_version(version);
     self.w.write_all(&bytes)?;
     Ok(bytes)
   }
 
   pub fn write_index_size(&mut self, index_size: u32) -> crate::Result<Vec<u8>> {
-    let bytes = index_size.to_be_bytes().to_vec();
+    let bytes = write_index_size(index_size);
     self.w.write_all(&bytes)?;
     Ok(bytes)
   }
 
   pub fn write_checksum(&mut self, checksum: u32) -> crate::Result<Vec<u8>> {
-    let bytes = checksum.to_be_bytes().to_vec();
+    let bytes = write_checksum(checksum);
     self.w.write_all(&bytes)?;
     Ok(bytes)
   }
@@ -116,6 +133,113 @@ impl<W: Write> Writer<Header> for HeaderWriter<W> {
     bytes.extend(self.write_checksum(checksum)?);
     Ok(bytes.len())
   }
+}
+
+#[cfg(feature = "async")]
+pub struct AsyncHeaderWriter<W: AsyncWrite + Unpin> {
+  w: W,
+  options: HeaderWriterOptions,
+}
+
+#[cfg(feature = "async")]
+impl<W: AsyncWrite + Unpin> AsyncHeaderWriter<W> {
+  pub fn new(w: W) -> Self {
+    Self {
+      w,
+      options: Default::default(),
+    }
+  }
+
+  pub fn new_with_options(w: W, options: HeaderWriterOptions) -> Self {
+    Self { w, options }
+  }
+
+  pub fn set_options(&mut self, options: HeaderWriterOptions) -> &mut Self {
+    self.options = options;
+    self
+  }
+
+  pub async fn write_magic(&mut self) -> crate::Result<Vec<u8>> {
+    let bytes = write_magic();
+    self.w.write_all(&bytes).await?;
+    Ok(bytes)
+  }
+
+  pub async fn write_version(&mut self, version: Version) -> crate::Result<Vec<u8>> {
+    let bytes = write_version(version);
+    self.w.write_all(&bytes).await?;
+    Ok(bytes)
+  }
+
+  pub async fn write_index_size(&mut self, index_size: u32) -> crate::Result<Vec<u8>> {
+    let bytes = write_index_size(index_size);
+    self.w.write_all(&bytes).await?;
+    Ok(bytes)
+  }
+
+  pub async fn write_checksum(&mut self, checksum: u32) -> crate::Result<Vec<u8>> {
+    let bytes = write_checksum(checksum);
+    self.w.write_all(&bytes).await?;
+    Ok(bytes)
+  }
+}
+
+#[cfg(feature = "async")]
+impl<W: AsyncWrite + Unpin> AsyncWriter<Header> for AsyncHeaderWriter<W> {
+  async fn write(&mut self, header: &Header) -> crate::Result<usize> {
+    let mut bytes = vec![];
+    bytes.extend(self.write_magic().await?);
+    bytes.extend(self.write_version(header.version).await?);
+    bytes.extend(self.write_index_size(header.index_size).await?);
+
+    let checksum = make_checksum(self.options.checksum_seed, &bytes);
+    bytes.extend(self.write_checksum(checksum).await?);
+    Ok(bytes.len())
+  }
+}
+
+fn read_magic() -> (u64, [u8; Header::MAGIC_LEN]) {
+  (Header::MAGIC_OFFSET, [0u8; Header::MAGIC_LEN])
+}
+
+fn parse_magic(buf: &[u8; Header::MAGIC_LEN]) -> crate::Result<()> {
+  if buf != Header::MAGIC.as_ref() {
+    return Err(crate::Error::InvalidMagicNum);
+  }
+  Ok(())
+}
+
+fn read_version() -> (u64, [u8; VERSION_LEN]) {
+  (Header::VERSION_OFFSET, [0u8; VERSION_LEN])
+}
+
+fn parse_version(buf: &[u8; VERSION_LEN]) -> crate::Result<Version> {
+  if buf == Version::Version1.bytes().as_ref() {
+    return Ok(Version::Version1);
+  }
+  Err(crate::Error::InvalidVersion)
+}
+
+fn read_index_size() -> (u64, [u8; Header::INDEX_SIZE_BYTES_LEN]) {
+  (
+    Header::INDEX_SIZE_OFFSET,
+    [0u8; Header::INDEX_SIZE_BYTES_LEN],
+  )
+}
+
+fn parse_index_size(buf: &[u8; Header::INDEX_SIZE_BYTES_LEN]) -> u32 {
+  u32::from_be_bytes(AsRef::<[u8]>::as_ref(&buf).try_into().unwrap())
+}
+
+fn read_checksum() -> (u64, [u8; CHECKSUM_LEN]) {
+  (Header::CHECKSUM_OFFSET, [0u8; CHECKSUM_LEN])
+}
+
+fn read_total() -> (u64, [u8; Header::CHECKSUM_OFFSET as usize]) {
+  (
+    Header::MAGIC_OFFSET,
+    [0u8; Header::CHECKSUM_OFFSET as usize],
+  )
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -159,47 +283,39 @@ impl<R: Read + Seek> HeaderReader<R> {
     self
   }
 
-  pub fn read_magic(&mut self) -> crate::Result<[u8; MAGIC_BYTES_LEN]> {
-    self.r.seek(SeekFrom::Start(Header::MAGIC_OFFSET))?;
-    let mut buf = [0u8; MAGIC_BYTES_LEN];
+  pub fn read_magic(&mut self) -> crate::Result<[u8; Header::MAGIC_LEN]> {
+    let (offset, mut buf) = read_magic();
+    self.r.seek(SeekFrom::Start(offset))?;
     self.r.read_exact(&mut buf)?;
-    if buf != MAGIC_BYTES {
-      return Err(crate::Error::InvalidMagicNum);
-    }
+    parse_magic(&buf)?;
     Ok(buf)
   }
 
   pub fn read_version(&mut self) -> crate::Result<Version> {
-    self.r.seek(SeekFrom::Start(Header::VERSION_OFFSET))?;
-    let mut buf = [0u8; VERSION_BYTES_LEN];
+    let (offset, mut buf) = read_version();
+    self.r.seek(SeekFrom::Start(offset))?;
     self.r.read_exact(&mut buf)?;
-    if buf == Version::Version1.bytes() {
-      return Ok(Version::Version1);
-    }
-    Err(crate::Error::InvalidVersion)
+    parse_version(&buf)
   }
 
   pub fn read_index_size(&mut self) -> crate::Result<u32> {
-    self.r.seek(SeekFrom::Start(Header::INDEX_SIZE_OFFSET))?;
-    let mut buf = [0u8; Header::INDEX_SIZE_BYTES_LEN];
+    let (offset, mut buf) = read_index_size();
+    self.r.seek(SeekFrom::Start(offset))?;
     self.r.read_exact(&mut buf)?;
-    let size = u32::from_be_bytes(AsRef::<[u8]>::as_ref(&buf).try_into().unwrap());
-    Ok(size)
+    Ok(parse_index_size(&buf))
   }
 
   pub fn read_checksum(&mut self) -> crate::Result<u32> {
-    self.r.seek(SeekFrom::Start(Header::CHECKSUM_OFFSET))?;
-    let mut buf = vec![0u8; CHECKSUM_BYTES_LEN];
+    let (offset, mut buf) = read_checksum();
+    self.r.seek(SeekFrom::Start(offset))?;
     self.r.read_exact(&mut buf)?;
-    let checksum = get_checksum(&buf);
+    let checksum = parse_checksum(&buf);
     Ok(checksum)
   }
 
   fn verify_checksum(&mut self, checksum: u32) -> crate::Result<()> {
-    self.r.seek(SeekFrom::Start(Header::MAGIC_OFFSET))?;
-
-    let total_len = Header::CHECKSUM_OFFSET;
-    let mut total = vec![0u8; total_len as usize];
+    let (offset, mut total) = read_total();
+    self.r.seek(SeekFrom::Start(offset))?;
     self.r.read_exact(&mut total)?;
 
     let expected_checksum = make_checksum(self.options.checksum_seed, &total);
@@ -223,6 +339,84 @@ impl<R: Read + Seek> Reader<Header> for HeaderReader<R> {
   }
 }
 
+#[cfg(feature = "async")]
+pub struct AsyncHeaderReader<R: AsyncRead + AsyncSeek + Unpin> {
+  r: R,
+  options: HeaderReaderOptions,
+}
+
+#[cfg(feature = "async")]
+impl<R: AsyncRead + AsyncSeek + Unpin> AsyncHeaderReader<R> {
+  pub fn new(r: R) -> Self {
+    Self::new_with_options(r, Default::default())
+  }
+
+  pub fn new_with_options(r: R, options: HeaderReaderOptions) -> Self {
+    Self { r, options }
+  }
+
+  pub fn set_options(&mut self, options: HeaderReaderOptions) -> &mut Self {
+    self.options = options;
+    self
+  }
+
+  pub async fn read_magic(&mut self) -> crate::Result<[u8; Header::MAGIC_LEN]> {
+    let (offset, mut buf) = read_magic();
+    self.r.seek(SeekFrom::Start(offset)).await?;
+    self.r.read_exact(&mut buf).await?;
+    parse_magic(&buf)?;
+    Ok(buf)
+  }
+
+  pub async fn read_version(&mut self) -> crate::Result<Version> {
+    let (offset, mut buf) = read_version();
+    self.r.seek(SeekFrom::Start(offset)).await?;
+    self.r.read_exact(&mut buf).await?;
+    parse_version(&buf)
+  }
+
+  pub async fn read_index_size(&mut self) -> crate::Result<u32> {
+    let (offset, mut buf) = read_index_size();
+    self.r.seek(SeekFrom::Start(offset)).await?;
+    self.r.read_exact(&mut buf).await?;
+    Ok(parse_index_size(&buf))
+  }
+
+  pub async fn read_checksum(&mut self) -> crate::Result<u32> {
+    let (offset, mut buf) = read_checksum();
+    self.r.seek(SeekFrom::Start(offset)).await?;
+    self.r.read_exact(&mut buf).await?;
+    let checksum = parse_checksum(&buf);
+    Ok(checksum)
+  }
+
+  async fn verify_checksum(&mut self, checksum: u32) -> crate::Result<()> {
+    let (offset, mut total) = read_total();
+    self.r.seek(SeekFrom::Start(offset)).await?;
+    self.r.read_exact(&mut total).await?;
+
+    let expected_checksum = make_checksum(self.options.checksum_seed, &total);
+    if checksum != expected_checksum {
+      return Err(crate::Error::InvalidHeaderChecksum);
+    }
+    Ok(())
+  }
+}
+
+#[cfg(feature = "async")]
+impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<Header> for AsyncHeaderReader<R> {
+  async fn read(&mut self) -> crate::Result<Header> {
+    self.read_magic().await?;
+    let version = self.read_version().await?;
+    let index_size = self.read_index_size().await?;
+    let checksum = self.read_checksum().await?;
+    if self.options.verify_checksum {
+      self.verify_checksum(checksum).await?;
+    }
+    Ok(Header::new(version, index_size))
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -240,6 +434,24 @@ mod tests {
     );
     let mut reader = HeaderReader::new(Cursor::new(&buf));
     let read_header = reader.read().unwrap();
+    assert_eq!(header, read_header);
+    assert_eq!(read_header.version(), Version::Version1);
+    assert_eq!(read_header.index_size(), 1234);
+  }
+
+  #[cfg(feature = "async")]
+  #[tokio::test]
+  async fn async_read_and_write() {
+    let header = Header::new(Version::Version1, 1234);
+    let mut buf = vec![];
+    let mut writer = AsyncHeaderWriter::new(Cursor::new(&mut buf));
+    writer.write(&header).await.unwrap();
+    assert_eq!(
+      buf,
+      [240, 159, 140, 144, 240, 159, 142, 129, 1, 0, 0, 4, 210, 49, 56, 3, 16]
+    );
+    let mut reader = AsyncHeaderReader::new(Cursor::new(&buf));
+    let read_header = reader.read().await.unwrap();
     assert_eq!(header, read_header);
     assert_eq!(read_header.version(), Version::Version1);
     assert_eq!(read_header.index_size(), 1234);

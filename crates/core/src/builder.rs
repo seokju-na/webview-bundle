@@ -1,4 +1,4 @@
-use crate::checksum::{make_checksum, CHECKSUM_BYTES_LEN};
+use crate::checksum::{make_checksum, CHECKSUM_LEN};
 use crate::header::HeaderWriterOptions;
 use crate::index::{Index, IndexEntry, IndexWriterOptions};
 use crate::version::Version;
@@ -26,6 +26,10 @@ impl BundleEntry {
 
   pub fn data(&self) -> &[u8] {
     &self.compressed
+  }
+
+  pub fn is_empty(&self) -> bool {
+    self.len == 0
   }
 
   pub fn len(&self) -> usize {
@@ -175,7 +179,7 @@ impl BundleBuilder {
       }
       index.insert_entry(path, index_entry);
       offset += len;
-      offset += CHECKSUM_BYTES_LEN as u32;
+      offset += CHECKSUM_LEN as u32;
     }
     index
   }
