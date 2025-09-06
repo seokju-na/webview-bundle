@@ -15,18 +15,18 @@ pub struct LocalProtocol {
 }
 
 impl super::protocol::Protocol for LocalProtocol {
-  fn handle(
+  async fn handle(
     &self,
     request: http::Request<Vec<u8>>,
   ) -> crate::Result<http::Response<Cow<'static, [u8]>>> {
-    let url = "http://localhost:3000";
+    let url = "http://localhost:3000"; // TODO
 
     let mut builder = http::Response::builder().header("Access-Control-Allow-Origin", "*");
 
     let client = reqwest::ClientBuilder::new();
     let mut proxy_builder = client.build()?.request(request.method().clone(), url);
     proxy_builder = proxy_builder.body(request.body().clone());
-    let r = crate::async_runtime::safe_block_on(proxy_builder.send())?;
+    let r = proxy_builder.send().await?;
     let mut cache = self.cache.lock().unwrap();
     let mut response = None;
     if r.status() == http::StatusCode::NOT_MODIFIED {
@@ -37,7 +37,7 @@ impl super::protocol::Protocol for LocalProtocol {
     } else {
       let status = r.status();
       let headers = r.headers().clone();
-      let body = crate::async_runtime::safe_block_on(r.bytes())?;
+      let body = r.bytes().await?;
       let response = CachedResponse {
         status,
         headers,

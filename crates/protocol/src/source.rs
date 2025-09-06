@@ -4,7 +4,7 @@ use tokio::io::{AsyncRead, AsyncSeek};
 use webview_bundle::{AsyncBundleReader, AsyncReader, Bundle, BundleManifest};
 
 pub trait Source: Send + Sync {
-  type Reader: AsyncRead + AsyncSeek + Unpin;
+  type Reader: AsyncRead + AsyncSeek + Unpin + Send + Sync;
 
   async fn reader(&self, name: &str) -> crate::Result<Self::Reader>;
   async fn fetch(&self, name: &str) -> crate::Result<Bundle>;
@@ -72,6 +72,12 @@ mod tests {
     let source = FileSource::new(base_dir);
     let manifest = source.fetch_manifest("nextjs.wvb").await.unwrap();
     assert!(manifest.index().contains_path("/index.html"));
+    let reader = source.reader("nextjs.wvb").await.unwrap();
+    manifest
+      .async_get_data(reader, "/index.html")
+      .await
+      .unwrap()
+      .unwrap();
   }
 
   #[tokio::test]
@@ -81,7 +87,7 @@ mod tests {
       .join("fixtures");
     let source = FileSource::new(base_dir);
     let mut handles = Vec::new();
-    for i in 0..10 {
+    for _i in 0..10 {
       let s = source.clone();
       let handle = tokio::spawn(async move {
         let bundle = s.fetch("nextjs.wvb").await.unwrap();

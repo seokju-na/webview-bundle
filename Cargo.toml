@@ -9,6 +9,7 @@ bincode                 = "2.0.1"
 biome_console           = "0.5.8"
 bpaf                    = { version = "0.9.14", features = ["derive"] }
 bytes                   = { version = "1" }
+dashmap                 = "7.0.0-rc2"
 http                    = { version = "1" }
 lz4_flex                = "0.11.3"
 mime_guess              = "2.0.5"

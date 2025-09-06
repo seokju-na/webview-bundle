@@ -35,7 +35,7 @@ impl BundleManifest {
       return Ok(None);
     }
     let entry = self.index.get_entry(path).unwrap();
-    let mut reader = BundleDataReader::new(reader);
+    let mut reader = BundleDataReader::new(reader, self.header.index_end_offset());
     let data = reader.read_entry_data(entry)?;
     Ok(Some(data))
   }
@@ -49,7 +49,7 @@ impl BundleManifest {
       return Ok(None);
     }
     let entry = self.index.get_entry(path).unwrap();
-    let mut reader = BundleDataReader::new(reader);
+    let mut reader = BundleDataReader::new(reader, self.header.index_end_offset());
     let checksum = reader.read_entry_checksum(entry)?;
     Ok(Some(checksum))
   }
@@ -64,7 +64,7 @@ impl BundleManifest {
       return Ok(None);
     }
     let entry = self.index.get_entry(path).unwrap();
-    let mut reader = AsyncBundleDataReader::new(reader);
+    let mut reader = AsyncBundleDataReader::new(reader, self.header.index_end_offset());
     let data = reader.read_entry_data(entry).await?;
     Ok(Some(data))
   }
@@ -79,7 +79,7 @@ impl BundleManifest {
       return Ok(None);
     }
     let entry = self.index.get_entry(path).unwrap();
-    let mut reader = AsyncBundleDataReader::new(reader);
+    let mut reader = AsyncBundleDataReader::new(reader, self.header.index_end_offset());
     let data = reader.read_entry_checksum(entry).await?;
     Ok(Some(data))
   }
@@ -105,15 +105,23 @@ impl Bundle {
   }
 
   pub fn get_data(&self, path: &str) -> crate::Result<Option<Vec<u8>>> {
-    let mut reader = Cursor::new(&self.data);
-    let resp = self.manifest.get_data(&mut reader, path)?;
-    Ok(resp)
+    if !self.manifest.index.contains_path(path) {
+      return Ok(None);
+    }
+    let entry = self.manifest.index.get_entry(path).unwrap();
+    let mut reader = BundleDataReader::new(Cursor::new(&self.data), 0);
+    let data = reader.read_entry_data(entry)?;
+    Ok(Some(data))
   }
 
   pub fn get_data_checksum(&self, path: &str) -> crate::Result<Option<u32>> {
-    let mut reader = Cursor::new(&self.data);
-    let resp = self.manifest.get_data_checksum(&mut reader, path)?;
-    Ok(resp)
+    if !self.manifest.index.contains_path(path) {
+      return Ok(None);
+    }
+    let entry = self.manifest.index.get_entry(path).unwrap();
+    let mut reader = BundleDataReader::new(Cursor::new(&self.data), 0);
+    let checksum = reader.read_entry_checksum(entry)?;
+    Ok(Some(checksum))
   }
 }
 
@@ -132,23 +140,24 @@ fn read_entry_checksum(entry: &IndexEntry) -> (u64, [u8; CHECKSUM_LEN]) {
 
 pub(crate) struct BundleDataReader<R: Read + Seek> {
   r: R,
+  base_offset: u64,
 }
 
 impl<R: Read + Seek> BundleDataReader<R> {
-  pub fn new(r: R) -> Self {
-    Self { r }
+  pub fn new(r: R, base_offset: u64) -> Self {
+    Self { r, base_offset }
   }
 
   pub fn read_entry_data(&mut self, entry: &IndexEntry) -> crate::Result<Vec<u8>> {
     let (offset, mut buf) = read_entry(entry);
-    self.r.seek(SeekFrom::Start(offset))?;
+    self.r.seek(SeekFrom::Start(self.base_offset + offset))?;
     self.r.read_exact(&mut buf)?;
     parse_entry(&buf)
   }
 
   pub fn read_entry_checksum(&mut self, entry: &IndexEntry) -> crate::Result<u32> {
     let (offset, mut buf) = read_entry_checksum(entry);
-    self.r.seek(SeekFrom::Start(offset))?;
+    self.r.seek(SeekFrom::Start(self.base_offset + offset))?;
     self.r.read_exact(&mut buf)?;
     Ok(parse_checksum(&buf))
   }
@@ -157,24 +166,31 @@ impl<R: Read + Seek> BundleDataReader<R> {
 #[cfg(feature = "async")]
 pub(crate) struct AsyncBundleDataReader<R: AsyncRead + AsyncSeek + Unpin> {
   r: R,
+  base_offset: u64,
 }
 
 #[cfg(feature = "async")]
 impl<R: AsyncRead + AsyncSeek + Unpin> AsyncBundleDataReader<R> {
-  pub fn new(r: R) -> Self {
-    Self { r }
+  pub fn new(r: R, base_offset: u64) -> Self {
+    Self { r, base_offset }
   }
 
   pub async fn read_entry_data(&mut self, entry: &IndexEntry) -> crate::Result<Vec<u8>> {
     let (offset, mut buf) = read_entry(entry);
-    self.r.seek(SeekFrom::Start(offset)).await?;
+    self
+      .r
+      .seek(SeekFrom::Start(self.base_offset + offset))
+      .await?;
     self.r.read_exact(&mut buf).await?;
     parse_entry(&buf)
   }
 
   pub async fn read_entry_checksum(&mut self, entry: &IndexEntry) -> crate::Result<u32> {
     let (offset, mut buf) = read_entry_checksum(entry);
-    self.r.seek(SeekFrom::Start(offset)).await?;
+    self
+      .r
+      .seek(SeekFrom::Start(self.base_offset + offset))
+      .await?;
     self.r.read_exact(&mut buf).await?;
     Ok(parse_checksum(&buf))
   }

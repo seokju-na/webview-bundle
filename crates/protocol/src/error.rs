@@ -8,4 +8,6 @@ pub enum Error {
   JoinError(#[from] tokio::task::JoinError),
   #[error("reqwest error: {0}")]
   Reqwest(#[from] reqwest::Error),
+  #[error("bundle not found")]
+  BundleNotFound,
 }
