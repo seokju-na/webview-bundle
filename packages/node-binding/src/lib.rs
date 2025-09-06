@@ -54,7 +54,7 @@ impl Bundle {
       .manifest()
       .index()
       .get_entry(&path)
-      .map(|x| from_headers(&x.headers))
+      .map(|x| from_headers(x.headers()))
   }
 }
 
@@ -175,6 +175,7 @@ pub struct BundleBuilder {
   inner: webview_bundle::BundleBuilder,
 }
 
+//noinspection RsCompileErrorMacro
 #[napi]
 impl BundleBuilder {
   #[napi(constructor)]

@@ -40,6 +40,20 @@ impl BundleManifest {
     Ok(Some(data))
   }
 
+  pub fn get_data_checksum<R: Read + Seek>(
+    &self,
+    reader: R,
+    path: &str,
+  ) -> crate::Result<Option<u32>> {
+    if !self.index.contains_path(path) {
+      return Ok(None);
+    }
+    let entry = self.index.get_entry(path).unwrap();
+    let mut reader = BundleDataReader::new(reader);
+    let checksum = reader.read_entry_checksum(entry)?;
+    Ok(Some(checksum))
+  }
+
   #[cfg(feature = "async")]
   pub async fn async_get_data<R: AsyncRead + AsyncSeek + Unpin>(
     &self,
@@ -52,6 +66,21 @@ impl BundleManifest {
     let entry = self.index.get_entry(path).unwrap();
     let mut reader = AsyncBundleDataReader::new(reader);
     let data = reader.read_entry_data(entry).await?;
+    Ok(Some(data))
+  }
+
+  #[cfg(feature = "async")]
+  pub async fn async_get_data_checksum<R: AsyncRead + AsyncSeek + Unpin>(
+    &self,
+    reader: R,
+    path: &str,
+  ) -> crate::Result<Option<u32>> {
+    if !self.index.contains_path(path) {
+      return Ok(None);
+    }
+    let entry = self.index.get_entry(path).unwrap();
+    let mut reader = AsyncBundleDataReader::new(reader);
+    let data = reader.read_entry_checksum(entry).await?;
     Ok(Some(data))
   }
 }
@@ -78,6 +107,12 @@ impl Bundle {
   pub fn get_data(&self, path: &str) -> crate::Result<Option<Vec<u8>>> {
     let mut reader = Cursor::new(&self.data);
     let resp = self.manifest.get_data(&mut reader, path)?;
+    Ok(resp)
+  }
+
+  pub fn get_data_checksum(&self, path: &str) -> crate::Result<Option<u32>> {
+    let mut reader = Cursor::new(&self.data);
+    let resp = self.manifest.get_data_checksum(&mut reader, path)?;
     Ok(resp)
   }
 }
@@ -332,7 +367,7 @@ mod tests {
 
     let html_entry = manifest.index.get_entry("/index.html").unwrap();
     assert_eq!(
-      html_entry.headers.get(header::CONTENT_TYPE).unwrap(),
+      html_entry.headers().get(header::CONTENT_TYPE).unwrap(),
       "text/html"
     );
     assert_eq!(html_entry.offset(), 0);

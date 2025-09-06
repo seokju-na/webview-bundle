@@ -63,7 +63,7 @@
     "@types/node": "22.7.4",
     "@yarnpkg/fslib": "^3.1.0",
     "electron": "^33.0.0",
-    "tsdown": "0.12.9",
+    "tsdown": "0.14.2",
     "typescript": "5.8.3",
     "vitest": "3.1.2"
   }

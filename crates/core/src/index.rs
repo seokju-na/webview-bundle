@@ -22,7 +22,7 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, As
 pub struct IndexEntry {
   offset: u32,
   len: u32,
-  pub headers: HeaderMap,
+  pub(crate) headers: HeaderMap,
 }
 
 impl IndexEntry {
@@ -32,6 +32,10 @@ impl IndexEntry {
       len,
       headers: HeaderMap::default(),
     }
+  }
+
+  pub fn headers(&self) -> &HeaderMap {
+    &self.headers
   }
 
   pub fn offset(&self) -> u32 {
