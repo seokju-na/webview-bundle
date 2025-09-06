@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { readBundle } from '@webview-bundle/node-binding';
-import { Option } from 'clipanion';
+import { Command, Option } from 'clipanion';
 import { c } from '../console.js';
 import { formatByteLength } from '../utils/format.js';
 import { intoHeaders } from '../utils/headers.js';
@@ -10,6 +10,13 @@ import { BaseCommand } from './base.js';
 export class ExtractCommand extends BaseCommand {
   readonly name = 'extract';
   static paths = [['extract']];
+  static usage = Command.Usage({
+    description: 'Extract webview bundle files.',
+    examples: [
+      ['A basic usage', '$0 extract ./dist.wvb'],
+      ['Specify outdir path', '$0 extract ./dist.wvb --outdir ./dist'],
+    ],
+  });
 
   readonly file = Option.String({
     name: 'FILE',

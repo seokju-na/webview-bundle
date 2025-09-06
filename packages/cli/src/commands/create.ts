@@ -14,7 +14,7 @@ export class CreateCommand extends BaseCommand {
   static usage = Command.Usage({
     description: 'Create webview bundle archive.',
     examples: [
-      ['A basic example', '$0 create ./dist'],
+      ['A basic usage', '$0 create ./dist'],
       ['Specify outfile path', '$0 create ./dist --outfile ./dist.wvb'],
       ['Ignore files with patterns', `$0 create ./dist --ignore='*.txt' --ignore='node_modules/**'`],
       ['Set headers for files', `$0 create ./dist --header='*.html' 'cache-control' 'max-age=3600'`],
