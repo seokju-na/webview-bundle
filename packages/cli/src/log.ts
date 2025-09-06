@@ -9,19 +9,19 @@ import {
 } from '@logtape/logtape';
 import { Option } from 'clipanion';
 import { isEnum } from 'typanion';
-import { colors } from './console.js';
+import { c } from './console.js';
 
 const LOG_LEVELS = ['debug', 'info', 'error', 'warning'] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];
 
 export const LogLevelOption = Option.String('--log-level', 'info', {
-  description: 'Set the log level for output. Default: "info"',
+  description: 'Set the log level for output. [Default: "info"]',
   validator: isEnum(LOG_LEVELS),
   env: 'LOG_LEVEL',
 });
 
 export const LogVerboseOption = Option.Boolean('--log-verbose', false, {
-  description: 'Enable verbose logging. Default: false',
+  description: 'Enable verbose logging. [Default: false]',
 });
 
 export interface ConfigureLoggerOptions {
@@ -35,14 +35,14 @@ function levelColor(level: AllLogLevel, message: string): string {
   switch (level) {
     case 'debug':
     case 'trace':
-      return colors.debug(message);
+      return c.debug(message);
     case 'info':
-      return colors.bold(colors.info(message));
+      return c.bold(c.info(message));
     case 'warning':
-      return colors.bold(colors.warn(message));
+      return c.bold(c.warn(message));
     case 'error':
     case 'fatal':
-      return colors.bold(colors.error(message));
+      return c.bold(c.error(message));
   }
 }
 
@@ -80,13 +80,13 @@ function formatValue(value: unknown, verbose: boolean): string {
   if (typeof value === 'object' && value != null) {
     if (value instanceof Error) {
       if (verbose && value.stack != null) {
-        return colors.bold(colors.error(`\n${value.stack}\n`));
+        return c.bold(c.error(`\n${value.stack}\n`));
       }
-      return colors.bold(colors.error(`${value.name}: ${value.message}`));
+      return c.bold(c.error(`${value.name}: ${value.message}`));
     }
-    return colors.bold(colors.debug(util.inspect('%O', value)));
+    return c.bold(c.debug(util.inspect('%O', value)));
   }
-  return colors.bold(String(value));
+  return c.bold(String(value));
 }
 
 export async function configureLogger(options?: ConfigureLoggerOptions) {

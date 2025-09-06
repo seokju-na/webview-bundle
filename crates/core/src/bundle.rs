@@ -17,13 +17,13 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, As
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BundleManifest {
-  header: Header,
-  index: Index,
+  pub(crate) header: Header,
+  pub(crate) index: Index,
 }
 
 impl BundleManifest {
-  pub fn header(&self) -> Header {
-    self.header
+  pub fn header(&self) -> &Header {
+    &self.header
   }
 
   pub fn index(&self) -> &Index {
@@ -58,8 +58,8 @@ impl BundleManifest {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bundle {
-  manifest: BundleManifest,
-  data: Vec<u8>,
+  pub(crate) manifest: BundleManifest,
+  pub(crate) data: Vec<u8>,
 }
 
 impl Bundle {
@@ -260,27 +260,12 @@ impl<W: Write> BundleWriter<W> {
   }
 }
 
-impl<W: Write> Writer<BundleBuilder> for BundleWriter<W> {
-  fn write(&mut self, builder: &BundleBuilder) -> crate::Result<usize> {
-    let mut index_bytes = vec![];
-    let index = builder.build_index();
-    let index_bytes_len = IndexWriter::new_with_options(
-      Cursor::new(&mut index_bytes),
-      builder.options().index_options,
-    )
-    .write(&index)?;
-    let index_size = index_bytes_len - CHECKSUM_LEN;
-
-    let header = Header::new(builder.version(), index_size as u32);
-    let header_len = HeaderWriter::new_with_options(&mut self.w, builder.options().header_options)
-      .write(&header)?;
-    self.w.write_all(&index_bytes)?;
-
-    let data_bytes = builder.build_data();
-    let data_len = data_bytes.len();
-    self.w.write_all(&data_bytes)?;
-
-    Ok(header_len + index_bytes_len + data_len)
+impl<W: Write> Writer<Bundle> for BundleWriter<W> {
+  fn write(&mut self, data: &Bundle) -> crate::Result<usize> {
+    let header_len = HeaderWriter::new(&mut self.w).write(&data.manifest.header)?;
+    let index_len = IndexWriter::new(&mut self.w).write(&data.manifest.index)?;
+    let data_len = self.w.write(&data.data)?;
+    Ok(header_len + index_len + data_len)
   }
 }
 
@@ -297,30 +282,16 @@ impl<W: AsyncWrite + Unpin> AsyncBundleWriter<W> {
 }
 
 #[cfg(feature = "async")]
-impl<W: AsyncWrite + Unpin> AsyncWriter<BundleBuilder> for AsyncBundleWriter<W> {
-  async fn write(&mut self, builder: &BundleBuilder) -> crate::Result<usize> {
-    let mut index_bytes = vec![];
-    let index = builder.build_index();
-    let index_bytes_len = AsyncIndexWriter::new_with_options(
-      Cursor::new(&mut index_bytes),
-      builder.options().index_options,
-    )
-    .write(&index)
-    .await?;
-    let index_size = index_bytes_len - CHECKSUM_LEN;
-
-    let header = Header::new(builder.version(), index_size as u32);
-    let header_len =
-      AsyncHeaderWriter::new_with_options(&mut self.w, builder.options().header_options)
-        .write(&header)
-        .await?;
-    self.w.write_all(&index_bytes).await?;
-
-    let data_bytes = builder.build_data();
-    let data_len = data_bytes.len();
-    self.w.write_all(&data_bytes).await?;
-
-    Ok(header_len + index_bytes_len + data_len)
+impl<W: AsyncWrite + Unpin> AsyncWriter<Bundle> for AsyncBundleWriter<W> {
+  async fn write(&mut self, data: &Bundle) -> crate::Result<usize> {
+    let header_len = AsyncHeaderWriter::new(&mut self.w)
+      .write(&data.manifest.header)
+      .await?;
+    let index_len = AsyncIndexWriter::new(&mut self.w)
+      .write(&data.manifest.index)
+      .await?;
+    let data_len = self.w.write(&data.data).await?;
+    Ok(header_len + index_len + data_len)
   }
 }
 
@@ -349,13 +320,14 @@ mod tests {
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
     builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
+    let bundle = builder.build().unwrap();
     let mut data = vec![];
     let mut writer = BundleWriter::new(Cursor::new(&mut data));
-    let size = writer.write(&builder).unwrap();
+    let size = writer.write(&bundle).unwrap();
     assert_eq!(size, 162);
     let mut reader = BundleReader::new(Cursor::new(&data));
     let manifest: BundleManifest = reader.read().unwrap();
-    assert_eq!(manifest.header.version(), Version::Version1);
+    assert_eq!(manifest.header.version(), Version::V1);
     assert_eq!(manifest.header.index_size(), 39);
 
     let html_entry = manifest.index.get_entry("/index.html").unwrap();
@@ -374,9 +346,10 @@ mod tests {
     headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
     builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
     builder.insert_entry("/index.js", INDEX_JS.as_bytes());
+    let bundle = builder.build().unwrap();
     let mut data = vec![];
     let mut writer = BundleWriter::new(Cursor::new(&mut data));
-    let size = writer.write(&builder).unwrap();
+    let size = writer.write(&bundle).unwrap();
     assert_eq!(size, 212);
     let mut reader = BundleReader::new(Cursor::new(&data));
     let bundle: Bundle = reader.read().unwrap();

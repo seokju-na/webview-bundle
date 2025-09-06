@@ -2,6 +2,7 @@ use crate::checksum::{make_checksum, CHECKSUM_LEN};
 use crate::header::HeaderWriterOptions;
 use crate::index::{Index, IndexEntry, IndexWriterOptions};
 use crate::version::Version;
+use crate::{Bundle, BundleManifest, Header, IndexWriter, Writer};
 use http::HeaderMap;
 use lz4_flex::compress_prepend_size;
 use std::collections::HashMap;
@@ -75,9 +76,9 @@ impl From<(Vec<u8>, HeaderMap)> for BundleEntry {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct BundleBuilderOptions {
-  pub header_options: HeaderWriterOptions,
-  pub index_options: IndexWriterOptions,
-  pub data_checksum_seed: u32,
+  pub(crate) header: HeaderWriterOptions,
+  pub(crate) index: IndexWriterOptions,
+  pub(crate) data_checksum_seed: u32,
 }
 
 impl BundleBuilderOptions {
@@ -85,17 +86,17 @@ impl BundleBuilderOptions {
     Self::default()
   }
 
-  pub fn header_options(mut self, options: HeaderWriterOptions) -> Self {
-    self.header_options = options;
+  pub fn header(&mut self, options: HeaderWriterOptions) -> &mut Self {
+    self.header = options;
     self
   }
 
-  pub fn index_options(mut self, options: IndexWriterOptions) -> Self {
-    self.index_options = options;
+  pub fn index(&mut self, options: IndexWriterOptions) -> &mut Self {
+    self.index = options;
     self
   }
 
-  pub fn data_checksum_seed(mut self, seed: u32) -> Self {
+  pub fn data_checksum_seed(&mut self, seed: u32) -> &mut Self {
     self.data_checksum_seed = seed;
     self
   }
@@ -129,6 +130,11 @@ impl BundleBuilder {
 
   pub fn version(&self) -> Version {
     self.version
+  }
+
+  pub fn set_version(&mut self, version: Version) -> &mut Self {
+    self.version = version;
+    self
   }
 
   pub fn options(&self) -> &BundleBuilderOptions {
@@ -168,7 +174,23 @@ impl BundleBuilder {
     self.entries.contains_key(path)
   }
 
-  pub fn build_index(&self) -> Index {
+  pub fn build(&self) -> crate::Result<Bundle> {
+    let index = self.build_index();
+    let header = self.build_header(&index)?;
+    let manifest = BundleManifest { header, index };
+    let data = self.build_data();
+    Ok(Bundle { manifest, data })
+  }
+
+  pub(crate) fn build_header(&self, index: &Index) -> crate::Result<Header> {
+    let index_bytes_size =
+      IndexWriter::new_with_options(&mut vec![], self.options().index).write(index)?;
+    let index_size = (index_bytes_size - CHECKSUM_LEN) as u32;
+    let header = Header::new(self.version(), index_size);
+    Ok(header)
+  }
+
+  pub(crate) fn build_index(&self) -> Index {
     let mut index = Index::new_with_capacity(self.entries().len());
     let mut offset = 0;
     for (path, entry) in self.entries() {
@@ -184,7 +206,7 @@ impl BundleBuilder {
     index
   }
 
-  pub fn build_data(&self) -> Vec<u8> {
+  pub(crate) fn build_data(&self) -> Vec<u8> {
     let mut data = vec![];
     for entry in self.entries().values() {
       let checksum = make_checksum(self.options.data_checksum_seed, entry.data());

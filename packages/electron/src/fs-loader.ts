@@ -1,7 +1,7 @@
 import nodeFs from 'node:fs/promises';
 import path from 'node:path';
-import { type Bundle, decode } from '@webview-bundle/node-binding';
 import { app } from 'electron';
+import { type Bundle, decode } from 'packages/node-binding-t';
 import type { Loader } from './loader.js';
 
 export interface FSLike {

@@ -12,7 +12,9 @@ test       = false
 [dependencies]
 napi           = { workspace = true }
 napi-derive    = { workspace = true }
-webview-bundle = { workspace = true }
+thiserror      = { workspace = true }
+tokio          = { workspace = true, features = ["fs"] }
+webview-bundle = { workspace = true, features = ["async"] }
 
 [build-dependencies]
 napi-build = { workspace = true }

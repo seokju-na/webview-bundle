@@ -125,6 +125,10 @@ impl DerefMut for IndexEntryMap {
 }
 
 impl Index {
+  pub fn entries(&self) -> &HashMap<String, IndexEntry> {
+    &self.entries
+  }
+
   pub fn insert_entry<S: Into<String>>(
     &mut self,
     path: S,
@@ -161,7 +165,7 @@ fn write_index(index: &Index) -> crate::Result<Vec<u8>> {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct IndexWriterOptions {
-  pub checksum_seed: u32,
+  pub(crate) checksum_seed: u32,
 }
 
 impl IndexWriterOptions {
@@ -169,7 +173,7 @@ impl IndexWriterOptions {
     Self::default()
   }
 
-  pub fn checksum_seed(mut self, seed: u32) -> Self {
+  pub fn checksum_seed(&mut self, seed: u32) -> &mut Self {
     self.checksum_seed = seed;
     self
   }
@@ -464,7 +468,7 @@ mod tests {
         47, 106, 97, 118, 97, 115, 99, 114, 105, 112, 116, 49, 24, 219, 15
       ]
     );
-    let header = Header::new(Version::Version1, (buf.len() - CHECKSUM_LEN) as u32);
+    let header = Header::new(Version::V1, (buf.len() - CHECKSUM_LEN) as u32);
     let mut total = vec![];
     HeaderWriter::new(Cursor::new(&mut total))
       .write(&header)

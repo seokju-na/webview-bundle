@@ -1,32 +1,33 @@
 {
   "name": "@webview-bundle/node-binding-win32-arm64-msvc",
   "version": "0.1.0",
-  "os": [
-    "win32"
-  ],
   "cpu": [
     "arm64"
   ],
-  "main": "binding.win32-arm64-msvc.node",
+  "main": "node-binding.win32-arm64-msvc.node",
   "files": [
-    "binding.win32-arm64-msvc.node"
+    "node-binding.win32-arm64-msvc.node"
   ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/node-binding/npm/win32-arm64-msvc"
-  },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
+  "description": "Node binding for webview bundle",
   "author": {
     "name": "Seokju Na",
     "email": "seokju.me@gmail.com",
     "url": "https://github.com/seokju-na"
   },
+  "homepage": "https://github.com/seokju-na/webview-bundle",
   "license": "MIT",
   "engines": {
-    "node": ">= 10"
-  }
+    "node": ">= 6.14.2 < 7 || >= 8.11.2 < 9 || >= 9.11.0 < 10 || >= 10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/node-binding"
+  },
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "os": [
+    "win32"
+  ]
 }

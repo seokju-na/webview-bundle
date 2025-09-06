@@ -1,4 +1,4 @@
-import type { Bundle } from '@webview-bundle/node-binding';
+import type { Bundle } from 'packages/node-binding-t';
 
 export interface Loader {
   load(name: string): Promise<Bundle>;

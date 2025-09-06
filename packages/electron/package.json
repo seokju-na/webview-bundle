@@ -56,7 +56,6 @@
     "electron": ">= 25"
   },
   "dependencies": {
-    "@webview-bundle/node-binding": "workspace:^",
     "es-mime-types": "^0.1.4"
   },
   "devDependencies": {

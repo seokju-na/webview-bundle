@@ -30,7 +30,9 @@ export const colors = {
   warn: (msg: string | number) => kleur.yellow(msg),
   error: (msg: string | number) => kleur.red(msg),
   success: (msg: string | number) => kleur.green(msg),
+  header: (x: [string, string]) => kleur.yellow(`${x[0]}: ${x[1]}`),
   bytes: (msg: string | number) => kleur.gray(msg),
   bold: (msg: string | number) => kleur.bold(msg),
   underline: (msg: string | number) => kleur.underline(msg),
 };
+export const c = colors;

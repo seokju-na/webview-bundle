@@ -1,8 +1,8 @@
 import path from 'node:path';
-import type { Bundle } from '@webview-bundle/node-binding';
 import { app } from 'electron';
 import { type Privileges, protocol } from 'electron/main';
 import { lookup } from 'es-mime-types';
+import type { Bundle } from 'packages/node-binding-t';
 import type { Cache } from './cache.js';
 import type { Loader } from './loader.js';
 import { URI } from './uri.js';

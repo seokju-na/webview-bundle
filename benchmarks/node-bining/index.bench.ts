@@ -1,11 +1,16 @@
+import { Buffer } from 'node:buffer';
 import fs from 'node:fs/promises';
+import { promisify } from 'node:util';
+import { deflate } from 'node:zlib';
 import { findAllFixtureFiles, listFixtures } from '@benchmark/tools';
-import { create } from '@webview-bundle/node-binding';
+import { BundleBuilder } from '@webview-bundle/node-binding';
 import { bench, describe } from 'vitest';
 import { ZipFile } from 'yazl';
 
-function streamToBuffer(stream: NodeJS.ReadableStream) {
-  return new Promise((resolve, reject) => {
+const deflateAsync = promisify(deflate);
+
+function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
     const chunks: any[] = [];
 
     stream.on('data', chunk => chunks.push(chunk));
@@ -15,12 +20,12 @@ function streamToBuffer(stream: NodeJS.ReadableStream) {
 }
 
 for (const fixture of listFixtures()) {
-  describe(`create - ${fixture.name}`, () => {
-    const title = `create - ${fixture.name}`;
+  const files = await findAllFixtureFiles(fixture.name);
+
+  describe(`create ${fixture.name}`, () => {
     bench(
-      `${title}/zip`,
+      'yazl',
       async () => {
-        const files = await findAllFixtureFiles(fixture.name);
         const zip = new ZipFile();
         for (const file of files) {
           zip.addFile(file.absolutePath, file.path, { compress: false });
@@ -32,9 +37,8 @@ for (const fixture of listFixtures()) {
     );
 
     bench(
-      `${title}/zip (compress)`,
+      'yazl (compressed)',
       async () => {
-        const files = await findAllFixtureFiles(fixture.name);
         const zip = new ZipFile();
         for (const file of files) {
           zip.addFile(file.absolutePath, file.path, { compress: true });
@@ -46,17 +50,25 @@ for (const fixture of listFixtures()) {
     );
 
     bench(
-      `${title}/webview-bundle`,
+      'zlib',
       async () => {
-        const files = await findAllFixtureFiles(fixture.name);
-        await create(
-          await Promise.all(
-            files.map(async file => ({
-              path: file.path,
-              data: await fs.readFile(file.absolutePath),
-            }))
-          )
-        );
+        for (const file of files) {
+          const data = await fs.readFile(file.absolutePath);
+          await deflateAsync(data, { level: 1 });
+        }
+      },
+      { iterations: 100 }
+    );
+
+    bench(
+      'webview-bundle',
+      async () => {
+        const builder = new BundleBuilder();
+        for (const file of files) {
+          const data = await fs.readFile(file.absolutePath);
+          builder.insertEntry(`/${file.path}`, data);
+        }
+        builder.build();
       },
       { iterations: 100 }
     );

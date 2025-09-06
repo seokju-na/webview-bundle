@@ -40,6 +40,7 @@
     "ci-info": "^4.2.0",
     "clipanion": "^4.0.0-rc.4",
     "kleur": "^4.1.5",
+    "picomatch": "^4.0.3",
     "supports-color": "^10.0.0",
     "tinyglobby": "^0.2.14",
     "typanion": "^3.14.0",
@@ -47,7 +48,9 @@
   },
   "devDependencies": {
     "@types/node": "22.7.4",
+    "@types/picomatch": "^4",
     "tsdown": "0.12.9",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "vitest": "3.1.2"
   }
 }

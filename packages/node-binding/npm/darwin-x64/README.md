@@ -1,3 +1,3 @@
-# `@webview-bundle/binding-darwin-x64`
+# `@webview-bundle/node-binding-darwin-x64`
 
-This is the **x86_64-apple-darwin** binary for `@webview-bundle/binding`
+This is the **x86_64-apple-darwin** binary for `@webview-bundle/node-binding`

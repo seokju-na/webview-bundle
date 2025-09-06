@@ -61,7 +61,7 @@ fn write_index_size(index_size: u32) -> Vec<u8> {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct HeaderWriterOptions {
-  pub checksum_seed: u32,
+  pub(crate) checksum_seed: u32,
 }
 
 impl HeaderWriterOptions {
@@ -69,7 +69,7 @@ impl HeaderWriterOptions {
     Self::default()
   }
 
-  pub fn checksum_seed(mut self, seed: u32) -> Self {
+  pub fn checksum_seed(&mut self, seed: u32) -> &mut Self {
     self.checksum_seed = seed;
     self
   }
@@ -214,8 +214,8 @@ fn read_version() -> (u64, [u8; VERSION_LEN]) {
 }
 
 fn parse_version(buf: &[u8; VERSION_LEN]) -> crate::Result<Version> {
-  if buf == Version::Version1.bytes().as_ref() {
-    return Ok(Version::Version1);
+  if buf == Version::V1.bytes().as_ref() {
+    return Ok(Version::V1);
   }
   Err(crate::Error::InvalidVersion)
 }
@@ -424,7 +424,7 @@ mod tests {
 
   #[test]
   fn read_and_write() {
-    let header = Header::new(Version::Version1, 1234);
+    let header = Header::new(Version::V1, 1234);
     let mut buf = vec![];
     let mut writer = HeaderWriter::new(Cursor::new(&mut buf));
     writer.write(&header).unwrap();
@@ -435,14 +435,14 @@ mod tests {
     let mut reader = HeaderReader::new(Cursor::new(&buf));
     let read_header = reader.read().unwrap();
     assert_eq!(header, read_header);
-    assert_eq!(read_header.version(), Version::Version1);
+    assert_eq!(read_header.version(), Version::V1);
     assert_eq!(read_header.index_size(), 1234);
   }
 
   #[cfg(feature = "async")]
   #[tokio::test]
   async fn async_read_and_write() {
-    let header = Header::new(Version::Version1, 1234);
+    let header = Header::new(Version::V1, 1234);
     let mut buf = vec![];
     let mut writer = AsyncHeaderWriter::new(Cursor::new(&mut buf));
     writer.write(&header).await.unwrap();
@@ -453,7 +453,7 @@ mod tests {
     let mut reader = AsyncHeaderReader::new(Cursor::new(&buf));
     let read_header = reader.read().await.unwrap();
     assert_eq!(header, read_header);
-    assert_eq!(read_header.version(), Version::Version1);
+    assert_eq!(read_header.version(), Version::V1);
     assert_eq!(read_header.index_size(), 1234);
   }
 }

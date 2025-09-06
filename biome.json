@@ -16,8 +16,8 @@
       "**/*.json",
       "!.yarn/**",
       "!**/*.json",
-      "!**/binding.cjs",
-      "!**/binding.d.cts"
+      "!**/*.cjs",
+      "!**/*.d.cts"
     ]
   },
   "formatter": {

@@ -45,9 +45,6 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@webview-bundle/node-binding": "workspace:^"
-  },
   "devDependencies": {
     "tsdown": "0.12.9",
     "typescript": "5.8.3"

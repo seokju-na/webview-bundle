@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type BundleFile, create, decode, encode } from '@webview-bundle/node-binding';
+import { type BundleFile, create, decode, encode } from 'packages/node-binding-t';
 import type { BundleData, DeployInfo, UploadReleaseInfo } from './types.js';
 
 export abstract class Deployer {

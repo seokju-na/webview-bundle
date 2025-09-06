@@ -1,3 +1,3 @@
-# `@webview-bundle/binding-linux-x64-musl`
+# `@webview-bundle/node-binding-linux-x64-musl`
 
-This is the **x86_64-unknown-linux-musl** binary for `@webview-bundle/binding`
+This is the **x86_64-unknown-linux-musl** binary for `@webview-bundle/node-binding`

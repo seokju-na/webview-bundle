@@ -1,3 +1,3 @@
-# `@webview-bundle/binding-linux-arm64-musl`
+# `@webview-bundle/node-binding-linux-arm64-musl`
 
-This is the **aarch64-unknown-linux-musl** binary for `@webview-bundle/binding`
+This is the **aarch64-unknown-linux-musl** binary for `@webview-bundle/node-binding`

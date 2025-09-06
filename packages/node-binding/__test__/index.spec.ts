@@ -1,28 +1,109 @@
-import { expect, it } from 'vitest';
-import { Bundle, create, decode, encode } from '../index.js';
+import { Buffer } from 'node:buffer';
+import { randomBytes } from 'node:crypto';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { BundleBuilder, readBundle, writeBundle } from '../index.js';
 
-it('parse failure', async () => {
-  await expect(decode(Buffer.from([]))).rejects.toThrowError(new Error('empty buffer'));
-  await expect(decode(Buffer.from([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))).rejects.toThrowError(
-    'invalid magic number'
-  );
+const DEFAULT_VERSION = 'v1';
+
+const INDEX_HTML = '!<DOCTYPE html>';
+const INDEX_HTML_BUF = Buffer.from(INDEX_HTML, 'utf8');
+
+const INDEX_JS = 'console.log("hello world");';
+const INDEX_JS_BUF = Buffer.from(INDEX_JS, 'utf8');
+
+describe('builder', () => {
+  it('build bundle', () => {
+    const builder = new BundleBuilder('v1');
+    expect(builder.version).toEqual('v1');
+    expect(builder.entryPaths()).toEqual([]);
+    expect(builder.insertEntry('/index.js', INDEX_JS_BUF)).toBe(false);
+    expect(builder.insertEntry('/index.html', INDEX_HTML_BUF)).toBe(false);
+    expect(builder.insertEntry('/index.html', INDEX_HTML_BUF)).toBe(true);
+    expect(builder.entryPaths()).toHaveLength(2);
+    expect(builder.hasEntry('/index.js')).toBe(true);
+    expect(builder.hasEntry('/index.html')).toBe(true);
+    expect(() => builder.build()).not.toThrowError();
+  });
+
+  it('build bundle with options', () => {
+    const builder = new BundleBuilder('v1');
+    builder.insertEntry('/index.js', INDEX_JS_BUF);
+    expect(() =>
+      builder.build({
+        header: {
+          checksumSeed: 1,
+        },
+        index: {
+          checksumSeed: 2,
+        },
+        dataChecksumSeed: 3,
+      })
+    ).not.toThrowError();
+  });
 });
 
-it('encode empty bundle', async () => {
-  const bundle = new Bundle();
-  await expect(encode(bundle)).resolves.toEqual(
-    Buffer.from([240, 159, 140, 144, 240, 159, 142, 129, 1, 0, 0, 0, 1, 0, 93, 190, 64, 6, 3, 142, 7, 8])
-  );
+describe('bundle', () => {
+  it('version', () => {
+    const builder = new BundleBuilder('v1');
+    const bundle = builder.build();
+    expect(bundle.version).toEqual('v1');
+  });
+
+  it('default version', () => {
+    const builder = new BundleBuilder();
+    const bundle = builder.build();
+    expect(bundle.version).toEqual(DEFAULT_VERSION);
+  });
+
+  it('get data', () => {
+    const builder = new BundleBuilder();
+    builder.insertEntry('/index.js', INDEX_JS_BUF);
+    builder.insertEntry('/index.html', INDEX_HTML_BUF);
+    const bundle = builder.build();
+    expect(bundle.hasPath('/index.js')).toBe(true);
+    expect(bundle.hasPath('/index.html')).toBe(true);
+    expect(bundle.hasPath('/not_exists')).toBe(false);
+    expect(bundle.getData('/index.js')).toEqual(Uint8Array.from(INDEX_JS_BUF));
+    expect(bundle.getData('/index.html')).toEqual(Uint8Array.from(INDEX_HTML_BUF));
+    expect(bundle.getData('/not_exists')).toBeNull();
+  });
+
+  it('get headers', () => {
+    const builder = new BundleBuilder();
+    builder.insertEntry('/index.js', INDEX_JS_BUF, [['content-type', 'text/javascript']]);
+    const bundle = builder.build();
+    expect(bundle.getHeaders('/index.js')).toEqual([['content-type', 'text/javascript']]);
+  });
 });
 
-it('file not found error', async () => {
-  const bundle = new Bundle();
-  await expect(bundle.readFileData('index.js')).rejects.toThrowError('file not found');
-  await expect(bundle.readFileData('unknown/dir/index.html')).rejects.toThrowError('file not found');
-});
+describe('read/write', () => {
+  let tmpdir: string;
 
-it('create bundle', async () => {
-  const data = Buffer.from('export const A = 10;', 'utf8');
-  const bundle = await create([{ path: 'index.js', data }]);
-  await expect(bundle.readFileData('index.js')).resolves.toEqual(data);
+  beforeEach(async () => {
+    tmpdir = path.join(os.tmpdir(), 'webview-bundle-node-binding', randomBytes(8).toString('hex'));
+    await fs.mkdir(tmpdir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    try {
+      await fs.rm(tmpdir, { recursive: true });
+    } catch {}
+  });
+
+  it('write bundle and read', async () => {
+    const builder = new BundleBuilder();
+    builder.insertEntry('/index.js', INDEX_JS_BUF);
+    builder.insertEntry('/index.html', INDEX_HTML_BUF);
+    const bundle = builder.build();
+
+    await writeBundle(bundle, path.join(tmpdir, 'bundle.wvb'));
+    const bundleFromFs = await readBundle(path.join(tmpdir, 'bundle.wvb'));
+    expect(bundleFromFs.version).toEqual('v1');
+    expect(bundleFromFs.paths()).toHaveLength(2);
+    expect(bundleFromFs.hasPath('/index.js')).toBe(true);
+    expect(bundleFromFs.hasPath('/index.html')).toBe(true);
+  });
 });
