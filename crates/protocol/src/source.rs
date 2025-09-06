@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::RwLock;
-use webview_bundle::{http, Bundle, BundleManifest};
+use webview_bundle::{AsyncBundleReader, AsyncReader, Bundle, BundleManifest};
 
 pub trait Source: Send + Sync {
   async fn fetch(&self, name: &str) -> crate::Result<Bundle>;
@@ -48,11 +48,16 @@ impl FileSource {
 
 impl Source for FileSource {
   async fn fetch(&self, name: &str) -> crate::Result<Bundle> {
-    todo!()
+    let mut file = self.open_file(&self.file_path(name)).await?;
+    let bundle = AsyncReader::<Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
+    Ok(bundle)
   }
 
   async fn fetch_manifest(&self, name: &str) -> crate::Result<BundleManifest> {
-    todo!()
+    let mut file = self.open_file(&self.file_path(name)).await?;
+    let manifest =
+      AsyncReader::<BundleManifest>::read(&mut AsyncBundleReader::new(&mut file)).await?;
+    Ok(manifest)
   }
 }
 
@@ -62,7 +67,7 @@ mod tests {
   use tokio::io::AsyncReadExt;
 
   #[tokio::test]
-  async fn test_file_source() {
+  async fn file_source_opens() {
     let file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml");
     let source = FileSource::new(file_path.parent().unwrap());
     let mut handles = Vec::new();
@@ -81,4 +86,7 @@ mod tests {
       let _ = h.await;
     }
   }
+
+  #[tokio::test]
+  async fn file_source_fetch() {}
 }

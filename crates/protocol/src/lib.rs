@@ -1,6 +1,5 @@
+mod async_runtime;
 mod error;
-mod fetcher;
-mod loader;
 mod protocol;
 mod source;
 mod uri;

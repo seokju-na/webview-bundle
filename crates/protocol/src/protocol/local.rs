@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::future::Future;
 use std::sync::{Arc, Mutex};
 use webview_bundle::http;
 
@@ -27,7 +26,7 @@ impl super::protocol::Protocol for LocalProtocol {
     let client = reqwest::ClientBuilder::new();
     let mut proxy_builder = client.build()?.request(request.method().clone(), url);
     proxy_builder = proxy_builder.body(request.body().clone());
-    let r = block_on(proxy_builder.send())??;
+    let r = crate::async_runtime::safe_block_on(proxy_builder.send())?;
     let mut cache = self.cache.lock().unwrap();
     let mut response = None;
     if r.status() == http::StatusCode::NOT_MODIFIED {
@@ -38,7 +37,7 @@ impl super::protocol::Protocol for LocalProtocol {
     } else {
       let status = r.status();
       let headers = r.headers().clone();
-      let body = block_on(r.bytes())??;
+      let body = crate::async_runtime::safe_block_on(r.bytes())?;
       let response = CachedResponse {
         status,
         headers,
@@ -55,18 +54,4 @@ impl super::protocol::Protocol for LocalProtocol {
       .body(response.body.to_vec().into())
       .map_err(|e| crate::Error::Core(e.into()))
   }
-}
-
-fn block_on<F>(task: F) -> crate::Result<F::Output>
-where
-  F: Future + Send + 'static,
-  F::Output: Send + 'static,
-{
-  let handle = tokio::runtime::Handle::try_current()?;
-  let (tx, rx) = std::sync::mpsc::sync_channel(1);
-  let cloned = handle.clone();
-  handle.spawn_blocking(move || {
-    tx.send(cloned.block_on(task)).unwrap();
-  });
-  Ok(rx.recv().unwrap())
 }

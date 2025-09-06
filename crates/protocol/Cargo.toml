@@ -16,8 +16,8 @@ doctest = false
 bytes          = { workspace = true }
 reqwest        = { workspace = true }
 thiserror      = { workspace = true }
-tokio          = { workspace = true, features = ["fs", "io-util"] }
-webview-bundle = { workspace = true }
+tokio          = { workspace = true, features = ["rt", "rt-multi-thread", "fs", "io-util"] }
+webview-bundle = { workspace = true, features = ["async"] }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }

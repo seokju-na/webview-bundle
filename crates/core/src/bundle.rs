@@ -3,13 +3,17 @@ use crate::checksum::{parse_checksum, CHECKSUM_LEN};
 use crate::header::{Header, HeaderReader, HeaderWriter};
 use crate::index::{Index, IndexEntry, IndexReader, IndexWriter};
 use crate::reader::Reader;
-use crate::version::Version;
 use crate::writer::Writer;
-use http::{header, HeaderValue, Response, StatusCode};
 use lz4_flex::decompress_size_prepended;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 
-pub type BundleResponse = Response<Vec<u8>>;
+#[cfg(feature = "async")]
+use crate::{
+  AsyncHeaderReader, AsyncHeaderWriter, AsyncIndexReader, AsyncIndexWriter, AsyncReader,
+  AsyncWriter,
+};
+#[cfg(feature = "async")]
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BundleManifest {
@@ -26,27 +30,29 @@ impl BundleManifest {
     &self.index
   }
 
-  pub fn response<R: Read + Seek>(
-    &self,
-    reader: R,
-    path: &str,
-  ) -> crate::Result<Option<BundleResponse>> {
+  pub fn get_data<R: Read + Seek>(&self, reader: R, path: &str) -> crate::Result<Option<Vec<u8>>> {
     if !self.index.contains_path(path) {
       return Ok(None);
     }
     let entry = self.index.get_entry(path).unwrap();
     let mut reader = BundleDataReader::new(reader);
-    let body = reader.read_entry_data(entry)?;
-    let mut response = Response::builder();
-    if let Some(headers) = response.headers_mut() {
-      headers.clone_from(&entry.headers);
-      if !headers.contains_key(header::CONTENT_LENGTH) {
-        let content_length = body.len() as u32;
-        headers.append(header::CONTENT_LENGTH, HeaderValue::from(content_length));
-      }
+    let data = reader.read_entry_data(entry)?;
+    Ok(Some(data))
+  }
+
+  #[cfg(feature = "async")]
+  pub async fn async_get_data<R: AsyncRead + AsyncSeek + Unpin>(
+    &self,
+    reader: R,
+    path: &str,
+  ) -> crate::Result<Option<Vec<u8>>> {
+    if !self.index.contains_path(path) {
+      return Ok(None);
     }
-    let response = response.status(StatusCode::OK).body(body)?;
-    Ok(Some(response))
+    let entry = self.index.get_entry(path).unwrap();
+    let mut reader = AsyncBundleDataReader::new(reader);
+    let data = reader.read_entry_data(entry).await?;
+    Ok(Some(data))
   }
 }
 
@@ -69,11 +75,24 @@ impl Bundle {
     &self.manifest
   }
 
-  pub fn response(&self, path: &str) -> crate::Result<Option<BundleResponse>> {
+  pub fn get_data(&self, path: &str) -> crate::Result<Option<Vec<u8>>> {
     let mut reader = Cursor::new(&self.data);
-    let resp = self.manifest.response(&mut reader, path)?;
+    let resp = self.manifest.get_data(&mut reader, path)?;
     Ok(resp)
   }
+}
+
+fn read_entry(entry: &IndexEntry) -> (u64, Vec<u8>) {
+  (entry.offset() as u64, vec![0u8; entry.len() as usize])
+}
+
+fn parse_entry(buf: &[u8]) -> crate::Result<Vec<u8>> {
+  let decompressed = decompress_size_prepended(&buf)?;
+  Ok(decompressed)
+}
+
+fn read_entry_checksum(entry: &IndexEntry) -> (u64, [u8; CHECKSUM_LEN]) {
+  ((entry.offset() + entry.len()) as u64, [0u8; CHECKSUM_LEN])
 }
 
 pub(crate) struct BundleDataReader<R: Read + Seek> {
@@ -86,22 +105,43 @@ impl<R: Read + Seek> BundleDataReader<R> {
   }
 
   pub fn read_entry_data(&mut self, entry: &IndexEntry) -> crate::Result<Vec<u8>> {
-    let offset = entry.offset() as u64;
-    let len = entry.len() as usize;
+    let (offset, mut buf) = read_entry(entry);
     self.r.seek(SeekFrom::Start(offset))?;
-    let mut buf = vec![0u8; len];
     self.r.read_exact(&mut buf)?;
-    let decompressed = decompress_size_prepended(&buf)?;
-    Ok(decompressed)
+    parse_entry(&buf)
   }
 
   pub fn read_entry_checksum(&mut self, entry: &IndexEntry) -> crate::Result<u32> {
-    let offset = entry.offset() as u64 + entry.len() as u64;
+    let (offset, mut buf) = read_entry_checksum(entry);
     self.r.seek(SeekFrom::Start(offset))?;
-    let mut buf = vec![0u8; CHECKSUM_LEN];
     self.r.read_exact(&mut buf)?;
-    let checksum = parse_checksum(&buf);
-    Ok(checksum)
+    Ok(parse_checksum(&buf))
+  }
+}
+
+#[cfg(feature = "async")]
+pub(crate) struct AsyncBundleDataReader<R: AsyncRead + AsyncSeek + Unpin> {
+  r: R,
+}
+
+#[cfg(feature = "async")]
+impl<R: AsyncRead + AsyncSeek + Unpin> AsyncBundleDataReader<R> {
+  pub fn new(r: R) -> Self {
+    Self { r }
+  }
+
+  pub async fn read_entry_data(&mut self, entry: &IndexEntry) -> crate::Result<Vec<u8>> {
+    let (offset, mut buf) = read_entry(entry);
+    self.r.seek(SeekFrom::Start(offset)).await?;
+    self.r.read_exact(&mut buf).await?;
+    parse_entry(&buf)
+  }
+
+  pub async fn read_entry_checksum(&mut self, entry: &IndexEntry) -> crate::Result<u32> {
+    let (offset, mut buf) = read_entry_checksum(entry);
+    self.r.seek(SeekFrom::Start(offset)).await?;
+    self.r.read_exact(&mut buf).await?;
+    Ok(parse_checksum(&buf))
   }
 }
 
@@ -154,6 +194,62 @@ impl<R: Read + Seek> Reader<Bundle> for BundleReader<R> {
   }
 }
 
+#[cfg(feature = "async")]
+pub struct AsyncBundleReader<R: AsyncRead + AsyncSeek + Unpin> {
+  r: R,
+}
+
+#[cfg(feature = "async")]
+impl<R: AsyncRead + AsyncSeek + Unpin> AsyncBundleReader<R> {
+  pub fn new(r: R) -> Self {
+    Self { r }
+  }
+
+  pub async fn read_header(&mut self) -> crate::Result<Header> {
+    let mut reader = AsyncHeaderReader::new(&mut self.r);
+    let header = reader.read().await?;
+    Ok(header)
+  }
+
+  pub async fn read_index(&mut self, header: Header) -> crate::Result<Index> {
+    let mut reader = AsyncIndexReader::new(&mut self.r, header);
+    let index = reader.read().await?;
+    Ok(index)
+  }
+
+  pub async fn read_data(&mut self, header: Header) -> crate::Result<Vec<u8>> {
+    self
+      .r
+      .seek(SeekFrom::Start(header.index_end_offset()))
+      .await?;
+    let mut data = vec![];
+    self.r.read_to_end(&mut data).await?;
+    Ok(data)
+  }
+}
+
+#[cfg(feature = "async")]
+impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<BundleManifest> for AsyncBundleReader<R> {
+  async fn read(&mut self) -> crate::Result<BundleManifest> {
+    let header = self.read_header().await?;
+    let index = self.read_index(header).await?;
+    Ok(BundleManifest { header, index })
+  }
+}
+
+#[cfg(feature = "async")]
+impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<Bundle> for AsyncBundleReader<R> {
+  async fn read(&mut self) -> crate::Result<Bundle> {
+    let header = self.read_header().await?;
+    let index = self.read_index(header).await?;
+    let data = self.read_data(header).await?;
+    Ok(Bundle {
+      manifest: BundleManifest { header, index },
+      data,
+    })
+  }
+}
+
 pub struct BundleWriter<W: Write> {
   w: W,
 }
@@ -188,10 +284,52 @@ impl<W: Write> Writer<BundleBuilder> for BundleWriter<W> {
   }
 }
 
+#[cfg(feature = "async")]
+pub struct AsyncBundleWriter<W: AsyncWrite + Unpin> {
+  w: W,
+}
+
+#[cfg(feature = "async")]
+impl<W: AsyncWrite + Unpin> AsyncBundleWriter<W> {
+  pub fn new(w: W) -> Self {
+    Self { w }
+  }
+}
+
+#[cfg(feature = "async")]
+impl<W: AsyncWrite + Unpin> AsyncWriter<BundleBuilder> for AsyncBundleWriter<W> {
+  async fn write(&mut self, builder: &BundleBuilder) -> crate::Result<usize> {
+    let mut index_bytes = vec![];
+    let index = builder.build_index();
+    let index_bytes_len = AsyncIndexWriter::new_with_options(
+      Cursor::new(&mut index_bytes),
+      builder.options().index_options,
+    )
+    .write(&index)
+    .await?;
+    let index_size = index_bytes_len - CHECKSUM_LEN;
+
+    let header = Header::new(builder.version(), index_size as u32);
+    let header_len =
+      AsyncHeaderWriter::new_with_options(&mut self.w, builder.options().header_options)
+        .write(&header)
+        .await?;
+    self.w.write_all(&index_bytes).await?;
+
+    let data_bytes = builder.build_data();
+    let data_len = data_bytes.len();
+    self.w.write_all(&data_bytes).await?;
+
+    Ok(header_len + index_bytes_len + data_len)
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::version::Version;
   use http::{header, HeaderMap};
+  use std::io::Cursor;
 
   const INDEX_HTML: &str = r#"<!DOCTYPE html>
 <html>
@@ -230,7 +368,7 @@ mod tests {
   }
 
   #[test]
-  fn responses() {
+  fn get_data() {
     let mut builder = Bundle::builder();
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
@@ -243,23 +381,13 @@ mod tests {
     let mut reader = BundleReader::new(Cursor::new(&data));
     let bundle: Bundle = reader.read().unwrap();
 
-    let html = bundle.response("/index.html").unwrap().unwrap();
-    assert_eq!(html.status(), 200);
-    assert_eq!(html.headers().len(), 2);
-    assert_eq!(
-      html.headers().get(header::CONTENT_TYPE).unwrap(),
-      "text/html"
-    );
-    assert_eq!(html.headers().get(header::CONTENT_LENGTH).unwrap(), "106");
-    assert_eq!(html.body(), INDEX_HTML.as_bytes());
+    let html = bundle.get_data("/index.html").unwrap().unwrap();
+    assert_eq!(html, INDEX_HTML.as_bytes());
 
-    let js = bundle.response("/index.js").unwrap().unwrap();
-    assert_eq!(js.status(), 200);
-    assert_eq!(js.headers().len(), 1);
-    assert_eq!(js.headers().get(header::CONTENT_LENGTH).unwrap(), "27");
-    assert_eq!(js.body(), INDEX_JS.as_bytes());
+    let js = bundle.get_data("/index.js").unwrap().unwrap();
+    assert_eq!(js, INDEX_JS.as_bytes());
 
     // Not found
-    assert!(bundle.response("/not_found.html").unwrap().is_none());
+    assert!(bundle.get_data("/not_found.html").unwrap().is_none());
   }
 }
