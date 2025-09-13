@@ -4,7 +4,7 @@ const config: UserConfig = defineConfig({
   entry: ['./src/main.ts'],
   format: ['esm'],
   platform: 'node',
-  target: 'node20',
+  target: 'node18',
 });
 
 export { config as default };

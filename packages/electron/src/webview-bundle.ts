@@ -1,25 +1,12 @@
-export interface WebviewBundleConfig extends RegisterProtocolConfig, RegisterIpcConfig {}
+import { type Protocol, registerProtocol } from './protocol.js';
 
-export interface WebviewBundleOutput {
-  unregisterProtocol: UnregisterProtocol;
-  unregisterIpc: UnregisterIpc;
+export interface WebviewBundleConfig {
+  protocols: Protocol[];
 }
 
-export function webviewBundle(config: WebviewBundleConfig): WebviewBundleOutput {
-  const { loader, scheme, privileges, versionFile, resolveUri, cache, contentType, headers, error } = config;
-  const unregisterProtocol = registerProtocol({
-    loader,
-    scheme,
-    privileges,
-    resolveUri,
-    cache,
-    contentType,
-    headers,
-    error,
-  });
-  const unregisterIpc = registerIpc({ loader, versionFile });
-  return {
-    unregisterProtocol,
-    unregisterIpc,
-  };
+export function webviewBundle(config: WebviewBundleConfig): void {
+  const { protocols } = config;
+  Promise.all(protocols.map(p => registerProtocol(p)));
 }
+
+export const wvb: typeof webviewBundle = webviewBundle;

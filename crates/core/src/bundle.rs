@@ -126,16 +126,16 @@ impl Bundle {
 }
 
 fn read_entry(entry: &IndexEntry) -> (u64, Vec<u8>) {
-  (entry.offset() as u64, vec![0u8; entry.len() as usize])
+  (entry.offset(), vec![0u8; entry.len() as usize])
 }
 
 fn parse_entry(buf: &[u8]) -> crate::Result<Vec<u8>> {
-  let decompressed = decompress_size_prepended(&buf)?;
+  let decompressed = decompress_size_prepended(buf)?;
   Ok(decompressed)
 }
 
 fn read_entry_checksum(entry: &IndexEntry) -> (u64, [u8; CHECKSUM_LEN]) {
-  ((entry.offset() + entry.len()) as u64, [0u8; CHECKSUM_LEN])
+  (entry.offset() + entry.len(), [0u8; CHECKSUM_LEN])
 }
 
 pub(crate) struct BundleDataReader<R: Read + Seek> {
@@ -315,7 +315,9 @@ impl<W: Write> Writer<Bundle> for BundleWriter<W> {
   fn write(&mut self, data: &Bundle) -> crate::Result<usize> {
     let header_len = HeaderWriter::new(&mut self.w).write(&data.manifest.header)?;
     let index_len = IndexWriter::new(&mut self.w).write(&data.manifest.index)?;
-    let data_len = self.w.write(&data.data)?;
+    let data_len = data.data.len();
+    self.w.write_all(&data.data)?;
+    self.w.flush()?;
     Ok(header_len + index_len + data_len)
   }
 }
@@ -341,7 +343,9 @@ impl<W: AsyncWrite + Unpin> AsyncWriter<Bundle> for AsyncBundleWriter<W> {
     let index_len = AsyncIndexWriter::new(&mut self.w)
       .write(&data.manifest.index)
       .await?;
-    let data_len = self.w.write(&data.data).await?;
+    let data_len = data.data.len();
+    self.w.write_all(&data.data).await?;
+    self.w.flush().await?;
     Ok(header_len + index_len + data_len)
   }
 }

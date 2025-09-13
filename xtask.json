@@ -4,10 +4,17 @@
   "packages": {
     "core": {
       "versionedFiles": [
-        "crates/webview-bundle/Cargo.toml"
+        "crates/core/Cargo.toml"
       ],
-      "changelog": "crates/webview-bundle/CHANGELOG.md",
+      "changelog": "crates/core/CHANGELOG.md",
       "scopes": ["core", "all"]
+    },
+    "protocol": {
+      "versionedFiles": [
+        "crates/protocol/Cargo.toml"
+      ],
+      "changelog": "crates/protocol/CHANGELOG.md",
+      "scopes": ["protocol", "all"]
     },
     "cli": {
       "versionedFiles": [
@@ -39,42 +46,33 @@
       "changelog": "packages/electron/CHANGELOG.md",
       "scopes": ["electron", "all"]
     },
-    "tauri": {
+    "electron-binding": {
       "versionedFiles": [
-        "crates/webview-bundle-tauri/Cargo.toml"
+        "packages/electron-binding/Cargo.toml",
+        "packages/electron-binding/package.json",
+        "packages/electron-binding/npm/*/package.json"
       ],
-      "changelog": "crates/webview-bundle-tauri/CHANGELOG.md",
-      "scopes": ["tauri", "all"]
-    },
-    "publisher": {
-      "versionedFiles": [
-        "packages/deployer/package.json"
-      ],
-      "changelog": "packages/deployer/CHANGELOG.md",
-      "scopes": ["deployer", "all"]
-    },
-    "publisher-github": {
-      "versionedFiles": [
-        "packages/deployer-github/package.json"
-      ],
-      "changelog": "packages/deployer-github/CHANGELOG.md",
-      "scopes": ["deployer-github", "deployer", "all"]
+      "changelog": "packages/electron-binding/CHANGELOG.md",
+      "scopes": ["electron", "all"],
+      "beforePublishScripts": [
+        {
+          "command": "yarn",
+          "args": ["artifacts"],
+          "cwd": "packages/electron-binding"
+        }
+      ]
     }
   },
   "artifacts": {
     "dir": "artifacts-merged",
     "files": [
       {
-        "source": "target/release/**/webview-bundle-cli?(.exe)",
-        "dist": "crates/webview-bundle-cli/artifacts"
-      },
-      {
         "source": "packages/node-binding/*.node",
         "dist": "packages/node-binding/artifacts"
       },
       {
-        "source": "packages/cli/*.node",
-        "dist": "packages/cli/artifacts"
+        "source": "packages/electron-binding/*.node",
+        "dist": "packages/electron-binding/artifacts"
       }
     ]
   },

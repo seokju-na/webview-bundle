@@ -17,7 +17,9 @@ impl UriResolver for DefaultUriResolver {
   }
 
   fn resolve_path(&self, uri: &Uri) -> String {
-    let mut path = uri.path().to_string();
+    let mut path = percent_encoding::percent_decode(uri.path().as_bytes())
+      .decode_utf8_lossy()
+      .to_string();
     if path.ends_with('/') {
       path.push_str("index.html");
       return path;

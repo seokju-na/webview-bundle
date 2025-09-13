@@ -13,13 +13,15 @@ bench   = false
 doctest = false
 
 [dependencies]
-bytes          = { workspace = true }
-dashmap        = { workspace = true }
-infer          = { workspace = true }
-reqwest        = { workspace = true }
-thiserror      = { workspace = true }
-tokio          = { workspace = true, features = ["rt", "rt-multi-thread", "fs", "io-util"] }
-webview-bundle = { workspace = true, features = ["async"] }
+bytes            = { workspace = true }
+dashmap          = { workspace = true }
+infer            = { workspace = true }
+percent-encoding = { workspace = true }
+reqwest          = { workspace = true }
+thiserror        = { workspace = true }
+tokio            = { workspace = true, features = ["rt", "rt-multi-thread", "fs", "io-util"] }
+webview-bundle   = { workspace = true, features = ["async"] }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["full"] }
+tiny_http = { workspace = true }
+tokio     = { workspace = true, features = ["full"] }

@@ -12,7 +12,7 @@
     "CHANGELOG.md"
   ],
   "engines": {
-    "node": ">= 16"
+    "node": ">= 18.14.1 < 19 || >= 19.7.0 < 20 || >= 20.0.0"
   },
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
@@ -35,10 +35,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.2",
     "@logtape/logtape": "1.0.4",
     "@webview-bundle/node-binding": "workspace:^",
     "ci-info": "^4.2.0",
     "clipanion": "^4.0.0-rc.4",
+    "file-type": "^21.0.0",
+    "hono": "^4.9.7",
     "kleur": "^4.1.5",
     "picomatch": "^4.0.3",
     "supports-color": "^10.0.0",
@@ -47,10 +50,10 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@types/node": "22.7.4",
+    "@types/node": "22.18.3",
     "@types/picomatch": "^4",
-    "tsdown": "0.14.2",
-    "typescript": "5.8.3",
-    "vitest": "3.1.2"
+    "tsdown": "0.15.1",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
   }
 }

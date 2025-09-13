@@ -3,6 +3,8 @@
 export declare class Bundle {
   get version(): Version;
   paths(): Array<string>;
+  getEntryOffset(path: string): bigint | null;
+  getEntryLen(path: string): bigint | null;
   hasPath(path: string): boolean;
   getData(path: string): Uint8Array | null;
   getHeaders(path: string): Array<[string, string]> | null;

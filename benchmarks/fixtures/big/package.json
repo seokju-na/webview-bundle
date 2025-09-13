@@ -1,0 +1,20 @@
+{
+  "name": "benchmark-fixture-big",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "out": "vite build --outDir out"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^5.0.2",
+    "typescript": "5.9.2",
+    "vite": "^7.1.5"
+  }
+}

@@ -1,7 +1,6 @@
 import { Buffer } from 'node:buffer';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type BundleFile, create, decode, encode } from 'packages/node-binding-t';
 import type { BundleData, DeployInfo, UploadReleaseInfo } from './types.js';
 
 export abstract class Deployer {
@@ -23,18 +22,19 @@ export abstract class Deployer {
     versionFilePath: string | undefined,
     version: string
   ): Promise<Buffer> {
-    const data = await this.readBundleData(bundleData);
-    const bundle = await decode(data);
-    const files = await bundle.readAllFiles();
-    const versionIdx = files.findIndex(x => x.path === versionFilePath);
-    const versionFile: BundleFile = { path: versionFilePath ?? '__VERSION__', data: Buffer.from(version, 'utf8') };
-    if (versionIdx > -1) {
-      files[versionIdx] = versionFile;
-    } else {
-      files.push(versionFile);
-    }
-    const updatedBundle = await create(files);
-    const updatedData = await encode(updatedBundle);
-    return updatedData;
+    throw new Error('TODO');
+    // const data = await this.readBundleData(bundleData);
+    // const bundle = await decode(data);
+    // const files = await bundle.readAllFiles();
+    // const versionIdx = files.findIndex(x => x.path === versionFilePath);
+    // const versionFile: BundleFile = { path: versionFilePath ?? '__VERSION__', data: Buffer.from(version, 'utf8') };
+    // if (versionIdx > -1) {
+    //   files[versionIdx] = versionFile;
+    // } else {
+    //   files.push(versionFile);
+    // }
+    // const updatedBundle = await create(files);
+    // const updatedData = await encode(updatedBundle);
+    // return updatedData;
   }
 }

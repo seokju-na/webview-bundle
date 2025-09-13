@@ -62,7 +62,7 @@ build: build-rs build-napi build-js
 
 # Build NAPI modules
 build-napi:
-    yarn workspaces foreach -Ap run build:napi
+    yarn workspaces foreach -Ap run build-napi
 
 # Build Rust workspaces
 build-rs:

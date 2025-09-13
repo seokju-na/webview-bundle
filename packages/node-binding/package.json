@@ -1,7 +1,7 @@
 {
   "name": "@webview-bundle/node-binding",
   "description": "Node binding for webview bundle",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -24,7 +24,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/node-binding"
+    "directory": "packages/node"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -36,7 +36,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">= 6.14.2 < 7 || >= 8.11.2 < 9 || >= 9.11.0 < 10 || >= 10.0.0"
+    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   },
   "napi": {
     "binaryName": "node-binding",
@@ -58,15 +58,14 @@
   },
   "scripts": {
     "artifacts": "just xtask artifacts napi packages/node-binding && napi artifacts",
-    "build:napi": "yarn build:napi:esm && yarn build:napi:cjs",
-    "build:napi:esm": "napi build --platform --release --esm --no-const-enum",
-    "build:napi:cjs": "napi build --platform --release --js=index.cjs --dts=index.d.cts --no-const-enum",
-    "build:napi:debug": "napi build --platform --esm"
+    "build-napi": "yarn build-napi-esm && yarn build-napi-cjs",
+    "build-napi-esm": "napi build --platform --release --esm --no-const-enum",
+    "build-napi-cjs": "napi build --platform --release --js=index.cjs --dts=index.d.cts --no-const-enum"
   },
   "devDependencies": {
     "@napi-rs/cli": "3.1.5",
-    "@types/node": "22.7.4",
-    "typescript": "5.8.3",
-    "vitest": "3.1.2"
+    "@types/node": "22.18.3",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
   }
 }

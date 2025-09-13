@@ -10,17 +10,14 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq, Clone)]
 pub struct BundleEntry {
   compressed: Vec<u8>,
-  len: usize,
   pub headers: Option<HeaderMap>,
 }
 
 impl BundleEntry {
   pub fn new(data: &[u8], headers: Option<HeaderMap>) -> Self {
     let compressed = compress_prepend_size(data);
-    let len = compressed.len();
     Self {
       compressed,
-      len,
       headers,
     }
   }
@@ -30,11 +27,11 @@ impl BundleEntry {
   }
 
   pub fn is_empty(&self) -> bool {
-    self.len == 0
+    self.compressed.is_empty()
   }
 
   pub fn len(&self) -> usize {
-    self.len
+    self.compressed.len()
   }
 }
 
@@ -155,7 +152,9 @@ impl BundleBuilder {
     path: S,
     entry: E,
   ) -> Option<BundleEntry> {
-    self.entries.insert(path.into(), entry.into())
+    let p: String = path.into();
+    let e: BundleEntry = entry.into();
+    self.entries.insert(p, e)
   }
 
   pub fn get_entry(&self, path: &str) -> Option<&BundleEntry> {
@@ -194,14 +193,14 @@ impl BundleBuilder {
     let mut index = Index::new_with_capacity(self.entries().len());
     let mut offset = 0;
     for (path, entry) in self.entries() {
-      let len = entry.len() as u32;
+      let len = entry.len() as u64;
       let mut index_entry = IndexEntry::new(offset, len);
       if let Some(headers) = entry.headers.as_ref() {
         index_entry.headers.clone_from(headers);
       }
       index.insert_entry(path, index_entry);
       offset += len;
-      offset += CHECKSUM_LEN as u32;
+      offset += CHECKSUM_LEN as u64;
     }
     index
   }

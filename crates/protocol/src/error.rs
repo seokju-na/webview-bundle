@@ -12,6 +12,8 @@ pub enum Error {
   Reqwest(#[from] reqwest::Error),
   #[error("bundle not found")]
   BundleNotFound,
+  #[error("local not found")]
+  LocalNotFound,
   #[error("http error: {0}")]
   Http(#[from] http::Error),
   #[error("invalid header value: {0}")]

@@ -20,13 +20,13 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, As
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct IndexEntry {
-  offset: u32,
-  len: u32,
+  offset: u64,
+  len: u64,
   pub(crate) headers: HeaderMap,
 }
 
 impl IndexEntry {
-  pub fn new(offset: u32, len: u32) -> Self {
+  pub fn new(offset: u64, len: u64) -> Self {
     Self {
       offset,
       len,
@@ -38,7 +38,7 @@ impl IndexEntry {
     &self.headers
   }
 
-  pub fn offset(&self) -> u32 {
+  pub fn offset(&self) -> u64 {
     self.offset
   }
 
@@ -46,7 +46,7 @@ impl IndexEntry {
     self.len == 0
   }
 
-  pub fn len(&self) -> u32 {
+  pub fn len(&self) -> u64 {
     self.len
   }
 }
@@ -65,7 +65,7 @@ impl Encode for IndexEntry {
 
 impl<T> Decode<T> for IndexEntry {
   fn decode<D: Decoder>(decoder: &mut D) -> Result<Self, DecodeError> {
-    let (offset, len, pairs): (u32, u32, Vec<(String, Vec<u8>)>) = Decode::decode(decoder)?;
+    let (offset, len, pairs): (u64, u64, Vec<(String, Vec<u8>)>) = Decode::decode(decoder)?;
     let mut headers = HeaderMap::new();
     for (name, value_bytes) in pairs {
       let header_name = HeaderName::try_from(name.as_str())

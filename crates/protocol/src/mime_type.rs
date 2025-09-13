@@ -1,3 +1,5 @@
+// This code is originally from https://github.com/tauri-apps/tauri/blob/dev/crates/tauri-utils/src/mime_type.rs
+
 // Copyright 2019-2024 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
@@ -22,7 +24,7 @@ pub enum MimeType {
   Txt,
 }
 
-impl std::fmt::Display for MimeType {
+impl fmt::Display for MimeType {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let mime = match self {
       MimeType::Css => "text/css",
@@ -57,10 +59,9 @@ impl MimeType {
       Some("csv") => Self::Csv,
       Some("html") => Self::Html,
       Some("ico") => Self::Ico,
-      Some("js") => Self::Js,
+      Some("js") | Some("mjs") => Self::Js,
       Some("json") => Self::Json,
       Some("jsonld") => Self::Jsonld,
-      Some("mjs") => Self::Js,
       Some("mp4") => Self::Mp4,
       Some("rtf") => Self::Rtf,
       Some("svg") => Self::Svg,

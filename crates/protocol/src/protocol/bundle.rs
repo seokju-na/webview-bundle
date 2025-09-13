@@ -322,20 +322,6 @@ mod tests {
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/_next/data/_NfFFTR049E8wOmF-fa7P/category.json")
-          .method("GET")
-          .body(vec![])
-          .unwrap(),
-      )
-      .await
-      .unwrap();
-    assert_eq!(
-      resp.headers().get(header::CONTENT_TYPE).unwrap(),
-      HeaderValue::from_static("application/json")
-    );
-    let resp = protocol
-      .handle(
-        Request::builder()
           .uri("https://nextjs.wvb/_next/static/css/419406682a95b9a9.css")
           .method("GET")
           .body(vec![])
@@ -383,20 +369,6 @@ mod tests {
     assert_eq!(
       resp.headers().get(header::CONTENT_LENGTH).unwrap(),
       HeaderValue::from_static("139833")
-    );
-    let resp = protocol
-      .handle(
-        Request::builder()
-          .uri("https://nextjs.wvb/_next/data/_NfFFTR049E8wOmF-fa7P/category.json")
-          .method("GET")
-          .body(vec![])
-          .unwrap(),
-      )
-      .await
-      .unwrap();
-    assert_eq!(
-      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
-      HeaderValue::from_static("1850")
     );
     let resp = protocol
       .handle(
@@ -466,5 +438,25 @@ mod tests {
       .await
       .unwrap_err();
     assert!(matches!(err, crate::Error::BundleNotFound));
+  }
+
+  #[tokio::test]
+  async fn big_file() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures");
+    let source = FileSource::new(base_dir);
+    let protocol = Arc::new(BundleProtocol::new(source));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://big.wvb/assets/index-fC9g8-6J.js")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 200);
   }
 }

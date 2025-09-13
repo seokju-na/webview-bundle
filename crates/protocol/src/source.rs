@@ -1,3 +1,4 @@
+use std::io;
 use std::path::{Path, PathBuf};
 use tokio::fs::File;
 use tokio::io::{AsyncRead, AsyncSeek};
@@ -35,7 +36,9 @@ impl Source for FileSource {
   type Reader = File;
 
   async fn reader(&self, name: &str) -> crate::Result<Self::Reader> {
-    let file = File::open(&self.file_path(name)).await?;
+    let file = File::open(&self.file_path(name))
+      .await
+      .map_err(map_io_err)?;
     Ok(file)
   }
 
@@ -51,6 +54,13 @@ impl Source for FileSource {
       AsyncReader::<BundleManifest>::read(&mut AsyncBundleReader::new(&mut file)).await?;
     Ok(manifest)
   }
+}
+
+fn map_io_err(e: io::Error) -> crate::Error {
+  if e.kind() == io::ErrorKind::NotFound {
+    return crate::Error::BundleNotFound;
+  }
+  crate::Error::from(e)
 }
 
 #[cfg(test)]
@@ -101,5 +111,15 @@ mod tests {
     for h in handles {
       h.await.unwrap();
     }
+  }
+
+  #[tokio::test]
+  async fn bundle_not_found() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures");
+    let source = FileSource::new(base_dir);
+    let bundle = source.fetch("not-found.wvb").await;
+    assert!(matches!(bundle.unwrap_err(), crate::Error::BundleNotFound));
   }
 }

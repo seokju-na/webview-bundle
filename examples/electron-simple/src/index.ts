@@ -1,22 +1,20 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { webviewBundle } from '@webview-bundle/electron';
+import { bundleProtocol, localProtocol, wvb } from '@webview-bundle/electron';
 import { app, BrowserWindow } from 'electron';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-// const loader = FSLoader.fromDir(path.join(dirname, '../'));
 
-webviewBundle({
-  protocol: {
-    scheme: 'app',
-    privileges: {},
-  },
-  updater: {
-    remotesBaseUrl: 'https://wvb.mycdn.com',
-  },
+wvb({
+  protocols: [
+    localProtocol('app-local', {
+      'wvb.dev': 'http://localhost:4312',
+    }),
+    bundleProtocol('app', path.join(dirname, '..'), {
+      onError: e => console.error(e),
+    }),
+  ],
 });
-
-// registerProtocol({ scheme: 'app', loader });
 
 async function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -24,7 +22,7 @@ async function createWindow() {
     height: 600,
   });
 
-  await mainWindow.loadURL('app://bundle');
+  await mainWindow.loadURL('app://out.wvb');
   mainWindow.webContents.openDevTools();
 }
 

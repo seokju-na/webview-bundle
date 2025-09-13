@@ -2,7 +2,7 @@
 edition = "2021"
 name    = "webview-bundle-node-binding"
 publish = false
-version = "0.1.0"
+version = "0.0.0"
 
 [lib]
 crate-type = ["cdylib"]
@@ -10,7 +10,7 @@ doctest    = false
 test       = false
 
 [dependencies]
-napi           = { workspace = true }
+napi           = { workspace = true, features = ["napi8"] }
 napi-derive    = { workspace = true }
 thiserror      = { workspace = true }
 tokio          = { workspace = true, features = ["fs"] }

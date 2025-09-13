@@ -1,12 +1,11 @@
 {
   "name": "@webview-bundle/electron",
+  "description": "Webview bundle API for Electron",
   "version": "0.0.0",
   "type": "module",
   "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./preload": "./src/preload/index.ts",
-    "./updater": "./src/updater/index.ts"
+    ".": "./src/index.ts"
   },
   "publishConfig": {
     "main": "./dist/index.js",
@@ -15,14 +14,6 @@
       ".": {
         "import": "./dist/index.js",
         "require": "./dist/index.cjs"
-      },
-      "./preload": {
-        "import": "./dist/preload/index.js",
-        "require": "./dist/preload/index.cjs"
-      },
-      "./updater": {
-        "import": "./dist/updater/index.js",
-        "require": "./dist/updater/index.cjs"
       },
       "./package.json": "./package.json"
     }
@@ -47,24 +38,24 @@
     "url": "https://github.com/seokju-na"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
+  },
   "scripts": {
-    "prepack": "yarn build",
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "electron": ">= 25"
+    "electron": ">= 15"
   },
   "dependencies": {
-    "es-mime-types": "^0.1.4"
+    "@webview-bundle/electron-binding": "workspace:^"
   },
   "devDependencies": {
-    "@types/mime-types": "^2",
-    "@types/node": "22.7.4",
-    "@yarnpkg/fslib": "^3.1.0",
+    "@types/node": "22.18.3",
     "electron": "^33.0.0",
-    "tsdown": "0.14.2",
-    "typescript": "5.8.3",
-    "vitest": "3.1.2"
+    "tsdown": "0.15.1",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
   }
 }

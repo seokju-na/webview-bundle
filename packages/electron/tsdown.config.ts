@@ -1,10 +1,11 @@
-import { defineConfig } from 'tsdown';
+import { defineConfig, type UserConfig } from 'tsdown';
 
-const config: ReturnType<typeof defineConfig> = defineConfig({
-  entry: ['./src/index.ts', './src/preload/index.ts', './src/updater/index.ts'],
+const config: UserConfig = defineConfig({
+  entry: ['./src/index.ts'],
   format: ['esm', 'cjs'],
-  dts: true,
   platform: 'node',
-  target: 'node16',
+  target: 'node12',
+  dts: true,
 });
+
 export { config as default };

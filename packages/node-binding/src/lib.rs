@@ -37,6 +37,26 @@ impl Bundle {
   }
 
   #[napi]
+  pub fn get_entry_offset(&self, path: String) -> Option<u64> {
+    self
+      .inner
+      .manifest()
+      .index()
+      .get_entry(&path)
+      .map(|x| x.offset())
+  }
+
+  #[napi]
+  pub fn get_entry_len(&self, path: String) -> Option<u64> {
+    self
+      .inner
+      .manifest()
+      .index()
+      .get_entry(&path)
+      .map(|x| x.len())
+  }
+
+  #[napi]
   pub fn has_path(&self, path: String) -> bool {
     self.inner.manifest().index().contains_path(&path)
   }
