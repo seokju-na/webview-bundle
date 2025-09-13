@@ -1,3 +1,5 @@
+use webview_bundle::http;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
   #[error("core error: {0}")]
@@ -10,4 +12,8 @@ pub enum Error {
   Reqwest(#[from] reqwest::Error),
   #[error("bundle not found")]
   BundleNotFound,
+  #[error("http error: {0}")]
+  Http(#[from] http::Error),
+  #[error("invalid header value: {0}")]
+  InvalidHeaderValue(#[from] http::header::InvalidHeaderValue),
 }

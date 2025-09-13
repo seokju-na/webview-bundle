@@ -15,6 +15,7 @@ doctest = false
 [dependencies]
 bytes          = { workspace = true }
 dashmap        = { workspace = true }
+infer          = { workspace = true }
 reqwest        = { workspace = true }
 thiserror      = { workspace = true }
 tokio          = { workspace = true, features = ["rt", "rt-multi-thread", "fs", "io-util"] }

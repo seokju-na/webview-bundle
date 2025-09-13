@@ -6,9 +6,12 @@ use webview_bundle::{AsyncBundleReader, AsyncReader, Bundle, BundleManifest};
 pub trait Source: Send + Sync {
   type Reader: AsyncRead + AsyncSeek + Unpin + Send + Sync;
 
-  async fn reader(&self, name: &str) -> crate::Result<Self::Reader>;
-  async fn fetch(&self, name: &str) -> crate::Result<Bundle>;
-  async fn fetch_manifest(&self, name: &str) -> crate::Result<BundleManifest>;
+  fn reader(&self, name: &str) -> impl std::future::Future<Output = crate::Result<Self::Reader>>;
+  fn fetch(&self, name: &str) -> impl std::future::Future<Output = crate::Result<Bundle>>;
+  fn fetch_manifest(
+    &self,
+    name: &str,
+  ) -> impl std::future::Future<Output = crate::Result<BundleManifest>>;
 }
 
 #[derive(Clone)]

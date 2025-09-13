@@ -1,5 +1,5 @@
 [workspace]
-members  = ["crates/*", "packages/node-binding", "examples/tauri-simple"]
+members  = ["crates/*", "packages/node-binding"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -11,6 +11,7 @@ bpaf                    = { version = "0.9.14", features = ["derive"] }
 bytes                   = { version = "1" }
 dashmap                 = "7.0.0-rc2"
 http                    = { version = "1" }
+infer                   = "0.19.0"
 lz4_flex                = "0.11.3"
 mime_guess              = "2.0.5"
 napi                    = { version = "3.2.4", default-features = false, features = ["napi3", "async"] }

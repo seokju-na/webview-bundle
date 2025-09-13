@@ -18,8 +18,8 @@ pub enum Error {
     error: bincode::error::DecodeError,
     message: String,
   },
-  #[error("http error: {0}")]
-  Http(#[from] http::Error),
+  // #[error("http error: {0}")]
+  // Http(#[from] http::Error),
   #[error("invalid magic number")]
   InvalidMagicNum,
   #[error("invalid version format")]

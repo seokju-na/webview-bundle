@@ -1,15 +1,16 @@
+use crate::mime_type::MimeType;
 use crate::source::Source;
 use crate::uri::{DefaultUriResolver, UriResolver};
 use dashmap::DashMap;
 use std::borrow::Cow;
 use std::sync::Arc;
 use tokio::sync::OnceCell;
-use webview_bundle::http::{Request, Response};
+use webview_bundle::http::{header, HeaderValue, Method, Request, Response};
 use webview_bundle::BundleManifest;
 
 pub struct BundleProtocol<S: Source> {
   source: Arc<S>,
-  uri: Box<dyn UriResolver + 'static>,
+  uri_resolver: Box<dyn UriResolver + 'static>,
   manifests: DashMap<String, Arc<OnceCell<Arc<BundleManifest>>>>,
 }
 
@@ -17,7 +18,7 @@ impl<S: Source> BundleProtocol<S> {
   pub fn new(source: S) -> Self {
     Self {
       source: Arc::new(source),
-      uri: Box::new(DefaultUriResolver),
+      uri_resolver: Box::new(DefaultUriResolver),
       manifests: DashMap::default(),
     }
   }
@@ -51,22 +52,43 @@ impl<S: Source> BundleProtocol<S> {
 
 impl<S: Source> super::protocol::Protocol for BundleProtocol<S> {
   async fn handle(&self, request: Request<Vec<u8>>) -> crate::Result<Response<Cow<'static, [u8]>>> {
-    // TODO: check method
     let name = self
-      .uri
+      .uri_resolver
       .resolve_bundle(request.uri())
       .ok_or(crate::Error::BundleNotFound)?;
-    let manifest = self.load_manifest(&name).await?;
-    let path = self.uri.resolve_path(request.uri());
-    let reader = self.source.reader(&name).await?;
-    let data = manifest.async_get_data(reader, &path).await?;
-    let resp: Response<Cow<'static, [u8]>> = if let Some(data) = data {
-      Response::builder().status(200).body(data.into())
-    } else {
-      Response::builder().status(404).body(vec![].into())
+    let path = self.uri_resolver.resolve_path(request.uri());
+
+    let mut resp = Response::builder();
+
+    if !(request.method() == Method::GET || request.method() == Method::HEAD) {
+      let method_not_allowed = resp.status(405).body(Vec::new().into())?;
+      return Ok(method_not_allowed);
     }
-    .map_err(|e| crate::Error::Core(e.into()))?;
-    Ok(resp)
+
+    let manifest = self.load_manifest(&name).await?;
+    if !manifest.index().contains_path(&path) {
+      let not_found = resp.status(404).body(Vec::new().into())?;
+      return Ok(not_found);
+    }
+
+    let reader = self.source.reader(&name).await?;
+    let data = manifest.async_get_data(reader, &path).await?.unwrap();
+
+    if let Some(headers_mut) = resp.headers_mut() {
+      if let Some(headers) = manifest.index().get_entry(&path).map(|x| x.headers()) {
+        headers_mut.clone_from(headers);
+      }
+      // append if content-type header does not exists
+      if !headers_mut.contains_key("content-type") {
+        let mime = MimeType::parse(&data, &path);
+        headers_mut.insert(header::CONTENT_TYPE, HeaderValue::try_from(&mime)?);
+      }
+      // insert content-length header
+      headers_mut.insert(header::CONTENT_LENGTH, data.len().into());
+    }
+
+    let response = resp.status(200).body(data.into())?;
+    Ok(response)
   }
 }
 
@@ -254,5 +276,195 @@ mod tests {
       let resp = h.await.unwrap().unwrap();
       assert_eq!(resp.status(), 200);
     }
+  }
+
+  #[tokio::test]
+  async fn resolve_index_html() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures");
+    let source = FileSource::new(base_dir);
+    let protocol = Arc::new(BundleProtocol::new(source));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 200);
+  }
+
+  #[tokio::test]
+  async fn content_type() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures");
+    let source = FileSource::new(base_dir);
+    let protocol = Arc::new(BundleProtocol::new(source));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("text/javascript")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/data/_NfFFTR049E8wOmF-fa7P/category.json")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("application/json")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/static/css/419406682a95b9a9.css")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("text/css")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/static/media/build.583ad785.png")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("image/png")
+    );
+  }
+
+  #[tokio::test]
+  async fn content_length() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures");
+    let source = FileSource::new(base_dir);
+    let protocol = Arc::new(BundleProtocol::new(source));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
+      HeaderValue::from_static("139833")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/data/_NfFFTR049E8wOmF-fa7P/category.json")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
+      HeaderValue::from_static("1850")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/static/css/419406682a95b9a9.css")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
+      HeaderValue::from_static("13856")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/_next/static/media/build.583ad785.png")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
+      HeaderValue::from_static("475918")
+    );
+  }
+
+  #[tokio::test]
+  async fn not_found() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures");
+    let source = FileSource::new(base_dir);
+    let protocol = Arc::new(BundleProtocol::new(source));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://nextjs.wvb/path/not/exists")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 404);
+  }
+
+  #[tokio::test]
+  async fn bundle_not_found() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures");
+    let source = FileSource::new(base_dir);
+    let protocol = Arc::new(BundleProtocol::new(source));
+    let err = protocol
+      .handle(
+        Request::builder()
+          .uri("https://not_exsits_bundle.wvb")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap_err();
+    assert!(matches!(err, crate::Error::BundleNotFound));
   }
 }

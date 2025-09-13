@@ -17,6 +17,16 @@ impl UriResolver for DefaultUriResolver {
   }
 
   fn resolve_path(&self, uri: &Uri) -> String {
-    uri.path().to_string()
+    let mut path = uri.path().to_string();
+    if path.ends_with('/') {
+      path.push_str("index.html");
+      return path;
+    }
+    if let Some(last) = path.rsplit('/').next() {
+      if !last.is_empty() && !last.contains('.') {
+        path.push_str("/index.html");
+      }
+    }
+    path
   }
 }

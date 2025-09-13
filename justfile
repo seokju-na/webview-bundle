@@ -25,7 +25,7 @@ test-js: build-napi build-js
 
 # Test Rust files
 test-rs:
-    cargo test --workspace --no-fail-fast
+    cargo test --workspace --no-fail-fast --all-features
 
 # Format all files
 format: format-toml format-rs format-js

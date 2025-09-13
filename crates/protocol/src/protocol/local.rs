@@ -49,9 +49,9 @@ impl super::protocol::Protocol for LocalProtocol {
     for (name, value) in &response.headers {
       builder = builder.header(name, value);
     }
-    builder
+    let resp = builder
       .status(response.status)
-      .body(response.body.to_vec().into())
-      .map_err(|e| crate::Error::Core(e.into()))
+      .body(response.body.to_vec().into())?;
+    Ok(resp)
   }
 }

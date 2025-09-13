@@ -427,8 +427,6 @@ impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<Index> for AsyncIndexReader<R
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::{HeaderWriter, Version};
-  use std::io::Cursor;
 
   #[test]
   fn index() {
@@ -453,6 +451,10 @@ mod tests {
   #[cfg(feature = "async")]
   #[tokio::test]
   async fn async_read_and_write() {
+    use crate::HeaderWriter;
+    use crate::Version;
+    use std::io::Cursor;
+
     let mut index = Index::default();
     let mut entry = IndexEntry::new(0, 0);
     entry.headers.append(

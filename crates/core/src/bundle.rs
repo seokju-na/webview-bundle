@@ -381,13 +381,13 @@ mod tests {
     assert_eq!(manifest.header.version(), Version::V1);
     assert_eq!(manifest.header.index_size(), 39);
 
-    let html_entry = manifest.index.get_entry("/index.html").unwrap();
+    let html = manifest.index.get_entry("/index.html").unwrap();
     assert_eq!(
-      html_entry.headers().get(header::CONTENT_TYPE).unwrap(),
+      html.headers().get(header::CONTENT_TYPE).unwrap(),
       "text/html"
     );
-    assert_eq!(html_entry.offset(), 0);
-    assert_eq!(html_entry.len(), 98);
+    assert_eq!(html.offset(), 0);
+    assert_eq!(html.len(), 98);
   }
 
   #[test]
@@ -413,5 +413,26 @@ mod tests {
 
     // Not found
     assert!(bundle.get_data("/not_found.html").unwrap().is_none());
+  }
+
+  #[cfg(feature = "async")]
+  #[tokio::test]
+  async fn async_get_data() {
+    let mut builder = Bundle::builder();
+    let mut headers = HeaderMap::new();
+    headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
+    builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
+    builder.insert_entry("/index.js", INDEX_JS.as_bytes());
+    let bundle = builder.build().unwrap();
+    let mut data = vec![];
+    let mut writer = BundleWriter::new(Cursor::new(&mut data));
+    writer.write(&bundle).unwrap();
+    let mut reader = BundleReader::new(Cursor::new(&data));
+    let manifest: BundleManifest = reader.read().unwrap();
+    let html = manifest
+      .async_get_data(Cursor::new(&data), "/index.html")
+      .await
+      .unwrap();
+    assert_eq!(html.unwrap(), INDEX_HTML.as_bytes());
   }
 }
