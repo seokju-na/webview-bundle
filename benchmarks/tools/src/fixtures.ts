@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execa } from 'execa';
 import { Listr } from 'listr2';
-import glob from 'tiny-glob';
+import { glob } from 'tinyglobby';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const current = path.resolve(dirname, '..');
@@ -14,7 +14,7 @@ export interface FixtureInfo {
   dir: string;
 }
 
-export function listFixtures() {
+export function listFixtures(): FixtureInfo[] {
   const names = fs.readdirSync(fixturesDir);
   const list: FixtureInfo[] = [];
   for (const name of names) {
@@ -27,15 +27,15 @@ export function listFixtures() {
   return list;
 }
 
-export function getFixtureDir(name: string) {
+export function getFixtureDir(name: string): string {
   return path.join(fixturesDir, name);
 }
 
-export function getFixtureOutDir(name: string) {
+export function getFixtureOutDir(name: string): string {
   return path.join(getFixtureDir(name), 'out');
 }
 
-export function getFixtureOutWebviewBundleFilePath(name: string) {
+export function getFixtureOutWebviewBundleFilePath(name: string): string {
   return path.join(getFixtureDir(name), 'out.wvb');
 }
 
@@ -44,13 +44,13 @@ export interface FixtureFile {
   absolutePath: string;
 }
 
-export async function findAllFixtureFiles(name: string) {
+export async function findAllFixtureFiles(name: string): Promise<FixtureFile[]> {
   const outDir = getFixtureOutDir(name);
   const paths = await glob('**/*', {
     cwd: getFixtureOutDir(name),
     dot: true,
     absolute: false,
-    filesOnly: true,
+    onlyFiles: true,
   });
   const files = paths.map((filePath): FixtureFile => {
     return {
@@ -65,13 +65,13 @@ export async function buildFixture(name: string): Promise<boolean> {
   await execa('yarn', ['out'], { cwd: getFixtureDir(name) });
   await execa(
     'yarn',
-    ['webview-bundle', 'pack', getFixtureOutDir(name), '-o', getFixtureOutWebviewBundleFilePath(name), '--truncate'],
+    ['wvb', 'create', getFixtureOutDir(name), '-O', getFixtureOutWebviewBundleFilePath(name), '--truncate'],
     { cwd: current }
   );
   return true;
 }
 
-export async function buildAllFixtures() {
+export async function buildAllFixtures(): Promise<void> {
   const fixtures = listFixtures();
   const task = new Listr(
     fixtures.map(fixture => ({

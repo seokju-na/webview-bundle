@@ -15,9 +15,10 @@ setup:
     corepack enable
     corepack prepare --activate
     yarn
-
-    # Pre-requirements
     yarn lefthook install
+
+    # Run build
+    just build
 
 # Test all files
 test: test-rs test-js
@@ -28,7 +29,7 @@ test-js: build-napi build-js
 
 # Test Rust files
 test-rs:
-    cargo test --workspace --no-fail-fast
+    cargo test --workspace --no-fail-fast --all-features
 
 # Format all files
 format: format-toml format-rs format-js
@@ -65,7 +66,7 @@ build: build-rs build-napi build-js
 
 # Build NAPI modules
 build-napi:
-    yarn workspaces foreach -Ap run build:napi
+    yarn workspaces foreach -Ap run build-napi
 
 # Build Rust workspaces
 build-rs:

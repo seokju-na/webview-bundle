@@ -1,5 +1,8 @@
-export type { Cache } from './cache.js';
-export { type FSLike, FSLoader, type FSLoaderConfig } from './fs-loader.js';
-export type { Loader } from './loader.js';
-export { type ProtocolHandlerConfig, protocolHandler } from './protocol.js';
-export { URI } from './uri.js';
+export type {
+  Protocol,
+  ProtocolHandler,
+  ProtocolOptions,
+} from './protocol.js';
+export { bundleProtocol, localProtocol } from './protocol.js';
+export type { WebviewBundleConfig } from './webview-bundle.js';
+export { webviewBundle, wvb } from './webview-bundle.js';

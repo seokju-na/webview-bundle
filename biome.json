@@ -16,8 +16,10 @@
       "**/*.json",
       "!.yarn/**",
       "!**/*.json",
-      "!**/binding.cjs",
-      "!**/binding.d.cts"
+      "!**/*.js",
+      "!**/*.cjs",
+      "!**/*.d.ts",
+      "!**/*.d.cts"
     ]
   },
   "formatter": {
@@ -33,7 +35,8 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noEmptyInterface": "off",
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "noConfusingVoidType": "off"
       },
       "style": {
         "noNonNullAssertion": "off",

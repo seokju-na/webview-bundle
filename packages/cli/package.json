@@ -3,17 +3,17 @@
   "version": "0.0.0",
   "type": "module",
   "bin": {
-    "webview-bundle": "./webview-bundle.js"
-  },
-  "exports": {
-    "./package.json": "./package.json"
+    "webview-bundle": "./dist/main.js",
+    "wvb": "./dist/main.js"
   },
   "files": [
-    "binding.cjs",
-    "webview-bundle.js",
+    "dist",
     "README.md",
     "CHANGELOG.md"
   ],
+  "engines": {
+    "node": ">= 18.14.1 < 19 || >= 19.7.0 < 20 || >= 20.0.0"
+  },
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
     "type": "git",
@@ -29,45 +29,31 @@
     "url": "https://github.com/seokju-na"
   },
   "license": "MIT",
-  "engines": {
-    "node": ">= 18"
-  },
-  "napi": {
-    "name": "cli",
-    "triples": {
-      "additional": [
-        "x86_64-apple-darwin",
-        "aarch64-apple-darwin",
-        "x86_64-pc-windows-msvc",
-        "aarch64-pc-windows-msvc",
-        "x86_64-unknown-linux-gnu",
-        "x86_64-unknown-linux-musl",
-        "aarch64-unknown-linux-gnu",
-        "aarch64-unknown-linux-musl"
-      ]
-    },
-    "npmClient": "yarn"
-  },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "artifacts": "just xtask artifacts napi packages/cli && napi artifacts",
-    "build:napi": "napi build --platform --release --js=binding.cjs --dts=binding.d.cts",
-    "build:napi:debug": "napi build --platform --js=binding.cjs --dts=binding.d.cts"
+    "prepack": "yarn build",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
   },
-  "optionalDependencies": {
-    "@webview-bundle/cli-darwin-arm64": "workspace:*",
-    "@webview-bundle/cli-darwin-x64": "workspace:*",
-    "@webview-bundle/cli-linux-arm64-gnu": "workspace:*",
-    "@webview-bundle/cli-linux-arm64-musl": "workspace:*",
-    "@webview-bundle/cli-linux-x64-gnu": "workspace:*",
-    "@webview-bundle/cli-linux-x64-musl": "workspace:*",
-    "@webview-bundle/cli-win32-arm64-msvc": "workspace:*",
-    "@webview-bundle/cli-win32-x64-msvc": "workspace:*"
+  "dependencies": {
+    "@hono/node-server": "^1.19.2",
+    "@logtape/logtape": "1.0.4",
+    "@webview-bundle/node-binding": "workspace:^",
+    "ci-info": "^4.2.0",
+    "clipanion": "^4.0.0-rc.4",
+    "file-type": "^21.0.0",
+    "hono": "^4.9.7",
+    "kleur": "^4.1.5",
+    "picomatch": "^4.0.3",
+    "supports-color": "^10.0.0",
+    "tinyglobby": "^0.2.14",
+    "typanion": "^3.14.0",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@napi-rs/cli": "2.18.4",
-    "@types/node": "22.7.4",
-    "typescript": "5.8.3",
-    "vitest": "3.1.2"
+    "@types/node": "22.18.3",
+    "@types/picomatch": "^4",
+    "tsdown": "0.15.1",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
   }
 }

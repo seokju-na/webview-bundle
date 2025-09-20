@@ -1,79 +1,126 @@
-import path from 'node:path';
-import type { Bundle } from '@webview-bundle/node-binding';
-import { lookup } from 'es-mime-types';
-import type { Cache } from './cache.js';
-import type { Loader } from './loader.js';
-import { URI } from './uri.js';
+import { Buffer } from 'node:buffer';
+import {
+  type Response as BindingResponse,
+  BundleProtocol,
+  LocalProtocol,
+  type Method,
+} from '@webview-bundle/electron-binding';
+import type { Protocol as ElectronProtocol, Privileges } from 'electron';
+import { app, protocol as electronProtocol } from 'electron';
+import { makeError } from './utils.js';
 
-export interface ProtocolHandlerConfig {
-  loader: Loader;
-  cache?: Cache<Bundle>;
-  contentType?: (filepath: string) => string | undefined;
-  headers?: (headers: Record<string, string>) => Record<string, string>;
-  error?: (e: unknown) => Response | undefined;
+export type ProtocolHandler = (req: Request) => Promise<Response>;
+
+export interface ProtocolOptions {
+  protocol?: () => ElectronProtocol;
+  privileges?: Privileges;
+  onError?: (e: Error) => void;
 }
 
-const defaultContentType = () => {
-  return (filepath: string): string | undefined => {
-    const contentType: string | undefined = lookup(filepath) || undefined;
-    return contentType;
-  };
+export interface Protocol {
+  scheme: string;
+  handler: ProtocolHandler;
+  options?: ProtocolOptions;
+}
+
+const DEFAULT_PRIVILEGES: Privileges = {
+  standard: true,
+  secure: true,
+  bypassCSP: true,
+  allowServiceWorkers: true,
+  supportFetchAPI: true,
+  corsEnabled: true,
+  stream: false,
+  codeCache: true,
 };
 
-export function protocolHandler({ loader, cache, contentType, headers, error }: ProtocolHandlerConfig) {
-  const getContentType = contentType != null ? contentType : defaultContentType();
-  const loadBundle = async (uri: URI): Promise<Bundle> => {
-    const cacheKey = loader.getBundleName?.(uri) ?? uri.toString();
-    if (cache?.has(cacheKey) === true) {
-      return cache.get(cacheKey)!;
-    }
-    const bundle = await loader.load(uri);
-    cache?.set(cacheKey, bundle);
+export async function registerProtocol(protocol: Protocol): Promise<void> {
+  const { scheme, handler, options = {} } = protocol;
+  const { protocol: getProtocol, privileges, onError } = options;
 
-    return bundle;
-  };
-  const makeHeaders = (filepath: string): Record<string, string> => {
-    const type = getContentType(filepath);
-    const defaultHeaders = {
-      'content-type': type ?? 'text/plain',
-    };
-    return headers?.(defaultHeaders) ?? defaultHeaders;
-  };
+  electronProtocol.registerSchemesAsPrivileged([
+    {
+      scheme,
+      privileges: { ...DEFAULT_PRIVILEGES, ...privileges },
+    },
+  ]);
 
-  return async (request: Request): Promise<Response> => {
-    const uri = new URI(request.url);
-    const bundle = await loadBundle(uri);
-    const filepath = uriToFilepath(uri);
-    try {
-      const data = await bundle.readFile(filepath);
-      const response = new Response(data, { headers: makeHeaders(filepath) });
-      return response;
-    } catch (e) {
-      const response = error?.(e);
-      if (response != null) {
-        return response;
+  await app.whenReady();
+  const p = getProtocol?.() ?? electronProtocol;
+  if (typeof p.handle === 'function') {
+    p.handle(scheme, async req => {
+      try {
+        const resp = await handler(req);
+        return resp;
+      } catch (e) {
+        const error = makeError(e);
+        onError?.(error);
+        return new Response(error.message, { status: 500 });
       }
-      if (isFileNotFoundError(e)) {
-        return new Response(null, {
-          status: 404,
-          headers: {
-            'content-type': 'text/html; charset=utf-8',
-          },
+    });
+  } else {
+    // support for electron < 25
+    p.registerBufferProtocol(scheme, async (req, callback) => {
+      const request = new Request(req.url, {
+        method: req.method,
+        headers: req.headers,
+      });
+      try {
+        const response = await handler(request);
+        callback({
+          statusCode: response.status,
+          headers: normalizeHeaders(response.headers),
+          data: Buffer.from(await response.arrayBuffer()),
         });
+      } catch (e) {
+        onError?.(makeError(e));
+        callback({ error: -2 });
       }
-      throw e;
-    }
-  };
-}
-
-function uriToFilepath(uri: URI): string {
-  const filepath = uri.path.slice(1);
-  if (path.extname(filepath) !== '') {
-    return decodeURIComponent(filepath);
+    });
   }
-  return decodeURIComponent([filepath, 'index.html'].filter(x => x !== '').join('/'));
 }
 
-function isFileNotFoundError(e: unknown): boolean {
-  return e != null && typeof e === 'object' && (e as Error)?.message?.includes('file not found');
+export function localProtocol(scheme: string, mapping: Record<string, string>, options?: ProtocolOptions): Protocol {
+  const local = new LocalProtocol(mapping);
+  const protocol: Protocol = {
+    scheme,
+    handler: async req => {
+      const method = req.method.toLowerCase() as Method;
+      const resp = await local.handle(method as Method, req.url, normalizeHeaders(req.headers));
+      return makeResponse(resp);
+    },
+    options,
+  };
+  return protocol;
+}
+
+export function bundleProtocol(scheme: string, basedir: string, options?: ProtocolOptions): Protocol {
+  const bundle = new BundleProtocol(basedir);
+  const protocol: Protocol = {
+    scheme,
+    handler: async req => {
+      const method = req.method.toLowerCase() as Method;
+      const resp = await bundle.handle(method as Method, req.url, normalizeHeaders(req.headers));
+      return makeResponse(resp);
+    },
+    options,
+  };
+  return protocol;
+}
+
+function normalizeHeaders(headers: Headers): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const [key, value] of headers.entries()) {
+    map[key] = value;
+  }
+  return map;
+}
+
+function makeResponse(resp: BindingResponse): Response {
+  const { status, headers: respHeaders, body } = resp;
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(respHeaders)) {
+    headers.set(key, value);
+  }
+  return new Response(body as any, { status, headers });
 }

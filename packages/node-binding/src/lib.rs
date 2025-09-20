@@ -1,109 +1,257 @@
-#![cfg(any(target_os = "macos", target_os = "linux", windows))]
-#![allow(clippy::new_without_default)]
+#![deny(clippy::all)]
+
+mod error;
 
 use napi::bindgen_prelude::*;
-use napi::threadsafe_function::{ErrorStrategy, ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
+use tokio::fs;
+use webview_bundle::{
+  http, AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, BundleBuilderOptions,
+  HeaderWriterOptions, IndexWriterOptions,
+};
 
-#[napi(js_name = "Bundle")]
-pub struct JsBundle {
+type Result<T> = std::result::Result<T, error::Error>;
+
+#[napi]
+pub struct Bundle {
   inner: webview_bundle::Bundle,
 }
 
 #[napi]
-impl JsBundle {
-  #[napi(constructor)]
-  pub fn new() -> Self {
-    Self {
-      inner: webview_bundle::Bundle::builder().build(),
-    }
+impl Bundle {
+  #[napi(getter)]
+  pub fn version(&self) -> Version {
+    Version::from(self.inner.manifest().header().version())
   }
 
   #[napi]
-  pub async fn read_file(&self, path: String) -> Result<Buffer> {
-    let data = self
+  pub fn paths(&self) -> Vec<String> {
+    self
       .inner
-      .read_file(&path)
-      .map_err(|e| Error::new(Status::GenericFailure, e))?;
-    Ok(Buffer::from(data))
-  }
-}
-
-#[napi(ts_args_type = "buf: Buffer, callback: (err: null | Error, result: Bundle) => void")]
-pub fn decode(buf: Buffer, callback: JsFunction) -> Result<()> {
-  let js_fn: ThreadsafeFunction<webview_bundle::Bundle, ErrorStrategy::CalleeHandled> =
-    callback.create_threadsafe_function(0, |ctx| Ok(vec![JsBundle { inner: ctx.value }]))?;
-  let data: Vec<u8> = buf.into();
-  std::thread::spawn(move || match webview_bundle::decode(data) {
-    Ok(bundle) => {
-      js_fn.call(Ok(bundle), ThreadsafeFunctionCallMode::Blocking);
-    }
-    Err(e) => {
-      js_fn.call(
-        Err(Error::new(Status::GenericFailure, e)),
-        ThreadsafeFunctionCallMode::Blocking,
-      );
-    }
-  });
-  Ok(())
-}
-
-#[napi(ts_args_type = "bundle: Bundle, callback: (err: null | Error, result: Buffer) => void")]
-pub fn encode(bundle: &JsBundle, callback: JsFunction) -> Result<()> {
-  let js_fn: ThreadsafeFunction<Vec<u8>, ErrorStrategy::CalleeHandled> = callback
-    .create_threadsafe_function(0, |ctx| {
-      ctx
-        .env
-        .create_buffer_with_data(ctx.value)
-        .map(|x| vec![x.into_raw()])
-    })?;
-  let b = bundle.inner.clone();
-  std::thread::spawn(move || {
-    match webview_bundle::encode_bytes(&b) {
-      Ok(x) => {
-        js_fn.call(Ok(x), ThreadsafeFunctionCallMode::Blocking);
-      }
-      Err(e) => {
-        js_fn.call(
-          Err(Error::new(Status::GenericFailure, e)),
-          ThreadsafeFunctionCallMode::Blocking,
-        );
-      }
-    };
-  });
-  Ok(())
-}
-
-#[napi(object)]
-#[derive(Clone)]
-pub struct File {
-  pub path: String,
-  pub data: Buffer,
-}
-
-pub struct BundleBuilder {
-  files: Vec<File>,
-}
-
-impl Task for BundleBuilder {
-  type Output = webview_bundle::Bundle;
-  type JsValue = JsBundle;
-
-  fn compute(&mut self) -> Result<Self::Output> {
-    let mut builder = webview_bundle::Bundle::builder();
-    for file in self.files.iter() {
-      let data: Vec<u8> = file.data.clone().into();
-      builder = builder.add_file(&file.path, &data);
-    }
-    Ok(builder.build())
+      .manifest()
+      .index()
+      .entries()
+      .keys()
+      .map(|x| x.to_owned())
+      .collect::<Vec<_>>()
   }
 
-  fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
-    Ok(JsBundle { inner: output })
+  #[napi]
+  pub fn get_entry_offset(&self, path: String) -> Option<u64> {
+    self
+      .inner
+      .manifest()
+      .index()
+      .get_entry(&path)
+      .map(|x| x.offset())
+  }
+
+  #[napi]
+  pub fn get_entry_len(&self, path: String) -> Option<u64> {
+    self
+      .inner
+      .manifest()
+      .index()
+      .get_entry(&path)
+      .map(|x| x.len())
+  }
+
+  #[napi]
+  pub fn has_path(&self, path: String) -> bool {
+    self.inner.manifest().index().contains_path(&path)
+  }
+
+  #[napi]
+  pub fn get_data(&self, path: String) -> Result<Option<Uint8Array>> {
+    let data = self.inner.get_data(&path)?.map(Uint8Array::from);
+    Ok(data)
+  }
+
+  #[napi]
+  pub fn get_headers(&self, path: String) -> Option<Vec<(String, String)>> {
+    self
+      .inner
+      .manifest()
+      .index()
+      .get_entry(&path)
+      .map(|x| from_headers(x.headers()))
   }
 }
 
 #[napi]
-pub fn create(files: Vec<File>) -> AsyncTask<BundleBuilder> {
-  AsyncTask::new(BundleBuilder { files })
+pub async fn read_bundle(path: String) -> Result<Bundle> {
+  let mut file = fs::File::open(&path).await?;
+  let bundle =
+    AsyncReader::<webview_bundle::Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
+  Ok(Bundle { inner: bundle })
+}
+
+#[napi]
+pub async fn write_bundle(bundle: &Bundle, path: String) -> Result<u32> {
+  let mut file = fs::File::create(&path).await?;
+  let size = AsyncWriter::<webview_bundle::Bundle>::write(
+    &mut AsyncBundleWriter::new(&mut file),
+    &bundle.inner,
+  )
+  .await?;
+  Ok(size as u32)
+}
+
+#[napi(string_enum = "lowercase")]
+pub enum Version {
+  V1,
+}
+
+impl From<Version> for webview_bundle::Version {
+  fn from(value: Version) -> Self {
+    match value {
+      Version::V1 => webview_bundle::Version::V1,
+    }
+  }
+}
+
+impl From<webview_bundle::Version> for Version {
+  fn from(value: webview_bundle::Version) -> Self {
+    match value {
+      webview_bundle::Version::V1 => Version::V1,
+    }
+  }
+}
+
+fn into_headers(value: Vec<(String, String)>) -> Result<http::HeaderMap> {
+  let mut headers = http::HeaderMap::new();
+  for (key, value) in value {
+    let k = http::HeaderName::try_from(&key)?;
+    let v = http::HeaderValue::try_from(&value)?;
+    headers.append(k, v);
+  }
+  Ok(headers)
+}
+
+fn from_headers(headers: &http::HeaderMap) -> Vec<(String, String)> {
+  let mut value = vec![];
+  for (k, v) in headers {
+    value.push((k.to_string(), v.to_str().unwrap().to_string()));
+  }
+  value
+}
+
+#[napi(object)]
+pub struct BuildOptions {
+  pub header: Option<BuildHeaderOptions>,
+  pub index: Option<BuildIndexOptions>,
+  pub data_checksum_seed: Option<u32>,
+}
+
+impl From<BuildOptions> for BundleBuilderOptions {
+  fn from(value: BuildOptions) -> Self {
+    let mut options = BundleBuilderOptions::new();
+    if let Some(header) = value.header {
+      options.header(header.into());
+    }
+    if let Some(index) = value.index {
+      options.index(index.into());
+    }
+    if let Some(seed) = value.data_checksum_seed {
+      options.data_checksum_seed(seed);
+    }
+    options
+  }
+}
+
+#[napi(object)]
+pub struct BuildHeaderOptions {
+  pub checksum_seed: Option<u32>,
+}
+
+impl From<BuildHeaderOptions> for HeaderWriterOptions {
+  fn from(value: BuildHeaderOptions) -> Self {
+    let mut options = HeaderWriterOptions::new();
+    if let Some(seed) = value.checksum_seed {
+      options.checksum_seed(seed);
+    }
+    options
+  }
+}
+
+#[napi(object)]
+pub struct BuildIndexOptions {
+  pub checksum_seed: Option<u32>,
+}
+
+impl From<BuildIndexOptions> for IndexWriterOptions {
+  fn from(value: BuildIndexOptions) -> Self {
+    let mut options = IndexWriterOptions::new();
+    if let Some(seed) = value.checksum_seed {
+      options.checksum_seed(seed);
+    }
+    options
+  }
+}
+
+#[napi]
+pub struct BundleBuilder {
+  version: Version,
+  inner: webview_bundle::BundleBuilder,
+}
+
+//noinspection RsCompileErrorMacro
+#[napi]
+impl BundleBuilder {
+  #[napi(constructor)]
+  pub fn new(version: Option<Version>) -> BundleBuilder {
+    Self {
+      version: version.unwrap_or(Version::from(webview_bundle::Version::default())),
+      inner: webview_bundle::BundleBuilder::new(),
+    }
+  }
+
+  #[napi(getter)]
+  pub fn version(&self) -> &Version {
+    &self.version
+  }
+
+  #[napi]
+  pub fn entry_paths(&self) -> Vec<String> {
+    self.inner.entries().keys().map(|s| s.to_string()).collect()
+  }
+
+  #[napi]
+  pub fn insert_entry(
+    &mut self,
+    path: String,
+    data: Buffer,
+    headers: Option<Vec<(String, String)>>,
+  ) -> Result<bool> {
+    let headers = if let Some(h) = headers {
+      Some(into_headers(h)?)
+    } else {
+      None
+    };
+    Ok(
+      self
+        .inner
+        .insert_entry(path, (data.as_ref(), headers))
+        .is_some(),
+    )
+  }
+
+  #[napi]
+  pub fn remove_entry(&mut self, path: String) -> bool {
+    self.inner.remove_entry(&path).is_some()
+  }
+
+  #[napi]
+  pub fn has_entry(&self, path: String) -> bool {
+    self.inner.contains_path(&path)
+  }
+
+  #[napi]
+  pub fn build(&mut self, options: Option<BuildOptions>) -> Result<Bundle> {
+    if let Some(options) = options {
+      self.inner.set_options(options.into());
+    }
+    let bundle = self.inner.build()?;
+    Ok(Bundle { inner: bundle })
+  }
 }

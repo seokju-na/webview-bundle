@@ -1,1 +1,1 @@
-# @webview-bundle/cli
+# @webview-bundle/deployer

@@ -1,21 +1,21 @@
 {
-  "name": "example-electron-simple",
+  "name": "@example/electron-simple",
   "private": true,
   "type": "module",
   "main": "./dist/index.mjs",
   "scripts": {
     "start": "electron .",
-    "out": "esbuild src/index.ts --bundle --outfile=./dist/index.mjs --target=node20 --format=esm --platform=node --external:electron --external:@webview-bundle/node-binding --sourcemap",
-    "make-bundle": "webview-bundle pack ./bundle -o bundle.wvb --truncate"
+    "out": "esbuild src/index.ts --bundle --outfile=./dist/index.mjs --target=node20 --format=esm --platform=node --external:electron --external:@webview-bundle/electron-binding --sourcemap",
+    "create-bundle": "wvb create ./bundle --outfile out.wvb --truncate"
   },
   "dependencies": {
-    "@webview-bundle/electron": "workspace:^",
-    "electron": "^33.0.0"
+    "@webview-bundle/electron": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "22.7.4",
+    "@types/node": "22.18.3",
     "@webview-bundle/cli": "workspace:^",
+    "electron": "^33.0.0",
     "esbuild": "0.25.3",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   }
 }

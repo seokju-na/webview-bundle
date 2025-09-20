@@ -7,9 +7,16 @@ pre-commit:
       stage_fixed: true
     format:taplo:
       glob: "*.toml"
-      run: taplo fmt --colors=never {staged_files}
+      run: yarn taplo fmt --colors=never {staged_files}
       stage_fixed: true
     format:biome:
       glob: "*.{js,ts,jsx,tsx,cjs,mjs,cts,mts}"
-      run: yarn biome format --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      run: yarn biome format --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
+    check:rust:
+      glob: "*.rs"
+      run: cargo clippy --workspace
+    check:biome:
+      glob: "*.{js,ts,jsx,tsx,cjs,mjs,cts,mts}"
+      run: yarn biome format --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       stage_fixed: true

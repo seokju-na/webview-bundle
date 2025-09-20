@@ -1,16 +1,26 @@
 {
-  "name": "example-tauri-simple",
+  "name": "@example/tauri-simple",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "tauri dev",
-    "make-bundle": "webview-bundle pack ./bundle -o bundle.wvb --truncate"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "create-bundle": "wvb create ./dist --outfile ./bundles/out.wvb --truncate"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.0.2"
+    "@tauri-apps/api": "^2.8.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.3",
+    "@tauri-apps/cli": "^2.8.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^5.0.2",
     "@webview-bundle/cli": "workspace:^",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2",
+    "vite": "^7.1.5"
   }
 }

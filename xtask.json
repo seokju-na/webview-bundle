@@ -4,27 +4,31 @@
   "packages": {
     "core": {
       "versionedFiles": [
-        "crates/webview-bundle/Cargo.toml"
+        "crates/core/Cargo.toml"
       ],
-      "changelog": "crates/webview-bundle/CHANGELOG.md",
+      "changelog": "crates/core/CHANGELOG.md",
       "scopes": ["core", "all"]
+    },
+    "protocol": {
+      "versionedFiles": [
+        "crates/protocol/Cargo.toml"
+      ],
+      "changelog": "crates/protocol/CHANGELOG.md",
+      "scopes": ["protocol", "all"]
+    },
+    "tauri": {
+      "versionedFiles": [
+        "crates/tauri/Cargo.toml"
+      ],
+      "changelog": "crates/tauri/CHANGELOG.md",
+      "scopes": ["tauri", "all"]
     },
     "cli": {
       "versionedFiles": [
-        "crates/webview-bundle-cli/Cargo.toml",
-        "packages/cli/Cargo.toml",
-        "packages/cli/package.json",
-        "packages/cli/npm/*/package.json"
+        "packages/cli/package.json"
       ],
       "changelog": "packages/cli/CHANGELOG.md",
-      "scopes": ["cli", "all"],
-      "beforePublishScripts": [
-        {
-          "command": "yarn",
-          "args": ["artifacts"],
-          "cwd": "packages/cli"
-        }
-      ]
+      "scopes": ["cli", "all"]
     },
     "node-binding": {
       "versionedFiles": [
@@ -49,42 +53,33 @@
       "changelog": "packages/electron/CHANGELOG.md",
       "scopes": ["electron", "all"]
     },
-    "tauri": {
+    "electron-binding": {
       "versionedFiles": [
-        "crates/webview-bundle-tauri/Cargo.toml"
+        "packages/electron-binding/Cargo.toml",
+        "packages/electron-binding/package.json",
+        "packages/electron-binding/npm/*/package.json"
       ],
-      "changelog": "crates/webview-bundle-tauri/CHANGELOG.md",
-      "scopes": ["tauri", "all"]
-    },
-    "publisher": {
-      "versionedFiles": [
-        "packages/publisher/package.json"
-      ],
-      "changelog": "packages/publisher/CHANGELOG.md",
-      "scopes": ["publisher", "all"]
-    },
-    "publisher-github": {
-      "versionedFiles": [
-        "packages/publisher-github/package.json"
-      ],
-      "changelog": "packages/publisher-github/CHANGELOG.md",
-      "scopes": ["publisher-github", "publisher", "all"]
+      "changelog": "packages/electron-binding/CHANGELOG.md",
+      "scopes": ["electron", "all"],
+      "beforePublishScripts": [
+        {
+          "command": "yarn",
+          "args": ["artifacts"],
+          "cwd": "packages/electron-binding"
+        }
+      ]
     }
   },
   "artifacts": {
     "dir": "artifacts-merged",
     "files": [
       {
-        "source": "target/release/**/webview-bundle-cli?(.exe)",
-        "dist": "crates/webview-bundle-cli/artifacts"
-      },
-      {
         "source": "packages/node-binding/*.node",
         "dist": "packages/node-binding/artifacts"
       },
       {
-        "source": "packages/cli/*.node",
-        "dist": "packages/cli/artifacts"
+        "source": "packages/electron-binding/*.node",
+        "dist": "packages/electron-binding/artifacts"
       }
     ]
   },
