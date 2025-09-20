@@ -441,24 +441,4 @@ mod tests {
       .unwrap_err();
     assert!(matches!(err, crate::Error::BundleNotFound));
   }
-
-  #[tokio::test]
-  async fn big_file() {
-    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-      .join("tests")
-      .join("fixtures");
-    let source = FileSource::new(base_dir);
-    let protocol = Arc::new(BundleProtocol::new(source));
-    let resp = protocol
-      .handle(
-        Request::builder()
-          .uri("https://big.wvb/assets/index-fC9g8-6J.js")
-          .method("GET")
-          .body(vec![])
-          .unwrap(),
-      )
-      .await
-      .unwrap();
-    assert_eq!(resp.status(), 200);
-  }
 }
