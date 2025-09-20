@@ -16,6 +16,13 @@
       "changelog": "crates/protocol/CHANGELOG.md",
       "scopes": ["protocol", "all"]
     },
+    "tauri": {
+      "versionedFiles": [
+        "crates/tauri/Cargo.toml"
+      ],
+      "changelog": "crates/tauri/CHANGELOG.md",
+      "scopes": ["tauri", "all"]
+    },
     "cli": {
       "versionedFiles": [
         "packages/cli/package.json"
