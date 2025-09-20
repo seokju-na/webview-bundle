@@ -20,7 +20,7 @@ interface ReleaseTarget {
   changelog: Changelog | null;
 }
 
-export class ReleaseCommand extends Command {
+export class Release extends Command {
   static paths = [['release']];
 
   readonly configFilepath = Option.String('--config', 'xtask.json');
