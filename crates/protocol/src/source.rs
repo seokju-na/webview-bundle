@@ -1,18 +1,17 @@
+use async_trait::async_trait;
 use std::io;
 use std::path::{Path, PathBuf};
 use tokio::fs::File;
 use tokio::io::{AsyncRead, AsyncSeek};
 use webview_bundle::{AsyncBundleReader, AsyncReader, Bundle, BundleManifest};
 
+#[async_trait]
 pub trait Source: Send + Sync {
   type Reader: AsyncRead + AsyncSeek + Unpin + Send + Sync;
 
-  fn reader(&self, name: &str) -> impl std::future::Future<Output = crate::Result<Self::Reader>>;
-  fn fetch(&self, name: &str) -> impl std::future::Future<Output = crate::Result<Bundle>>;
-  fn fetch_manifest(
-    &self,
-    name: &str,
-  ) -> impl std::future::Future<Output = crate::Result<BundleManifest>>;
+  async fn reader(&self, name: &str) -> crate::Result<Self::Reader>;
+  async fn fetch(&self, name: &str) -> crate::Result<Bundle>;
+  async fn fetch_manifest(&self, name: &str) -> crate::Result<BundleManifest>;
 }
 
 #[derive(Clone)]
@@ -32,6 +31,7 @@ impl FileSource {
   }
 }
 
+#[async_trait]
 impl Source for FileSource {
   type Reader = File;
 

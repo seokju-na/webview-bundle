@@ -1,6 +1,7 @@
 use crate::mime_type::MimeType;
 use crate::source::Source;
 use crate::uri::{DefaultUriResolver, UriResolver};
+use async_trait::async_trait;
 use dashmap::DashMap;
 use std::borrow::Cow;
 use std::sync::Arc;
@@ -50,7 +51,8 @@ impl<S: Source> BundleProtocol<S> {
   }
 }
 
-impl<S: Source> super::protocol::Protocol for BundleProtocol<S> {
+#[async_trait]
+impl<S: Source> super::Protocol for BundleProtocol<S> {
   async fn handle(&self, request: Request<Vec<u8>>) -> crate::Result<Response<Cow<'static, [u8]>>> {
     let name = self
       .uri_resolver
@@ -95,7 +97,7 @@ impl<S: Source> super::protocol::Protocol for BundleProtocol<S> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::protocol::protocol::Protocol;
+  use crate::protocol::Protocol;
   use crate::source::FileSource;
   use std::path::PathBuf;
 

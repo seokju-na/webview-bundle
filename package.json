@@ -8,7 +8,7 @@
     "benchmarks/**/*",
     "xtask"
   ],
-  "packageManager": "yarn@4.9.4",
+  "packageManager": "yarn@4.10.2",
   "scripts": {
     "postinstall": "yarn install-lefthook",
     "install-lefthook": "lefthook install"

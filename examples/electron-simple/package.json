@@ -1,5 +1,5 @@
 {
-  "name": "example-electron-simple",
+  "name": "@example/electron-simple",
   "private": true,
   "type": "module",
   "main": "./dist/index.mjs",

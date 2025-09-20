@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use dashmap::DashMap;
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -16,9 +17,13 @@ pub trait LocalUriResolver: Send + Sync {
         .to_string();
       // Append the path of the original URI to the localhost URI.
       let url = format!(
-        "{}/{}",
+        "{}/{}{}",
         localhost.trim_end_matches('/'),
-        decoded_path.trim_start_matches('/')
+        decoded_path.trim_start_matches('/'),
+        match uri.query() {
+          Some(q) => format!("?{q}"),
+          None => "".to_string(),
+        },
       );
       return Some(url);
     }
@@ -69,7 +74,8 @@ impl LocalProtocol {
   }
 }
 
-impl super::protocol::Protocol for LocalProtocol {
+#[async_trait]
+impl super::Protocol for LocalProtocol {
   async fn handle(
     &self,
     request: http::Request<Vec<u8>>,

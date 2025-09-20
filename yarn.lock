@@ -1438,6 +1438,36 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@example/electron-simple@workspace:examples/electron-simple":
+  version: 0.0.0-use.local
+  resolution: "@example/electron-simple@workspace:examples/electron-simple"
+  dependencies:
+    "@types/node": "npm:22.18.3"
+    "@webview-bundle/cli": "workspace:^"
+    "@webview-bundle/electron": "workspace:^"
+    electron: "npm:^33.0.0"
+    esbuild: "npm:0.25.3"
+    typescript: "npm:5.9.2"
+  languageName: unknown
+  linkType: soft
+
+"@example/tauri-simple@workspace:examples/tauri-simple":
+  version: 0.0.0-use.local
+  resolution: "@example/tauri-simple@workspace:examples/tauri-simple"
+  dependencies:
+    "@tauri-apps/api": "npm:^2.8.0"
+    "@tauri-apps/cli": "npm:^2.8.0"
+    "@types/react": "npm:^18"
+    "@types/react-dom": "npm:^18"
+    "@vitejs/plugin-react": "npm:^5.0.2"
+    "@webview-bundle/cli": "workspace:^"
+    react: "npm:^18.3.1"
+    react-dom: "npm:^18.3.1"
+    typescript: "npm:5.9.2"
+    vite: "npm:^7.1.5"
+  languageName: unknown
+  linkType: soft
+
 "@hono/node-server@npm:^1.19.2":
   version: 1.19.2
   resolution: "@hono/node-server@npm:1.19.2"
@@ -3939,6 +3969,134 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tauri-apps/api@npm:^2.8.0":
+  version: 2.8.0
+  resolution: "@tauri-apps/api@npm:2.8.0"
+  checksum: 10c0/fb111e4d7572372997b440ebe6879543fa8c4765151878e3fddfbfe809b18da29eed142ce83061d14a9ca6d896b3266dc8a4927c642d71cdc0b4277dc7e3aabf
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-darwin-arm64@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-darwin-arm64@npm:2.8.4"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-darwin-x64@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-darwin-x64@npm:2.8.4"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-arm-gnueabihf@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-linux-arm-gnueabihf@npm:2.8.4"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-arm64-gnu@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-linux-arm64-gnu@npm:2.8.4"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-arm64-musl@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-linux-arm64-musl@npm:2.8.4"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-riscv64-gnu@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-linux-riscv64-gnu@npm:2.8.4"
+  conditions: os=linux & cpu=riscv64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-x64-gnu@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-linux-x64-gnu@npm:2.8.4"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-x64-musl@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-linux-x64-musl@npm:2.8.4"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-win32-arm64-msvc@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-win32-arm64-msvc@npm:2.8.4"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-win32-ia32-msvc@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-win32-ia32-msvc@npm:2.8.4"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-win32-x64-msvc@npm:2.8.4":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli-win32-x64-msvc@npm:2.8.4"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli@npm:^2.8.0":
+  version: 2.8.4
+  resolution: "@tauri-apps/cli@npm:2.8.4"
+  dependencies:
+    "@tauri-apps/cli-darwin-arm64": "npm:2.8.4"
+    "@tauri-apps/cli-darwin-x64": "npm:2.8.4"
+    "@tauri-apps/cli-linux-arm-gnueabihf": "npm:2.8.4"
+    "@tauri-apps/cli-linux-arm64-gnu": "npm:2.8.4"
+    "@tauri-apps/cli-linux-arm64-musl": "npm:2.8.4"
+    "@tauri-apps/cli-linux-riscv64-gnu": "npm:2.8.4"
+    "@tauri-apps/cli-linux-x64-gnu": "npm:2.8.4"
+    "@tauri-apps/cli-linux-x64-musl": "npm:2.8.4"
+    "@tauri-apps/cli-win32-arm64-msvc": "npm:2.8.4"
+    "@tauri-apps/cli-win32-ia32-msvc": "npm:2.8.4"
+    "@tauri-apps/cli-win32-x64-msvc": "npm:2.8.4"
+  dependenciesMeta:
+    "@tauri-apps/cli-darwin-arm64":
+      optional: true
+    "@tauri-apps/cli-darwin-x64":
+      optional: true
+    "@tauri-apps/cli-linux-arm-gnueabihf":
+      optional: true
+    "@tauri-apps/cli-linux-arm64-gnu":
+      optional: true
+    "@tauri-apps/cli-linux-arm64-musl":
+      optional: true
+    "@tauri-apps/cli-linux-riscv64-gnu":
+      optional: true
+    "@tauri-apps/cli-linux-x64-gnu":
+      optional: true
+    "@tauri-apps/cli-linux-x64-musl":
+      optional: true
+    "@tauri-apps/cli-win32-arm64-msvc":
+      optional: true
+    "@tauri-apps/cli-win32-ia32-msvc":
+      optional: true
+    "@tauri-apps/cli-win32-x64-msvc":
+      optional: true
+  bin:
+    tauri: tauri.js
+  checksum: 10c0/cba247813599180ddf7346870bf5f1d8cee11dc0136a84afe689347b0a81547c261a8957ae86eb6af1c4908f3575e8fe6f022c824dad818171e53af4053fabf4
+  languageName: node
+  linkType: hard
+
 "@tokenizer/inflate@npm:^0.2.7":
   version: 0.2.7
   resolution: "@tokenizer/inflate@npm:0.2.7"
@@ -5655,19 +5813,6 @@ __metadata:
   checksum: 10c0/4ba5c00c506e6c786b4d6262cfbce90ddc14c10d4667e5c83ae993c9de88aa856033994dd2b35b83e8dc1170e224e66a319fa80adc4c32adcd2379bbc75da814
   languageName: node
   linkType: hard
-
-"example-electron-simple@workspace:examples/electron-simple":
-  version: 0.0.0-use.local
-  resolution: "example-electron-simple@workspace:examples/electron-simple"
-  dependencies:
-    "@types/node": "npm:22.18.3"
-    "@webview-bundle/cli": "workspace:^"
-    "@webview-bundle/electron": "workspace:^"
-    electron: "npm:^33.0.0"
-    esbuild: "npm:0.25.3"
-    typescript: "npm:5.9.2"
-  languageName: unknown
-  linkType: soft
 
 "execa@npm:^9":
   version: 9.5.1
