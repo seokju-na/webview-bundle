@@ -9,10 +9,6 @@
     "xtask"
   ],
   "packageManager": "yarn@4.10.2",
-  "scripts": {
-    "postinstall": "yarn install-lefthook",
-    "install-lefthook": "lefthook install"
-  },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
     "@biomejs/biome": "2.1.2",

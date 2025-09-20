@@ -5,29 +5,29 @@
 <table>
 <thead>
 <tr>
-  <th colspan="5">Header</th>
+  <th colspan="4">Header</th>
+  <th colspan="2">Index</th>
   <th>Data</th>
-  <th>Footer</th>
 </tr>
 </thead>
 <tbody>
 <tr>
   <td>MagicNb</td>
   <td>Version</td>
-  <td>F. Descriptors Size</td>
-  <td>F. Descriptors</td>
-  <td>H. Checksum</td>
+  <td>Index Size</td>
+  <td>Checksum</td>
+  <td>Index</td>
+  <td>Checksum</td>
   <td>Data</td>
-  <td>C. Checksum</td>
 </tr>
 <tr>
   <td>8 bytes</td>
   <td>1 bytes</td>
   <td>4 bytes</td>
-  <td>(...)</td>
+  <td>4 bytes</td>
+  <td>Size of index</td>
   <td>4 bytes</td>
   <td>(...)</td>
-  <td>4 bytes</td>
 </tr>
 </tbody>
 </table>
@@ -41,26 +41,28 @@
   - Version field for this webview bundle format.
   - Available versions:
     - version1: `0x01`
-- **File Descriptors Size (4 bytes)**
+- **Index Size (4 bytes)**
   - 4 bytes unsigned big endian value (`u32`)
-  - Indicates the size of the File Descriptors field to be read next.
-- **File Descriptors**
-  - This field has dynamic bytes size which is determined by the value of the File Descriptors Size field, and value is big endian format.
-  - Format of file descriptors should be `HashMap` formatted:
-    - Key is a path for this file.
-    - Value contains offset and length.
+  - Indicates the size of the Index field to be read next.
 - **Header checksum (4 bytes)**
-  - Header checksum verifies that the full header data has been decoded correctly.
-  - The checksum is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the original (decoded) data as input.
+  - Checksum verifies that the full header data has been decoded correctly.
+  - The checksum is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the header data as input.
+
+### Index
+
+- **Index**
+  - This field has dynamic bytes size which is determined by the value of the Index Size field, and value is a big endian format.
+  - Format of index should be `HashMap` formatted with binary encoded:
+    - Key is a path for this file.
+    - Value contains offset, length for reading contents from the data field.
+    - Value can contain http headers which will be included in the response.
+- **Index checksum (4 bytes)**
+  - Checksum verifies that the full index data has been decoded correctly.
+  - The checksum is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the encoded index data as input.
 
 ### Data
 
 - **Data**
-  - This field has dynamic bytes size which can be determined each file offset and length from File Descriptors.
+  - This field has dynamic bytes size which can be determined each file offset and length from Index.
   - The content of data is compressed with [lz4 block format](https://github.com/lz4/lz4/blob/dev/doc/lz4_Block_format.md).
-
-### Footer
-
-- **Content Checksum (4 bytes)**
-  - Content checksum verifies that the full data content has been decoded correctly.
-  - The checksum is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the original (decoded) data as input.
+  - The last 4 bytes are the checksum which is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the compressed data as input.
