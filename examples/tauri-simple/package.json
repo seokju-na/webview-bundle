@@ -7,7 +7,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "create-bundle": "wvb create ./dist --outfile out.wvb --truncate"
+    "create-bundle": "wvb create ./dist --outfile ./bundles/out.wvb --truncate"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

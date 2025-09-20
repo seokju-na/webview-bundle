@@ -4,16 +4,13 @@ use tauri::{
   Manager, Runtime, UriSchemeContext,
 };
 
-pub use config::*;
-pub use models::*;
+pub use config::{Config, Protocol};
 
 #[cfg(desktop)]
 mod desktop;
 
-mod commands;
 mod config;
 mod error;
-mod models;
 
 pub use error::{Error, Result};
 
@@ -32,16 +29,14 @@ impl<R: Runtime, T: Manager<R>> WebviewBundleExtra<R> for T {
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime>(config: Config) -> TauriPlugin<R, Option<JsonConfig>> {
+pub fn init<R: Runtime>(config: Config) -> TauriPlugin<R> {
   let c = config.clone();
-  let mut builder = Builder::<R, Option<JsonConfig>>::new("webview-bundle")
-    .invoke_handler(tauri::generate_handler![commands::ping])
-    .setup(move |app, _api| {
-      #[cfg(desktop)]
-      let webview_bundle = desktop::init(app, c)?;
-      app.manage(webview_bundle);
-      Ok(())
-    });
+  let mut builder = Builder::<R>::new("webview-bundle").setup(move |app, _api| {
+    #[cfg(desktop)]
+    let webview_bundle = desktop::init(app, c)?;
+    app.manage(webview_bundle);
+    Ok(())
+  });
   for protocol_config in config.protocols {
     let scheme = protocol_config.scheme().to_string();
     builder = builder.register_asynchronous_uri_scheme_protocol(

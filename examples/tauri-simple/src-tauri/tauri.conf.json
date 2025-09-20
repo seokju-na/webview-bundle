@@ -9,25 +9,10 @@
   "app": {
     "windows": [
       {
-        "label": "out",
         "title": "out",
         "width": 800,
         "height": 600,
         "url": "bundle://out.wvb"
-      },
-      {
-        "label": "big",
-        "title": "big",
-        "width": 800,
-        "height": 600,
-        "url": "bundle://big.wvb"
-      },
-      {
-        "label": "nextjs",
-        "title": "nextjs",
-        "width": 800,
-        "height": 600,
-        "url": "bundle://nextjs.wvb"
       }
     ],
     "security": {

@@ -6,7 +6,7 @@ license      = "MIT"
 links        = "webview-bundle-tauri"
 name         = "webview-bundle-tauri"
 repository   = "https://github.com/seokju-na/webview-bundle"
-rust-version = "1.77.2"
+rust-version = "1.85.0"
 version      = "0.0.0"
 
 [dependencies]

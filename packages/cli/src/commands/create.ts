@@ -48,8 +48,7 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
 
   async run() {
     const dir = path.isAbsolute(this.dir) ? this.dir : path.join(process.cwd(), this.dir);
-    const pattern = path.join(dir, '**/*');
-    const files = await glob([pattern], {
+    const files = await glob('**/*', {
       cwd: dir,
       onlyFiles: true,
       dot: true,
@@ -87,6 +86,7 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
         return 1;
       }
     }
+    await fs.mkdir(path.dirname(outfilePath), { recursive: true });
     const size = await writeBundle(bundle, outfilePath);
     this.logger.info(`Output: ${c.bold(c.success(outfile))} ${c.bytes(formatByteLength(size))}`);
   }
