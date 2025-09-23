@@ -1,0 +1,27 @@
+[package]
+authors      = ["Seokju Na <seokju.me@gmail.com>"]
+description  = "TBD"
+edition      = "2021"
+license      = "MIT"
+name         = "webview-bundle-remote"
+repository   = "https://github.com/seokju-na/webview-bundle"
+rust-version = "1.85.0"
+version      = "0.0.0"
+
+[dependencies]
+async-trait    = { workspace = true }
+opendal        = { workspace = true, optional = true }
+reqwest        = { workspace = true, optional = true }
+serde          = { workspace = true }
+thiserror      = { workspace = true }
+tokio          = { workspace = true, features = ["rt", "rt-multi-thread"] }
+webview-bundle = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
+
+[features]
+aws        = ["opendal", "opendal/services-s3"]
+cloudflare = ["opendal", "opendal/services-s3"]
+github     = ["reqwest", "reqwest/rustls-tls", "reqwest/json"]
+vercel     = ["opendal", "opendal/services-vercel-blob"]

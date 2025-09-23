@@ -13,6 +13,7 @@ lz4_flex                = "0.11.3"
 napi                    = { version = "3.2.4", default-features = false, features = ["napi3", "async"] }
 napi-build              = "2.2.3"
 napi-derive             = "3.2.4"
+opendal                 = "0.54"
 percent-encoding        = "2.3.2"
 reqwest                 = { version = "0.12", default-features = false }
 serde                   = "1.0"
