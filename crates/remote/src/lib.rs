@@ -1,18 +1,23 @@
+#[cfg(feature = "aws")]
+pub mod aws;
 mod builder;
+mod common;
 mod config;
 mod error;
 #[cfg(feature = "github")]
 pub mod github;
+#[cfg(feature = "vercel")]
+pub mod vercel;
 
 use async_trait::async_trait;
 pub use builder::*;
+pub use common::*;
 pub use config::*;
 pub use error::*;
-use std::path::Path;
 use webview_bundle::Bundle;
 
 #[async_trait]
 pub trait Remote: Send + Sync + Unpin + 'static {
-  async fn upload(&self, name: &str, version: &str, bundle: &Bundle) -> Result<()>;
-  async fn download(&self, name: &str, version: &str) -> Result<Bundle>;
+  async fn upload(&self, bundle_name: &str, version: &str, bundle: &Bundle) -> Result<()>;
+  async fn download(&self, bundle_name: &str, version: &str) -> Result<Bundle>;
 }

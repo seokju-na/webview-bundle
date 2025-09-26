@@ -11,10 +11,11 @@ version      = "0.0.0"
 [dependencies]
 async-trait    = { workspace = true }
 opendal        = { workspace = true, optional = true }
-reqwest        = { workspace = true, optional = true }
+reqwest        = { workspace = true, default-features = false, features = ["rustls-tls", "json", "hickory-dns"] }
 serde          = { workspace = true }
 thiserror      = { workspace = true }
 tokio          = { workspace = true, features = ["rt", "rt-multi-thread"] }
+urlencoding    = { workspace = true }
 webview-bundle = { workspace = true }
 
 [dev-dependencies]
@@ -23,5 +24,5 @@ tokio = { workspace = true, features = ["full"] }
 [features]
 aws        = ["opendal", "opendal/services-s3"]
 cloudflare = ["opendal", "opendal/services-s3"]
-github     = ["reqwest", "reqwest/rustls-tls", "reqwest/json"]
+github     = []
 vercel     = ["opendal", "opendal/services-vercel-blob"]

@@ -1,20 +1,60 @@
+use crate::common::{HttpConfig, EXTENSION, MIME_TYPE};
 use crate::{Builder, Config, Remote};
 use async_trait::async_trait;
 use reqwest::header;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use webview_bundle::{AsyncBundleWriter, Bundle, BundleWriter, Writer};
+use std::io::Cursor;
+use webview_bundle::{Bundle, BundleReader, BundleWriter, Reader, Writer};
 
-#[derive(Default, Debug, Clone)]
+type NameResolver = dyn Fn(&str, &str) -> String + Send + Sync + 'static;
+
+#[derive(Default)]
 #[non_exhaustive]
 pub struct GitHubConfig {
   pub token: Option<String>,
   pub owner: String,
   pub repo: String,
   pub api_version: Option<String>,
-  pub user_agent: Option<String>,
-  pub timeout: Option<u64>,
-  pub pool_idle_timeout: Option<u64>,
+  pub http: Option<HttpConfig>,
+  pub release_tag_name: Option<Box<NameResolver>>,
+  pub release_name: Option<Box<NameResolver>>,
+  pub asset_name: Option<Box<NameResolver>>,
+}
+
+fn default_release_name(name: &str, version: &str) -> String {
+  format!("{name} v{version}")
+}
+
+fn default_asset_name(name: &str, version: &str) -> String {
+  format!("{name}_v{version}{EXTENSION}")
+}
+
+fn default_tag_name(name: &str, version: &str) -> String {
+  format!("{name}/{version}")
+}
+
+impl GitHubConfig {
+  pub(crate) fn release_tag_name(&self, bundle_name: &str, version: &str) -> String {
+    match self.release_tag_name.as_ref() {
+      Some(resolver) => resolver(bundle_name, version),
+      None => default_tag_name(bundle_name, version),
+    }
+  }
+
+  pub(crate) fn release_name(&self, bundle_name: &str, version: &str) -> String {
+    match self.release_name.as_ref() {
+      Some(resolver) => resolver(bundle_name, version),
+      None => default_release_name(bundle_name, version),
+    }
+  }
+
+  pub(crate) fn asset_name(&self, bundle_name: &str, version: &str) -> String {
+    match self.asset_name.as_ref() {
+      Some(resolver) => resolver(bundle_name, version),
+      None => default_asset_name(bundle_name, version),
+    }
+  }
 }
 
 impl Config for GitHubConfig {
@@ -31,6 +71,10 @@ pub struct GitHubBuilder {
 }
 
 impl GitHubBuilder {
+  pub fn new() -> Self {
+    Self::default()
+  }
+
   pub fn token(mut self, token: impl Into<String>) -> Self {
     self.config.token = Some(token.into());
     self
@@ -45,51 +89,83 @@ impl GitHubBuilder {
     self.config.repo = repo.into();
     self
   }
+
+  pub fn api_version(mut self, api_version: impl Into<String>) -> Self {
+    self.config.api_version = Some(api_version.into());
+    self
+  }
+
+  pub fn http(mut self, http: HttpConfig) -> Self {
+    self.config.http = Some(http);
+    self
+  }
+
+  pub fn release_tag_name<T>(mut self, resolver: T) -> Self
+  where
+    T: Fn(&str, &str) -> String + Send + Sync + 'static,
+  {
+    self.config.release_tag_name = Some(Box::new(resolver));
+    self
+  }
+
+  pub fn release_name<T>(mut self, resolver: T) -> Self
+  where
+    T: Fn(&str, &str) -> String + Send + Sync + 'static,
+  {
+    self.config.release_name = Some(Box::new(resolver));
+    self
+  }
+
+  pub fn asset_name<T>(mut self, resolver: T) -> Self
+  where
+    T: Fn(&str, &str) -> String + Send + Sync + 'static,
+  {
+    self.config.asset_name = Some(Box::new(resolver));
+    self
+  }
 }
+
+const DEFAULT_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
 impl Builder for GitHubBuilder {
   type Config = GitHubConfig;
 
   fn build(self) -> crate::Result<impl Remote> {
     if self.config.owner.is_empty() {
-      return Err(crate::Error::InvalidConfig("owner is empty".to_string()));
+      return Err(crate::Error::invalid_config("owner is empty"));
     }
     if self.config.repo.is_empty() {
-      return Err(crate::Error::InvalidConfig("repo is empty".to_string()));
+      return Err(crate::Error::invalid_config("repo is empty"));
     }
     let mut http = reqwest::ClientBuilder::new();
+    let mut http_config = self.config.http.clone().unwrap_or_default();
+    if http_config.user_agent.is_none() {
+      http_config.user_agent = Some(DEFAULT_USER_AGENT.to_string());
+    }
+    http = http_config.apply_into(http);
     let mut headers = header::HeaderMap::new();
     headers.insert(
       header::ACCEPT,
       header::HeaderValue::from_static("application/vnd.github+json"),
     );
-    if let Some(user_agent) = self.config.user_agent.as_ref() {
-      http = http.user_agent(user_agent);
-    }
     if let Some(api_version) = self.config.api_version.as_ref() {
       headers.insert(
         header::HeaderName::from_static("X-GitHub-Api-Version"),
         header::HeaderValue::from_str(api_version)
-          .map_err(|e| crate::Error::InvalidConfig("invalid api version".to_string()))?,
+          .map_err(|_| crate::Error::invalid_config("invalid api version"))?,
       );
     }
     if let Some(token) = self.config.token.as_ref() {
       headers.insert(
         header::AUTHORIZATION,
         header::HeaderValue::from_str(token)
-          .map_err(|e| crate::Error::InvalidConfig("invalid token".to_string()))?,
+          .map_err(|_| crate::Error::invalid_config("invalid token"))?,
       );
-    }
-    if let Some(timeout) = self.config.timeout {
-      http = http.timeout(std::time::Duration::from_millis(timeout));
-    }
-    if let Some(pool_idle_timeout) = self.config.pool_idle_timeout {
-      http = http.pool_idle_timeout(std::time::Duration::from_millis(pool_idle_timeout));
     }
     let http = http
       .default_headers(headers)
       .build()
-      .map_err(|e| crate::Error::InvalidConfig(e.to_string()))?;
+      .map_err(|e| crate::Error::invalid_config(e.to_string()))?;
     Ok(GitHub {
       config: self.config,
       http,
@@ -108,6 +184,7 @@ pub(crate) enum GitHubReleaseAssetState {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct GitHubReleaseAsset {
   pub id: u32,
+  pub browser_download_url: String,
   pub name: String,
   pub state: GitHubReleaseAssetState,
   pub content_type: String,
@@ -138,32 +215,12 @@ pub(crate) struct GitHubErrorResponse {
   pub message: Option<String>,
 }
 
-#[derive(Debug, Clone)]
 pub struct GitHub {
   config: GitHubConfig,
   http: reqwest::Client,
 }
 
 impl GitHub {
-  pub(crate) async fn list_releases(
-    &self,
-    per_page: Option<u8>,
-    page: Option<u16>,
-  ) -> crate::Result<Vec<GitHubRelease>> {
-    let mut req = self.http.get(Self::api_url(format!(
-      "/repos/{}/{}/releases",
-      self.config.owner, self.config.repo
-    )));
-    if let Some(per_page) = per_page {
-      req = req.query(&[("per_page", &per_page.to_string())]);
-    }
-    if let Some(page) = page {
-      req = req.query(&[("page", &page.to_string())]);
-    }
-    let resp = req.send().await?;
-    Self::parse_response(resp).await
-  }
-
   pub(crate) async fn create_release(
     &self,
     payload: CreateGitHubReleasePayload,
@@ -244,41 +301,55 @@ impl GitHub {
       }),
     }
   }
-
-  pub(crate) fn tag_name(name: &str, version: &str) -> String {
-    format!("{name}_v{version}")
-  }
 }
 
 #[async_trait]
 impl Remote for GitHub {
-  async fn upload(&self, name: &str, version: &str, bundle: &Bundle) -> crate::Result<()> {
+  async fn upload(&self, bundle_name: &str, version: &str, bundle: &Bundle) -> crate::Result<()> {
+    let tag_name = self.config.release_tag_name(bundle_name, version);
+    let name = self.config.release_name(bundle_name, version);
     let release = self
       .create_release(CreateGitHubReleasePayload {
-        tag_name: Self::tag_name(name, version),
-        name: Some(Self::tag_name(name, version)),
+        tag_name,
+        name: Some(name),
         body: None,
       })
       .await?;
     let mut data_binary = vec![];
     BundleWriter::new(&mut data_binary).write(bundle)?;
+    let asset_name = self.config.asset_name(bundle_name, version);
     self
-      .upload_release_asset(
-        &release.upload_url,
-        format!("{}.wvb", Self::tag_name(name, version)),
-        "application/webview-bundle",
-        data_binary,
-      )
+      .upload_release_asset(&release.upload_url, asset_name, MIME_TYPE, data_binary)
       .await?;
     Ok(())
   }
 
-  async fn download(&self, name: &str, version: &str) -> crate::Result<Bundle> {
+  async fn download(&self, bundle_name: &str, version: &str) -> crate::Result<Bundle> {
+    let tag_name = self.config.release_tag_name(bundle_name, version);
     let release = self
-      .get_release_by_tag_name(&Self::tag_name(name, version))
+      .get_release_by_tag_name(&tag_name)
+      .await
+      .map_err(|e| match e {
+        crate::Error::GitHub { status: 404, .. } => {
+          crate::Error::remote_bundle_not_found("github release not found.")
+        }
+        _ => e,
+      })?;
+    let asset_name = self.config.asset_name(bundle_name, version);
+    let asset = release
+      .assets
+      .iter()
+      .find(|x| x.name == asset_name)
+      .ok_or_else(|| crate::Error::remote_bundle_not_found("github release asset not found."))?;
+    let bytes = self
+      .http
+      .get(&asset.browser_download_url)
+      .send()
+      .await?
+      .bytes()
       .await?;
-    let asset = release.assets
-      .iter().find()
-    todo!()
+    let mut reader = Cursor::new(bytes);
+    let bundle = Reader::<Bundle>::read(&mut BundleReader::new(&mut reader))?;
+    Ok(bundle)
   }
 }
