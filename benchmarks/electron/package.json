@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@benchmark/tools": "workspace:^",
-    "electron": "^33.0.0",
+    "electron": "^35.7.5",
     "esbuild": "0.25.3",
     "execa": "^9",
     "playwright": "1.48.2",
