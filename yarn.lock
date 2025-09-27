@@ -318,7 +318,7 @@ __metadata:
   dependencies:
     "@benchmark/tools": "workspace:^"
     "@webview-bundle/electron": "workspace:^"
-    electron: "npm:^33.0.0"
+    electron: "npm:^35.7.5"
     electron-serve: "npm:2.1.1"
     esbuild: "npm:0.25.3"
     execa: "npm:^9"
@@ -693,7 +693,7 @@ __metadata:
     "@types/node": "npm:22.18.3"
     "@webview-bundle/cli": "workspace:^"
     "@webview-bundle/electron": "workspace:^"
-    electron: "npm:^33.0.0"
+    electron: "npm:^35.7.5"
     esbuild: "npm:0.25.3"
     typescript: "npm:5.9.2"
   languageName: unknown
@@ -2922,12 +2922,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.9.0":
-  version: 20.16.11
-  resolution: "@types/node@npm:20.16.11"
+"@types/node@npm:^22.7.7":
+  version: 22.18.6
+  resolution: "@types/node@npm:22.18.6"
   dependencies:
-    undici-types: "npm:~6.19.2"
-  checksum: 10c0/bba43f447c3c80548513954dae174e18132e9149d572c09df4a282772960d33e229d05680fb5364997c03489c22fe377d1dbcd018a3d4ff1cfbcfcdaa594a9c3
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/7ba190da2e64e56c59270661af8cd682c830a1375b6f965ab153be90baabfdaa867aa1d63f87b42de80956996d46dfe1cf93ecefe982d9a16e485b6756949f9a
   languageName: node
   linkType: hard
 
@@ -3217,7 +3217,7 @@ __metadata:
   dependencies:
     "@types/node": "npm:22.18.3"
     "@webview-bundle/electron-binding": "workspace:^"
-    electron: "npm:^33.0.0"
+    electron: "npm:^35.7.5"
     tsdown: "npm:0.15.1"
     typescript: "npm:5.9.2"
     vitest: "npm:3.2.4"
@@ -4093,16 +4093,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^33.0.0":
-  version: 33.0.0
-  resolution: "electron@npm:33.0.0"
+"electron@npm:^35.7.5":
+  version: 35.7.5
+  resolution: "electron@npm:35.7.5"
   dependencies:
     "@electron/get": "npm:^2.0.0"
-    "@types/node": "npm:^20.9.0"
+    "@types/node": "npm:^22.7.7"
     extract-zip: "npm:^2.0.1"
   bin:
     electron: cli.js
-  checksum: 10c0/3158741c4348e27494a0aed1ecd6c1fd55e42cfd051da4f22dc7c9824ae03e88261f0561da71347e84043c3282db3e9ae20e81efba3c69ec9f1d83f69b98225e
+  checksum: 10c0/2c331e438b655b25a8b49ce038878cdc61a42481fcdf464ecb5648585a2c83f1edc5d8e0a8de582713f8e3dc8a3b35aaa136735ad68f8009ee2369f3b2e79c15
   languageName: node
   linkType: hard
 
