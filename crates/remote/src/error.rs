@@ -8,11 +8,14 @@ pub enum Error {
   Reqwest(#[from] reqwest::Error),
   #[error("invalid config: {0}")]
   InvalidConfig(String),
-  #[error("remote bundle not fund: {0}")]
+  #[error("remote bundle not found: {0}")]
   RemoteBundleNotFund(String),
-  #[cfg(feature = "github")]
-  #[error("github error: {message}")]
-  GitHub { status: u16, message: String },
+  #[error("remote bundle name not exists")]
+  RemoteBundleNameNotExists,
+  #[error("remote bundle version not exists")]
+  RemoteBundleVersionNotExists,
+  #[error("remote http error with status {status}")]
+  RemoteHttp { status: u16 },
   #[cfg(feature = "_opendal")]
   #[error("opendal error: {0}")]
   Opendal(#[from] opendal::Error),
@@ -21,10 +24,6 @@ pub enum Error {
 impl Error {
   pub(crate) fn invalid_config(message: impl Into<String>) -> Self {
     Self::InvalidConfig(message.into())
-  }
-
-  pub(crate) fn remote_bundle_not_found(message: impl Into<String>) -> Self {
-    Self::RemoteBundleNotFund(message.into())
   }
 }
 

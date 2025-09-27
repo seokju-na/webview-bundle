@@ -10,8 +10,9 @@ version      = "0.0.0"
 
 [dependencies]
 async-trait    = { workspace = true }
+futures-util   = { workspace = true }
 opendal        = { workspace = true, optional = true }
-reqwest        = { workspace = true, default-features = false, features = ["rustls-tls", "json", "hickory-dns"] }
+reqwest        = { workspace = true, default-features = false, features = ["rustls-tls", "json", "hickory-dns", "stream"] }
 serde          = { workspace = true }
 thiserror      = { workspace = true }
 urlencoding    = { workspace = true }
@@ -20,10 +21,7 @@ webview-bundle = { workspace = true, features = ["async"] }
 [dev-dependencies]
 skipif = { workspace = true }
 tokio  = { workspace = true, features = ["full"] }
-uuid   = { workspace = true }
 
 [features]
-_opendal = ["dep:opendal"]
-github   = []
-s3       = ["_opendal", "opendal/services-s3"]
-vercel   = ["_opendal", "opendal/services-vercel-blob"]
+_opendal    = ["dep:opendal"]
+uploader-s3 = ["_opendal", "opendal/services-s3"]
