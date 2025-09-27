@@ -1,11 +1,11 @@
-#[cfg(feature = "aws")]
-pub mod aws;
 mod builder;
 mod common;
 mod config;
 mod error;
 #[cfg(feature = "github")]
 pub mod github;
+#[cfg(feature = "s3")]
+pub mod s3;
 #[cfg(feature = "vercel")]
 pub mod vercel;
 

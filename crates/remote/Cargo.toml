@@ -22,7 +22,6 @@ webview-bundle = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 
 [features]
-aws        = ["opendal", "opendal/services-s3"]
-cloudflare = ["opendal", "opendal/services-s3"]
-github     = []
-vercel     = ["opendal", "opendal/services-vercel-blob"]
+github = []
+s3     = ["opendal", "opendal/services-s3"]
+vercel = ["opendal", "opendal/services-vercel-blob"]

@@ -1,5 +1,12 @@
+use crate::Remote;
+use async_trait::async_trait;
+use std::io::Cursor;
+use webview_bundle::{Bundle, BundleReader, BundleWriter, Reader, Writer};
+
 pub const EXTENSION: &str = ".wvb";
 pub const MIME_TYPE: &str = "application/webview-bundle";
+
+pub type NameResolver = dyn Fn(&str, &str) -> String + Send + Sync + 'static;
 
 #[derive(Debug, Clone, Default)]
 pub struct HttpConfig {
@@ -79,5 +86,110 @@ impl HttpConfig {
       http = http.tcp_nodelay(tcp_nodelay);
     }
     http
+  }
+}
+
+#[derive(Default)]
+pub(crate) struct OpendalConfig {
+  pub read_concurrent: Option<usize>,
+  pub read_chunk: Option<usize>,
+  pub write_concurrent: Option<usize>,
+  pub write_chunk: Option<usize>,
+  pub cache_control: Option<String>,
+  pub http: Option<HttpConfig>,
+  pub path: Option<Box<NameResolver>>,
+  pub download: Option<Box<NameResolver>>,
+}
+
+impl OpendalConfig {
+  pub(crate) fn path(&self, bundle_name: &str, version: &str) -> String {
+    match self.path.as_ref() {
+      Some(path) => path(bundle_name, version),
+      None => format!("bundles/{bundle_name}/{version}/{bundle_name}_{version}{EXTENSION}"),
+    }
+  }
+
+  pub(crate) fn content_disposition(&self, bundle_name: &str, version: &str) -> Option<String> {
+    if let Some(ref download) = self.download {
+      let download_name = download(bundle_name, version);
+      return Some(format!(
+        "attachment; filename*=UTF-8''{}",
+        urlencoding::encode(&download_name)
+      ));
+    }
+    None
+  }
+}
+
+pub(crate) struct OpendalRemote {
+  config: OpendalConfig,
+  op: opendal::Operator,
+}
+
+impl OpendalRemote {
+  pub(crate) fn new<B: opendal::Builder>(b: B, config: OpendalConfig) -> crate::Result<Self> {
+    let mut op = opendal::Operator::new(b)
+      .map_err(|e| {
+        if e.kind() == opendal::ErrorKind::ConfigInvalid {
+          return crate::Error::invalid_config(e.to_string());
+        }
+        crate::Error::Opendal(e)
+      })?
+      .finish();
+    if let Some(ref http_config) = config.http {
+      let mut http = reqwest::ClientBuilder::new();
+      http = http_config.apply_into(http);
+      let client = http.build()?;
+      op = op.layer(opendal::layers::HttpClientLayer::new(
+        opendal::raw::HttpClient::with(client),
+      ));
+    }
+    Ok(Self { config, op })
+  }
+}
+
+#[async_trait]
+impl Remote for OpendalRemote {
+  async fn upload(&self, bundle_name: &str, version: &str, bundle: &Bundle) -> crate::Result<()> {
+    let path = self.config.path(bundle_name, version);
+    let mut writer = self.op.writer_with(&path).content_type(MIME_TYPE);
+    if let Some(concurrent) = self.config.write_concurrent {
+      writer = writer.concurrent(concurrent);
+    }
+    if let Some(chunk) = self.config.write_chunk {
+      writer = writer.chunk(chunk);
+    }
+    if let Some(ref content_disposition) = self.config.content_disposition(bundle_name, version) {
+      writer = writer.content_disposition(content_disposition);
+    }
+    if let Some(ref cache_control) = self.config.cache_control {
+      writer = writer.cache_control(cache_control);
+    }
+    let mut w = writer.await?;
+    let mut data_binary = vec![];
+    BundleWriter::new(&mut data_binary).write(bundle)?;
+    w.write(data_binary).await?;
+    w.close().await?;
+    Ok(())
+  }
+
+  async fn download(&self, bundle_name: &str, version: &str) -> crate::Result<Bundle> {
+    let path = self.config.path(bundle_name, version);
+    let mut r = self.op.read_with(&path);
+    if let Some(concurrent) = self.config.read_concurrent {
+      r = r.concurrent(concurrent);
+    }
+    if let Some(chunk) = self.config.read_chunk {
+      r = r.chunk(chunk);
+    }
+    let buf = r.await.map_err(|e| {
+      if e.kind() == opendal::ErrorKind::NotFound {
+        return crate::Error::remote_bundle_not_found(e.to_string());
+      }
+      crate::Error::Opendal(e)
+    })?;
+    let mut reader = Cursor::new(buf.to_vec());
+    let bundle = Reader::<Bundle>::read(&mut BundleReader::new(&mut reader))?;
+    Ok(bundle)
   }
 }
