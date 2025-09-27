@@ -13,7 +13,7 @@ pub enum Error {
   #[cfg(feature = "github")]
   #[error("github error: {message}")]
   GitHub { status: u16, message: String },
-  #[cfg(any(feature = "s3", feature = "vercel"))]
+  #[cfg(feature = "_opendal")]
   #[error("opendal error: {0}")]
   Opendal(#[from] opendal::Error),
 }

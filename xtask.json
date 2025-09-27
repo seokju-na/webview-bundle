@@ -68,6 +68,11 @@
           "cwd": "packages/electron-binding"
         }
       ]
+    },
+    "remote": {
+      "changelog": "crates/remote/CHANGELOG.md",
+      "versionedFiles": ["crates/remote/Cargo.toml"],
+      "scopes": ["remote", "all"]
     }
   },
   "artifacts": {

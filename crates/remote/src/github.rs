@@ -1,15 +1,14 @@
 use crate::common::{HttpConfig, EXTENSION, MIME_TYPE};
-use crate::{Builder, Config, Remote};
+use crate::{Builder, Config, NameResolver, Remote};
 use async_trait::async_trait;
 use reqwest::header;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
+use std::sync::Arc;
 use webview_bundle::{Bundle, BundleReader, BundleWriter, Reader, Writer};
 
-type NameResolver = dyn Fn(&str, &str) -> String + Send + Sync + 'static;
-
-#[derive(Default)]
+#[derive(Default, Clone)]
 #[non_exhaustive]
 pub struct GitHubConfig {
   pub token: Option<String>,
@@ -17,9 +16,9 @@ pub struct GitHubConfig {
   pub repo: String,
   pub api_version: Option<String>,
   pub http: Option<HttpConfig>,
-  pub release_tag_name: Option<Box<NameResolver>>,
-  pub release_name: Option<Box<NameResolver>>,
-  pub asset_name: Option<Box<NameResolver>>,
+  pub release_tag_name: Option<Arc<NameResolver>>,
+  pub release_name: Option<Arc<NameResolver>>,
+  pub asset_name: Option<Arc<NameResolver>>,
 }
 
 fn default_release_name(name: &str, version: &str) -> String {
@@ -71,10 +70,6 @@ pub struct GitHubBuilder {
 }
 
 impl GitHubBuilder {
-  pub fn new() -> Self {
-    Self::default()
-  }
-
   pub fn token(mut self, token: impl Into<String>) -> Self {
     self.config.token = Some(token.into());
     self
@@ -104,7 +99,7 @@ impl GitHubBuilder {
   where
     T: Fn(&str, &str) -> String + Send + Sync + 'static,
   {
-    self.config.release_tag_name = Some(Box::new(resolver));
+    self.config.release_tag_name = Some(Arc::new(resolver));
     self
   }
 
@@ -112,7 +107,7 @@ impl GitHubBuilder {
   where
     T: Fn(&str, &str) -> String + Send + Sync + 'static,
   {
-    self.config.release_name = Some(Box::new(resolver));
+    self.config.release_name = Some(Arc::new(resolver));
     self
   }
 
@@ -120,7 +115,7 @@ impl GitHubBuilder {
   where
     T: Fn(&str, &str) -> String + Send + Sync + 'static,
   {
-    self.config.asset_name = Some(Box::new(resolver));
+    self.config.asset_name = Some(Arc::new(resolver));
     self
   }
 }
@@ -221,7 +216,11 @@ pub struct GitHub {
 }
 
 impl GitHub {
-  pub(crate) async fn create_release(
+  pub fn builder() -> GitHubBuilder {
+    GitHubBuilder::default()
+  }
+
+  async fn create_release(
     &self,
     payload: CreateGitHubReleasePayload,
   ) -> crate::Result<GitHubRelease> {
@@ -237,22 +236,7 @@ impl GitHub {
     Self::parse_response(resp).await
   }
 
-  pub(crate) async fn get_release(&self, release_id: u32) -> crate::Result<GitHubRelease> {
-    let resp = self
-      .http
-      .get(Self::api_url(format!(
-        "/repos/{}/{}/releases/{}",
-        self.config.owner, self.config.repo, release_id
-      )))
-      .send()
-      .await?;
-    Self::parse_response(resp).await
-  }
-
-  pub(crate) async fn get_release_by_tag_name(
-    &self,
-    tag_name: &str,
-  ) -> crate::Result<GitHubRelease> {
+  async fn get_release_by_tag_name(&self, tag_name: &str) -> crate::Result<GitHubRelease> {
     let resp = self
       .http
       .get(Self::api_url(format!(
@@ -264,7 +248,7 @@ impl GitHub {
     Self::parse_response(resp).await
   }
 
-  pub(crate) async fn upload_release_asset(
+  async fn upload_release_asset(
     &self,
     upload_url: &str,
     name: String,
@@ -282,13 +266,11 @@ impl GitHub {
     Self::parse_response(resp).await
   }
 
-  pub(crate) fn api_url(path: impl Into<String>) -> String {
+  fn api_url(path: impl Into<String>) -> String {
     format!("https://api.github.com/{}", path.into())
   }
 
-  pub(crate) async fn parse_response<T: DeserializeOwned>(
-    resp: reqwest::Response,
-  ) -> crate::Result<T> {
+  async fn parse_response<T: DeserializeOwned>(resp: reqwest::Response) -> crate::Result<T> {
     match resp.status().is_success() {
       true => Ok(resp.json::<T>().await?),
       false => Err(crate::Error::GitHub {

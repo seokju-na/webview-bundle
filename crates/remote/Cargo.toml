@@ -14,14 +14,16 @@ opendal        = { workspace = true, optional = true }
 reqwest        = { workspace = true, default-features = false, features = ["rustls-tls", "json", "hickory-dns"] }
 serde          = { workspace = true }
 thiserror      = { workspace = true }
-tokio          = { workspace = true, features = ["rt", "rt-multi-thread"] }
 urlencoding    = { workspace = true }
-webview-bundle = { workspace = true }
+webview-bundle = { workspace = true, features = ["async"] }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["full"] }
+skipif = { workspace = true }
+tokio  = { workspace = true, features = ["full"] }
+uuid   = { workspace = true }
 
 [features]
-github = []
-s3     = ["opendal", "opendal/services-s3"]
-vercel = ["opendal", "opendal/services-vercel-blob"]
+_opendal = ["dep:opendal"]
+github   = []
+s3       = ["_opendal", "opendal/services-s3"]
+vercel   = ["_opendal", "opendal/services-vercel-blob"]
