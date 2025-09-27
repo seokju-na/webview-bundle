@@ -1,12 +1,13 @@
-use crate::common::HttpConfig;
-use crate::{impl_opendal_config_for_builder, Builder, Config, Remote};
+use crate::uploader::Uploader;
+use crate::HttpConfig;
+use crate::{impl_opendal_config_for_builder, MIME_TYPE};
 use async_trait::async_trait;
 use std::sync::Arc;
-use webview_bundle::Bundle;
+use webview_bundle::{Bundle, BundleWriter, Writer};
 
 #[derive(Default, Clone)]
 #[non_exhaustive]
-pub struct S3Config {
+pub struct S3UploaderConfig {
   pub access_key_id: Option<String>,
   pub secret_access_key: Option<String>,
   pub session_token: Option<String>,
@@ -16,23 +17,15 @@ pub struct S3Config {
   pub role_arn: Option<String>,
   pub role_session_name: Option<String>,
   pub external_id: Option<String>,
-  pub(crate) opendal: crate::common::opendal::OpendalConfig,
-}
-
-impl Config for S3Config {
-  type Builder = S3Builder;
-
-  fn into_builder(self) -> Self::Builder {
-    S3Builder { config: self }
-  }
+  pub(crate) opendal: crate::opendal::OpendalConfig,
 }
 
 #[derive(Default)]
-pub struct S3Builder {
-  config: S3Config,
+pub struct S3UploaderBuilder {
+  config: S3UploaderConfig,
 }
 
-impl S3Builder {
+impl S3UploaderBuilder {
   pub fn access_key_id(mut self, access_key_id: impl Into<String>) -> Self {
     self.config.access_key_id = Some(access_key_id.into());
     self
@@ -78,6 +71,30 @@ impl S3Builder {
     self
   }
 
+  pub fn build(self) -> crate::Result<impl Uploader> {
+    let service = self.build_service();
+    let mut op = opendal::Operator::new(service)
+      .map_err(|e| {
+        if e.kind() == opendal::ErrorKind::ConfigInvalid {
+          return crate::Error::invalid_config(e.to_string());
+        }
+        crate::Error::Opendal(e)
+      })?
+      .finish();
+    if let Some(ref http_config) = self.config.opendal.http {
+      let mut http = reqwest::ClientBuilder::new();
+      http = http_config.apply(http);
+      let client = http.build()?;
+      op = op.layer(opendal::layers::HttpClientLayer::new(
+        opendal::raw::HttpClient::with(client),
+      ));
+    }
+    Ok(S3Uploader {
+      config: self.config,
+      op,
+    })
+  }
+
   fn build_service(&self) -> opendal::services::S3 {
     let mut s = opendal::services::S3::default().bucket(&self.config.bucket);
     if let Some(ref access_key_id) = self.config.access_key_id {
@@ -108,69 +125,51 @@ impl S3Builder {
   }
 }
 
-impl_opendal_config_for_builder!(S3Builder);
+impl_opendal_config_for_builder!(S3UploaderBuilder);
 
-impl Builder for S3Builder {
-  type Config = S3Config;
-
-  fn build(self) -> crate::Result<impl Remote> {
-    let service = self.build_service();
-    let remote = crate::common::opendal::OpendalRemote::new(service, self.config.opendal)?;
-    Ok(S3 { remote })
-  }
+pub struct S3Uploader {
+  config: S3UploaderConfig,
+  op: opendal::Operator,
 }
 
-pub struct S3 {
-  remote: crate::common::opendal::OpendalRemote,
-}
-
-impl S3 {
-  pub fn builder() -> S3Builder {
-    S3Builder::default()
+impl S3Uploader {
+  pub fn builder() -> S3UploaderBuilder {
+    S3UploaderBuilder::default()
   }
 }
 
 #[async_trait]
-impl Remote for S3 {
-  async fn upload(&self, bundle_name: &str, version: &str, bundle: &Bundle) -> crate::Result<()> {
-    self.remote.upload(bundle_name, version, bundle).await
-  }
-
-  async fn download(&self, bundle_name: &str, version: &str) -> crate::Result<Bundle> {
-    self.remote.download(bundle_name, version).await
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  #[skipif::skip_if(missing_env(MINIO_TESTING_ENDPOINT))]
-  #[tokio::test]
-  async fn smoke() {
-    use super::*;
-    use std::path::PathBuf;
-    use uuid::Uuid;
-    use webview_bundle::{AsyncBundleReader, AsyncReader};
-
-    let version = Uuid::new_v4().to_string();
-    let s3 = S3::builder()
-      .bucket("webview-bundle")
-      .endpoint(std::env::var("MINIO_TESTING_ENDPOINT").unwrap())
-      .access_key_id("minio_testing")
-      .secret_access_key("minio_testing")
-      .build()
-      .unwrap();
-    let mut file = tokio::fs::File::open(
-      PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("fixtures")
-        .join("nextjs.wvb"),
-    )
-    .await
-    .unwrap();
-    let bundle = AsyncReader::<Bundle>::read(&mut AsyncBundleReader::new(&mut file))
-      .await
-      .unwrap();
-    s3.upload("nextjs", &version, &bundle).await.unwrap();
-    s3.download("nextjs", &version).await.unwrap();
+impl Uploader for S3Uploader {
+  // TODO: integrity
+  async fn upload_bundle(
+    &self,
+    bundle_name: &str,
+    version: &str,
+    bundle: &Bundle,
+  ) -> crate::Result<()> {
+    let path = self.config.opendal.resolve_path(bundle_name, version);
+    let mut writer = self.op.writer_with(&path).content_type(MIME_TYPE);
+    if let Some(concurrent) = self.config.opendal.write_concurrent {
+      writer = writer.concurrent(concurrent);
+    }
+    if let Some(chunk) = self.config.opendal.write_chunk {
+      writer = writer.chunk(chunk);
+    }
+    if let Some(ref content_disposition) = self
+      .config
+      .opendal
+      .resolve_content_disposition(bundle_name, version)
+    {
+      writer = writer.content_disposition(content_disposition);
+    }
+    if let Some(ref cache_control) = self.config.opendal.cache_control {
+      writer = writer.cache_control(cache_control);
+    }
+    let mut w = writer.await?;
+    let mut data = vec![];
+    BundleWriter::new(&mut data).write(bundle)?;
+    w.write(data).await?;
+    w.close().await?;
+    Ok(())
   }
 }
