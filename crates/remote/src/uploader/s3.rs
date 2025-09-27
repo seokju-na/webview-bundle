@@ -141,7 +141,12 @@ impl S3Uploader {
 #[async_trait]
 impl Uploader for S3Uploader {
   // TODO: integrity
-  async fn upload(&self, bundle_name: &str, version: &str, bundle: &Bundle) -> crate::Result<()> {
+  async fn upload_bundle(
+    &self,
+    bundle_name: &str,
+    version: &str,
+    bundle: &Bundle,
+  ) -> crate::Result<()> {
     let path = self.config.opendal.resolve_path(bundle_name, version);
     let mut writer = self.op.writer_with(&path).content_type(MIME_TYPE);
     if let Some(concurrent) = self.config.opendal.write_concurrent {

@@ -21,7 +21,7 @@ async fn s3_smoke() {
   )
   .unwrap();
   let bundle = Reader::<Bundle>::read(&mut BundleReader::new(&mut reader)).unwrap();
-  s3.upload("nextjs", "1.0.0", &bundle)
+  s3.upload_bundle("nextjs", "1.0.0", &bundle)
     .await
     .expect("fail to upload bundle");
   // TODO: add remote testing

@@ -8,5 +8,10 @@ pub use s3::*;
 
 #[async_trait]
 pub trait Uploader: Send + Sync + Unpin + 'static {
-  async fn upload(&self, bundle_name: &str, version: &str, bundle: &Bundle) -> crate::Result<()>;
+  async fn upload_bundle(
+    &self,
+    bundle_name: &str,
+    version: &str,
+    bundle: &Bundle,
+  ) -> crate::Result<()>;
 }
