@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "yarn create-schema",
+    "create-schema": "node --no-warnings=ExperimentalWarning --experimental-strip-types ./.scripts/create-schema.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { serve } from '@hono/node-server';
-import { readBundle } from '@webview-bundle/node-binding';
+import { readBundle } from '@webview-bundle/cli/binding';
 import { Command, Option } from 'clipanion';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';

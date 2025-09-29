@@ -4,7 +4,7 @@ import {
   BundleProtocol,
   LocalProtocol,
   type Method,
-} from '@webview-bundle/electron-binding';
+} from '@webview-bundle/electron/binding';
 import type { Protocol as ElectronProtocol, Privileges } from 'electron';
 import { app, protocol as electronProtocol } from 'electron';
 import { makeError } from './utils.js';

@@ -1,0 +1,21 @@
+[package]
+edition = "2021"
+name    = "webview-bundle-cli"
+publish = false
+version = "0.0.0"
+
+[lib]
+crate-type = ["cdylib"]
+doctest    = false
+path       = "binding/lib.rs"
+test       = false
+
+[dependencies]
+napi           = { workspace = true, features = ["napi8"] }
+napi-derive    = { workspace = true }
+thiserror      = { workspace = true }
+tokio          = { workspace = true, features = ["fs"] }
+webview-bundle = { workspace = true, features = ["async"] }
+
+[build-dependencies]
+napi-build = { workspace = true }

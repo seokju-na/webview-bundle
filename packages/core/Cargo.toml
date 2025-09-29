@@ -1,0 +1,58 @@
+[package]
+authors      = ["Seokju Na <seokju.me@gmail.com>"]
+description  = "TBD"
+edition      = "2021"
+license      = "MIT"
+name         = "webview-bundle"
+repository   = "https://github.com/seokju-na/webview-bundle"
+rust-version = "1.85.0"
+version      = "0.0.0"
+
+[lib]
+bench   = false
+doctest = false
+
+[dependencies]
+async-trait      = { workspace = true }
+bincode          = { workspace = true }
+bytes            = { workspace = true, optional = true }
+dashmap          = { workspace = true, optional = true }
+futures-util     = { workspace = true, optional = true }
+http             = { workspace = true }
+infer            = { workspace = true, optional = true }
+lz4_flex         = { workspace = true }
+opendal          = { workspace = true, optional = true }
+percent-encoding = { workspace = true, optional = true }
+reqwest          = { workspace = true, default-features = false, optional = true }
+serde            = { workspace = true, optional = true }
+serde_json       = { workspace = true, optional = true }
+thiserror        = { workspace = true }
+tokio            = { workspace = true, optional = true }
+twox-hash        = { workspace = true, features = ["serialize"] }
+urlencoding      = { workspace = true, optional = true }
+
+[dev-dependencies]
+skipif    = { workspace = true }
+tiny_http = { workspace = true }
+tokio     = { workspace = true, features = ["full"] }
+
+[features]
+_opendal = ["dep:opendal"]
+_reqwest = ["dep:reqwest"]
+_serde = ["dep:serde", "dep:serde_json"]
+async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs"]
+protocol = ["async", "dep:bytes", "dep:dashmap", "dep:infer", "dep:percent-encoding"]
+protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
+remote = [
+  "async",
+  "_reqwest",
+  "_serde",
+  "reqwest/rustls-tls",
+  "reqwest/json",
+  "reqwest/hickory-dns",
+  "reqwest/stream",
+  "urlencoding",
+  "dep:futures-util",
+  "dep:opendal",
+]
+remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
