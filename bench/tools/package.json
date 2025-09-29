@@ -1,5 +1,5 @@
 {
-  "name": "@benchmark/tools",
+  "name": "@bench/tools",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "@webview-bundle/cli": "workspace:^",
-    "@webview-bundle/node-binding": "workspace:^",
     "execa": "^9",
     "listr2": "^8.2.5",
     "tinyglobby": "^0.2.14"

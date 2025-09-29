@@ -1,4 +1,4 @@
-import { buildAllFixtures } from '@benchmark/tools';
+import { buildAllFixtures } from '@bench/tools';
 import { build } from 'esbuild';
 
 const external = ['electron', '@webview-bundle/electron-binding'];

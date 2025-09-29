@@ -1,5 +1,5 @@
 {
-  "name": "benchmark-fixture-react",
+  "name": "@bench/fixture-react",
   "private": true,
   "version": "0.0.0",
   "type": "module",

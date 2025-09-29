@@ -1,5 +1,5 @@
 {
-  "name": "benchmark-fixture-next",
+  "name": "@bench/fixture-next",
   "repository": "https://github.com/vercel/examples.git",
   "private": true,
   "scripts": {
