@@ -2,24 +2,29 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import glob from 'fast-glob';
 import type { PackageJson as PackageJsonType } from 'type-fest';
+import { z } from 'zod';
 import type { Action } from './action.ts';
 import { type CargoToml, editCargoTomlVersion, formatCargoToml, parseCargoToml } from './cargo-toml.ts';
 import { ROOT_DIR } from './consts.ts';
 import { type BumpRule, Version } from './version.ts';
 
-export type VersionedFileType = 'Cargo.toml' | 'package.json';
+export const VersionedFileTypeSchema = z.enum(['package.json', 'Cargo.toml']);
+export type VersionedFileType = z.infer<typeof VersionedFileTypeSchema>;
 
 export class VersionedFile {
   readonly type: VersionedFileType;
   private _nextVersion: Version | null;
   private pkgManager: PackageManager;
 
-  static async loadAll(patterns: string[]): Promise<VersionedFile[]> {
-    const files = await glob(patterns, {
-      cwd: ROOT_DIR,
-      onlyFiles: true,
-    });
-    const versionedFiles = await Promise.all(files.map(filepath => VersionedFile.load(filepath)));
+  static async loadAll(dir: string): Promise<VersionedFile[]> {
+    const files = await glob(
+      VersionedFileTypeSchema.options.map(fileType => path.join(dir, '**', fileType)),
+      {
+        cwd: ROOT_DIR,
+        onlyFiles: true,
+      }
+    );
+    const versionedFiles = await Promise.all(files.map(x => VersionedFile.load(x)));
     return versionedFiles;
   }
 

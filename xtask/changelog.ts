@@ -37,6 +37,7 @@ export class Changelog {
       this.lines.splice(idx + 2, 0, ...changesLines);
     } else {
       const packages = pkg.versionedFiles
+        .filter(x => x.canPublish)
         .map((file): string => {
           const name = file.name;
           const version = file.nextVersion.toString();

@@ -3,26 +3,13 @@
   "rootChangelog": "CHANGELOG.md",
   "packages": {
     "core": {
-      "versionedFiles": [
-        "packages/core/Cargo.toml"
-      ],
-      "changelog": "packages/core/CHANGELOG.md",
-      "scopes": ["core", "all"]
+      "path": "packages/core"
     },
     "tauri": {
-      "versionedFiles": [
-        "packages/tauri/Cargo.toml"
-      ],
-      "changelog": "packages/tauri/CHANGELOG.md",
-      "scopes": ["tauri", "all"]
+      "path": "packages/tauri"
     },
     "cli": {
-      "versionedFiles": [
-        "packages/cli/package.json",
-        "packages/cli/Cargo.toml"
-      ],
-      "changelog": "packages/cli/CHANGELOG.md",
-      "scopes": ["cli", "all"],
+      "path": "packages/cli",
       "beforePublishScripts": [
         {
           "command": "yarn",
@@ -32,12 +19,7 @@
       ]
     },
     "electron": {
-      "versionedFiles": [
-        "packages/electron/package.json",
-        "packages/electron/Cargo.toml"
-      ],
-      "changelog": "packages/electron/CHANGELOG.md",
-      "scopes": ["electron", "all"],
+      "path": "packages/electron",
       "beforePublishScripts": [
         {
           "command": "yarn",

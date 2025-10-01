@@ -11,9 +11,9 @@ export const ScriptConfigSchema = z.object({
 export type ScriptConfig = z.infer<typeof ScriptConfigSchema>;
 
 export const PackageConfigSchema = z.object({
-  versionedFiles: z.string().array(),
+  path: z.string(),
   changelog: z.string().optional(),
-  scopes: z.string().array(),
+  scopes: z.string().array().optional(),
   beforePublishScripts: ScriptConfigSchema.array().optional(),
 });
 export type PackageConfig = z.infer<typeof PackageConfigSchema>;

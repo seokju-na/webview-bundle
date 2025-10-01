@@ -1,6 +1,6 @@
-import type { ReadonlyDeep } from 'type-fest';
+import path from 'node:path';
 import type { Action } from './action.ts';
-import type { Config, PackageConfig } from './config.ts';
+import type { Config, PackageConfig, ScriptConfig } from './config.ts';
 import type { BumpRule, Version } from './version.ts';
 import { VersionedFile } from './versioned-file.ts';
 import { VersionedGitTag } from './versioned-git-tag.ts';
@@ -14,16 +14,16 @@ function isNonEmptyArray<T>(x: readonly T[]): x is NonEmptyArray<T> {
 export class Package {
   public readonly name: string;
   public readonly versionedFiles: NonEmptyArray<VersionedFile>;
-  public readonly config: ReadonlyDeep<PackageConfig>;
+  private readonly config: PackageConfig;
 
   static async loadAll(config: Config): Promise<Package[]> {
     const packages: Package[] = [];
-    for (const [name, pkg] of Object.entries(config.packages)) {
-      const versionedFiles = await VersionedFile.loadAll(pkg.versionedFiles);
+    for (const [name, pkgConfig] of Object.entries(config.packages)) {
+      const versionedFiles = await VersionedFile.loadAll(pkgConfig.path);
       if (!isNonEmptyArray(versionedFiles)) {
-        throw new Error(`"versionedFiles" must not be empty: ${name}`);
+        throw new Error(`Cannot load versioned files from "${name}"`);
       }
-      packages.push(new Package(name, versionedFiles, pkg));
+      packages.push(new Package(name, versionedFiles, pkgConfig));
     }
     return packages;
   }
@@ -32,6 +32,21 @@ export class Package {
     this.name = name;
     this.versionedFiles = versionedFiles;
     this.config = config;
+  }
+
+  get changelog(): string {
+    return this.config.changelog ?? path.join(this.config.path, 'CHANGELOG.md');
+  }
+
+  get scopes(): readonly string[] {
+    if (this.config.scopes != null && this.config.scopes.length > 0) {
+      return this.config.scopes;
+    }
+    return [this.name, 'all'];
+  }
+
+  get beforePublishScripts(): ScriptConfig[] {
+    return this.config.beforePublishScripts ?? [];
   }
 
   get version(): Version {
