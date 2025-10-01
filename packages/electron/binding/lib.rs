@@ -1,5 +1,3 @@
-#![deny(clippy::all)]
-
 mod error;
 
 use napi::bindgen_prelude::*;
