@@ -1,16 +1,14 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { bundleProtocol, localProtocol, wvb } from '@webview-bundle/electron';
 import { app, BrowserWindow } from 'electron';
-
-const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 wvb({
   protocols: [
     localProtocol('app-local', {
-      'wvb.dev': 'http://localhost:4312',
+      hosts: {
+        'wvb.dev': 'http://localhost:4312',
+      },
     }),
-    bundleProtocol('app', path.join(dirname, '..'), {
+    bundleProtocol('app', {
       onError: e => console.error(e),
     }),
   ],

@@ -1,10 +1,11 @@
+use std::sync::Arc;
 use tauri::{
   http,
   plugin::{Builder, TauriPlugin},
   Manager, Runtime, UriSchemeContext,
 };
 
-pub use config::{Config, Protocol};
+pub use config::{Config, Protocol, Source};
 
 #[cfg(desktop)]
 mod desktop;
@@ -29,7 +30,8 @@ impl<R: Runtime, T: Manager<R>> WebviewBundleExtra<R> for T {
 }
 
 /// Initializes the plugin.
-pub fn init<R: Runtime>(config: Config) -> TauriPlugin<R> {
+pub fn init<R: Runtime>(config: Config<R>) -> TauriPlugin<R> {
+  let config = Arc::new(config);
   let c = config.clone();
   let mut builder = Builder::<R>::new("webview-bundle").setup(move |app, _api| {
     #[cfg(desktop)]
@@ -37,7 +39,7 @@ pub fn init<R: Runtime>(config: Config) -> TauriPlugin<R> {
     app.manage(webview_bundle);
     Ok(())
   });
-  for protocol_config in config.protocols {
+  for protocol_config in &config.protocols {
     let scheme = protocol_config.scheme().to_string();
     builder = builder.register_asynchronous_uri_scheme_protocol(
       protocol_config.scheme(),

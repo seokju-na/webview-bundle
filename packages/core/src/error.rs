@@ -30,6 +30,9 @@ pub enum Error {
   InvalidIndexChecksum,
   #[error("checksum mismatch")]
   ChecksumMismatch,
+  #[cfg(feature = "_serde")]
+  #[error("json error: {0}")]
+  Json(#[from] serde_json::Error),
   #[cfg(feature = "protocol-local")]
   #[error("cannot resolve local host")]
   CannotResolveLocalHost,
@@ -58,6 +61,7 @@ pub enum Error {
 }
 
 impl Error {
+  #[cfg(feature = "remote")]
   pub(crate) fn invalid_remote_config(message: impl Into<String>) -> Self {
     Self::InvalidRemoteConfig(message.into())
   }

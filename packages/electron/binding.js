@@ -508,7 +508,11 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { BundleProtocol, LocalProtocol, Method } = nativeBinding
+const { BundleProtocol, BundleSource, LocalProtocol, bundleProtocol, initBundleSource, localProtocol, Method } = nativeBinding
 export { BundleProtocol }
+export { BundleSource }
 export { LocalProtocol }
+export { bundleProtocol }
+export { initBundleSource }
+export { localProtocol }
 export { Method }

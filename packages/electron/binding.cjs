@@ -509,5 +509,9 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.BundleProtocol = nativeBinding.BundleProtocol
+module.exports.BundleSource = nativeBinding.BundleSource
 module.exports.LocalProtocol = nativeBinding.LocalProtocol
+module.exports.bundleProtocol = nativeBinding.bundleProtocol
+module.exports.initBundleSource = nativeBinding.initBundleSource
+module.exports.localProtocol = nativeBinding.localProtocol
 module.exports.Method = nativeBinding.Method

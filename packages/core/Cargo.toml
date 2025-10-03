@@ -40,8 +40,8 @@ tokio     = { workspace = true, features = ["full"] }
 _opendal = ["dep:opendal"]
 _reqwest = ["dep:reqwest"]
 _serde = ["dep:serde", "dep:serde_json"]
-async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs"]
-protocol = ["async", "dep:bytes", "dep:dashmap", "dep:infer", "dep:percent-encoding"]
+async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs", "tokio/sync"]
+protocol = ["source", "dep:bytes", "dep:infer", "dep:percent-encoding"]
 protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
 remote = [
   "async",
@@ -56,3 +56,4 @@ remote = [
   "dep:opendal",
 ]
 remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
+source = ["dep:dashmap", "async", "_serde"]

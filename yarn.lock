@@ -3132,6 +3132,84 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@webview-bundle/cli-android-arm-eabi@workspace:packages/cli/npm/android-arm-eabi":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-android-arm-eabi@workspace:packages/cli/npm/android-arm-eabi"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-android-arm64@workspace:packages/cli/npm/android-arm64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-android-arm64@workspace:packages/cli/npm/android-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-darwin-arm64@workspace:packages/cli/npm/darwin-arm64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-darwin-arm64@workspace:packages/cli/npm/darwin-arm64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-darwin-x64@workspace:packages/cli/npm/darwin-x64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-darwin-x64@workspace:packages/cli/npm/darwin-x64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-freebsd-x64@workspace:packages/cli/npm/freebsd-x64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-freebsd-x64@workspace:packages/cli/npm/freebsd-x64"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-arm-gnueabihf@workspace:packages/cli/npm/linux-arm-gnueabihf":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-arm-gnueabihf@workspace:packages/cli/npm/linux-arm-gnueabihf"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-arm64-gnu@workspace:packages/cli/npm/linux-arm64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-arm64-gnu@workspace:packages/cli/npm/linux-arm64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-arm64-musl@workspace:packages/cli/npm/linux-arm64-musl":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-arm64-musl@workspace:packages/cli/npm/linux-arm64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-x64-gnu@workspace:packages/cli/npm/linux-x64-gnu":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-x64-gnu@workspace:packages/cli/npm/linux-x64-gnu"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-linux-x64-musl@workspace:packages/cli/npm/linux-x64-musl":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-linux-x64-musl@workspace:packages/cli/npm/linux-x64-musl"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-win32-arm64-msvc@workspace:packages/cli/npm/win32-arm64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-win32-arm64-msvc@workspace:packages/cli/npm/win32-arm64-msvc"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-win32-ia32-msvc@workspace:packages/cli/npm/win32-ia32-msvc":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-win32-ia32-msvc@workspace:packages/cli/npm/win32-ia32-msvc"
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/cli-win32-x64-msvc@workspace:packages/cli/npm/win32-x64-msvc":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/cli-win32-x64-msvc@workspace:packages/cli/npm/win32-x64-msvc"
+  languageName: unknown
+  linkType: soft
+
 "@webview-bundle/cli@workspace:^, @webview-bundle/cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/cli@workspace:packages/cli"
@@ -3157,6 +3235,12 @@ __metadata:
   bin:
     webview-bundle: ./dist/main.js
     wvb: ./dist/main.js
+  languageName: unknown
+  linkType: soft
+
+"@webview-bundle/electron-darwin-arm64@workspace:packages/electron/npm/darwin-arm64":
+  version: 0.0.0-use.local
+  resolution: "@webview-bundle/electron-darwin-arm64@workspace:packages/electron/npm/darwin-arm64"
   languageName: unknown
   linkType: soft
 

@@ -66,9 +66,9 @@ pub struct LocalProtocol {
 }
 
 impl LocalProtocol {
-  pub fn new<T: Into<HashMap<String, String>>>(mapping: T) -> Self {
+  pub fn new<T: Into<HashMap<String, String>>>(hosts: T) -> Self {
     Self {
-      uri_resolver: Box::new(MappingLocalUriResolver::new(mapping)),
+      uri_resolver: Box::new(MappingLocalUriResolver::new(hosts)),
       cache: DashMap::default(),
     }
   }

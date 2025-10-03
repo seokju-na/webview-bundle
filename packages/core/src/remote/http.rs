@@ -1,8 +1,5 @@
 use reqwest::header::HeaderMap;
 
-pub const EXTENSION: &str = ".wvb";
-pub const MIME_TYPE: &str = "application/webview-bundle";
-
 #[derive(Debug, Clone, Default)]
 pub struct HttpConfig {
   pub(crate) default_headers: Option<HeaderMap>,

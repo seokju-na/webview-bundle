@@ -1,4 +1,5 @@
-use crate::remote::{HttpConfig, EXTENSION};
+use crate::consts::EXTENSION;
+use crate::remote::HttpConfig;
 use std::sync::Arc;
 
 type PathResolver = dyn Fn(&str, &str) -> String + Send + Sync + 'static;
@@ -17,7 +18,7 @@ impl OpendalConfig {
   pub(crate) fn resolve_path(&self, bundle_name: &str, version: &str) -> String {
     match self.path.as_ref() {
       Some(path) => path(bundle_name, version),
-      None => format!("bundles/{bundle_name}/{version}/{bundle_name}_{version}{EXTENSION}"),
+      None => format!("bundles/{bundle_name}/{version}/{bundle_name}_{version}.{EXTENSION}"),
     }
   }
 

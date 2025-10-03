@@ -1,6 +1,6 @@
 use crate::remote::uploader::Uploader;
-use crate::remote::{HttpConfig, MIME_TYPE};
-use crate::{impl_opendal_config_for_builder, BundleWriter, Writer};
+use crate::remote::HttpConfig;
+use crate::{impl_opendal_config_for_builder, BundleWriter, Writer, MIME_TYPE};
 use async_trait::async_trait;
 use std::sync::Arc;
 

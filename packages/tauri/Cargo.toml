@@ -13,7 +13,7 @@ version      = "0.0.0"
 serde          = { workspace = true }
 tauri          = { workspace = true, features = ["unstable"] }
 thiserror      = { workspace = true }
-webview-bundle = { workspace = true }
+webview-bundle = { workspace = true, features = ["protocol", "protocol-local"] }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }

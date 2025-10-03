@@ -3,61 +3,103 @@ use std::path::PathBuf;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
 
-pub(crate) const DEFAULT_DIR: &str = "bundles";
-pub(crate) const DEFAULT_BASE_DIR: BaseDirectory = BaseDirectory::Resource;
+type DynamicDirFn<R> = fn(app: &AppHandle<R>) -> Result<PathBuf, Box<dyn std::error::Error>>;
+
+#[derive(Clone, Debug)]
+pub(crate) enum Dir<R: Runtime> {
+  Static(String),
+  Dynamic(DynamicDirFn<R>),
+}
+
+impl<R: Runtime> Dir<R> {
+  pub fn resolve(&self, app: &AppHandle<R>) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    match self {
+      Self::Static(dir) => Ok(PathBuf::from(dir)),
+      Self::Dynamic(f) => {
+        let dir = f(app)?;
+        Ok(dir)
+      }
+    }
+  }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct Source<R: Runtime> {
+  pub(crate) builtin_dir: Option<Dir<R>>,
+  pub(crate) remote_dir: Option<Dir<R>>,
+}
+
+impl<R: Runtime> Source<R> {
+  pub fn new() -> Self {
+    Self {
+      builtin_dir: None,
+      remote_dir: None,
+    }
+  }
+
+  pub fn builtin_dir<T: Into<String>>(mut self, dir: T) -> Self {
+    self.builtin_dir = Some(Dir::Static(dir.into()));
+    self
+  }
+
+  pub fn builtin_dir_fn(mut self, dir: DynamicDirFn<R>) -> Self {
+    self.builtin_dir = Some(Dir::Dynamic(dir));
+    self
+  }
+
+  pub fn remote_dir<T: Into<String>>(mut self, dir: T) -> Self {
+    self.remote_dir = Some(Dir::Static(dir.into()));
+    self
+  }
+
+  pub fn remote_dir_fn(mut self, dir: DynamicDirFn<R>) -> Self {
+    self.remote_dir = Some(Dir::Dynamic(dir));
+    self
+  }
+
+  pub(crate) fn resolve_builtin_dir(&self, app: &AppHandle<R>) -> crate::Result<PathBuf> {
+    let dir = match self.builtin_dir {
+      Some(ref builtin_dir) => {
+        let dir = builtin_dir
+          .resolve(app)
+          .map_err(|e| crate::Error::FailToResolveDirectory(e.to_string()))?;
+        dir
+      }
+      None => {
+        let dir = app.path().resolve("bundles", BaseDirectory::Resource)?;
+        dir
+      }
+    };
+    Ok(dir)
+  }
+
+  pub(crate) fn resolve_remote_dir(&self, app: &AppHandle<R>) -> crate::Result<PathBuf> {
+    let dir = match self.remote_dir {
+      Some(ref remote_dir) => {
+        let dir = remote_dir
+          .resolve(app)
+          .map_err(|e| crate::Error::FailToResolveDirectory(e.to_string()))?;
+        dir
+      }
+      None => {
+        let dir = app.path().resolve("bundles", BaseDirectory::Resource)?;
+        dir
+      }
+    };
+    Ok(dir)
+  }
+}
 
 #[derive(Clone, Debug)]
 pub struct BundleProtocolConfig {
   scheme: String,
-  dir: Option<String>,
-  base_dir: Option<String>,
 }
 
 impl BundleProtocolConfig {
   pub fn new<S: Into<String>>(scheme: S) -> Self {
     Self {
       scheme: scheme.into(),
-      dir: None,
-      base_dir: None,
     }
-  }
-
-  pub fn new_with_dir<S: Into<String>, T: Into<String>>(scheme: S, dir: T) -> Self {
-    Self {
-      scheme: scheme.into(),
-      dir: Some(dir.into()),
-      base_dir: None,
-    }
-  }
-
-  pub fn dir<T: Into<String>>(self, dir: T) -> Self {
-    Self {
-      dir: Some(dir.into()),
-      ..self
-    }
-  }
-
-  pub fn base_dir<T: Into<String>>(self, base_dir: T) -> Self {
-    Self {
-      base_dir: Some(base_dir.into()),
-      ..self
-    }
-  }
-
-  pub(crate) fn resolve_source_dir<R: Runtime>(
-    &self,
-    app: &AppHandle<R>,
-  ) -> crate::Result<PathBuf> {
-    let base_dir = self
-      .base_dir
-      .as_ref()
-      .and_then(|x| BaseDirectory::from_variable(x))
-      .unwrap_or(DEFAULT_BASE_DIR);
-    let source_dir = app
-      .path()
-      .resolve("", base_dir)?
-      .join(self.dir.as_ref().unwrap_or(&DEFAULT_DIR.to_string()));
-    Ok(source_dir)
   }
 }
 
@@ -82,16 +124,14 @@ impl LocalProtocolConfig {
     }
   }
 
-  pub fn host<T: Into<String>, U: Into<String>>(self, host: T, url: U) -> Self {
-    let mut this = self;
-    this.hosts.insert(host.into(), url.into());
-    this
+  pub fn host<T: Into<String>, U: Into<String>>(mut self, host: T, url: U) -> Self {
+    self.hosts.insert(host.into(), url.into());
+    self
   }
 
-  pub fn hosts<T: Into<HashMap<String, String>>>(self, hosts: T) -> Self {
-    let mut this = self;
-    this.hosts = hosts.into();
-    this
+  pub fn hosts<T: Into<HashMap<String, String>>>(mut self, hosts: T) -> Self {
+    self.hosts = hosts.into();
+    self
   }
 }
 
@@ -131,18 +171,26 @@ impl From<LocalProtocolConfig> for Protocol {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Config {
+pub struct Config<R: Runtime> {
+  pub(crate) source: Source<R>,
   pub(crate) protocols: Vec<Protocol>,
 }
 
-impl Config {
+impl<R: Runtime> Config<R> {
   pub fn new() -> Self {
-    Self { protocols: vec![] }
+    Self {
+      source: Source::new(),
+      protocols: vec![],
+    }
   }
 
-  pub fn protocol<P: Into<Protocol>>(self, protocol: P) -> Self {
-    let mut this = self;
-    this.protocols.push(protocol.into());
-    this
+  pub fn source(mut self, source: Source<R>) -> Self {
+    self.source = source;
+    self
+  }
+
+  pub fn protocol<P: Into<Protocol>>(mut self, protocol: P) -> Self {
+    self.protocols.push(protocol.into());
+    self
   }
 }

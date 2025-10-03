@@ -14,7 +14,6 @@ test       = false
 napi           = { workspace = true, features = ["napi8", "async"] }
 napi-derive    = { workspace = true }
 thiserror      = { workspace = true }
-tokio          = { workspace = true, features = ["fs"] }
 webview-bundle = { workspace = true, features = ["protocol", "protocol-local"] }
 
 [build-dependencies]
