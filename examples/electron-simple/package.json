@@ -5,8 +5,8 @@
   "main": "./dist/index.mjs",
   "scripts": {
     "start": "electron .",
-    "out": "esbuild src/index.ts --bundle --outfile=./dist/index.mjs --target=node20 --format=esm --platform=node --external:electron --external:@webview-bundle/electron-binding --sourcemap",
-    "create-bundle": "wvb create ./bundle --outfile out.wvb --truncate"
+    "out": "esbuild src/index.ts --bundle --outfile=./dist/index.mjs --target=node20 --format=esm --platform=node --external:electron --external:@webview-bundle/electron --sourcemap",
+    "create-bundle": "wvb create renderer --outfile ./bundles/out_1.0.0.wvb --truncate"
   },
   "dependencies": {
     "@webview-bundle/electron": "workspace:^"

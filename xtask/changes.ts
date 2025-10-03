@@ -4,11 +4,6 @@ import { ConventionalCommit } from './conventional-commit.ts';
 import type { BumpRule } from './version.ts';
 import type { VersionedGitTag } from './versioned-git-tag.ts';
 
-export interface ChangeAuthor {
-  readonly name: string;
-  readonly email: string;
-}
-
 export class Change {
   public readonly commit: ConventionalCommit;
 

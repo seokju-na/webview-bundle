@@ -3,88 +3,42 @@
   "rootChangelog": "CHANGELOG.md",
   "packages": {
     "core": {
-      "versionedFiles": [
-        "crates/core/Cargo.toml"
-      ],
-      "changelog": "crates/core/CHANGELOG.md",
-      "scopes": ["core", "all"]
-    },
-    "protocol": {
-      "versionedFiles": [
-        "crates/protocol/Cargo.toml"
-      ],
-      "changelog": "crates/protocol/CHANGELOG.md",
-      "scopes": ["protocol", "all"]
+      "path": "packages/core"
     },
     "tauri": {
-      "versionedFiles": [
-        "crates/tauri/Cargo.toml"
-      ],
-      "changelog": "crates/tauri/CHANGELOG.md",
-      "scopes": ["tauri", "all"]
+      "path": "packages/tauri"
     },
     "cli": {
-      "versionedFiles": [
-        "packages/cli/package.json"
-      ],
-      "changelog": "packages/cli/CHANGELOG.md",
-      "scopes": ["cli", "all"]
-    },
-    "node-binding": {
-      "versionedFiles": [
-        "packages/node-binding/Cargo.toml",
-        "packages/node-binding/package.json",
-        "packages/node-binding/npm/*/package.json"
-      ],
-      "changelog": "packages/node-binding/CHANGELOG.md",
-      "scopes": ["node-binding", "all"],
+      "path": "packages/cli",
       "beforePublishScripts": [
         {
           "command": "yarn",
           "args": ["artifacts"],
-          "cwd": "packages/node-binding"
+          "cwd": "packages/cli"
         }
       ]
     },
     "electron": {
-      "versionedFiles": [
-        "packages/electron/package.json"
-      ],
-      "changelog": "packages/electron/CHANGELOG.md",
-      "scopes": ["electron", "all"]
-    },
-    "electron-binding": {
-      "versionedFiles": [
-        "packages/electron-binding/Cargo.toml",
-        "packages/electron-binding/package.json",
-        "packages/electron-binding/npm/*/package.json"
-      ],
-      "changelog": "packages/electron-binding/CHANGELOG.md",
-      "scopes": ["electron", "all"],
+      "path": "packages/electron",
       "beforePublishScripts": [
         {
           "command": "yarn",
           "args": ["artifacts"],
-          "cwd": "packages/electron-binding"
+          "cwd": "packages/electron"
         }
       ]
-    },
-    "remote": {
-      "changelog": "crates/remote/CHANGELOG.md",
-      "versionedFiles": ["crates/remote/Cargo.toml"],
-      "scopes": ["remote", "all"]
     }
   },
   "artifacts": {
     "dir": "artifacts-merged",
     "files": [
       {
-        "source": "packages/node-binding/*.node",
-        "dist": "packages/node-binding/artifacts"
+        "source": "packages/cli/*.node",
+        "dist": "packages/cli/artifacts"
       },
       {
-        "source": "packages/electron-binding/*.node",
-        "dist": "packages/electron-binding/artifacts"
+        "source": "packages/electron/*.node",
+        "dist": "packages/electron/artifacts"
       }
     ]
   },

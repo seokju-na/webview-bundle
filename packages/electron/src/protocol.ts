@@ -1,15 +1,18 @@
 import { Buffer } from 'node:buffer';
 import {
   type Response as BindingResponse,
-  BundleProtocol,
-  LocalProtocol,
+  bundleProtocol as bundleProtocolBinding,
+  localProtocol as localProtocolBinding,
   type Method,
-} from '@webview-bundle/electron-binding';
+} from '@webview-bundle/electron/binding';
 import type { Protocol as ElectronProtocol, Privileges } from 'electron';
 import { app, protocol as electronProtocol } from 'electron';
+import { getSource } from './source.js';
 import { makeError } from './utils.js';
 
-export type ProtocolHandler = (req: Request) => Promise<Response>;
+export interface ProtocolHandler {
+  handle(req: Request): Promise<Response>;
+}
 
 export interface ProtocolOptions {
   protocol?: () => ElectronProtocol;
@@ -19,7 +22,7 @@ export interface ProtocolOptions {
 
 export interface Protocol {
   scheme: string;
-  handler: ProtocolHandler;
+  handler: ProtocolHandler | (() => ProtocolHandler | Promise<ProtocolHandler>);
   options?: ProtocolOptions;
 }
 
@@ -46,11 +49,12 @@ export async function registerProtocol(protocol: Protocol): Promise<void> {
   ]);
 
   await app.whenReady();
+  const h = typeof handler === 'function' ? await handler() : handler;
   const p = getProtocol?.() ?? electronProtocol;
   if (typeof p.handle === 'function') {
     p.handle(scheme, async req => {
       try {
-        const resp = await handler(req);
+        const resp = await h.handle(req);
         return resp;
       } catch (e) {
         const error = makeError(e);
@@ -66,7 +70,7 @@ export async function registerProtocol(protocol: Protocol): Promise<void> {
         headers: req.headers,
       });
       try {
-        const response = await handler(request);
+        const response = await h.handle(request);
         callback({
           statusCode: response.status,
           headers: normalizeHeaders(response.headers),
@@ -80,28 +84,48 @@ export async function registerProtocol(protocol: Protocol): Promise<void> {
   }
 }
 
-export function localProtocol(scheme: string, mapping: Record<string, string>, options?: ProtocolOptions): Protocol {
-  const local = new LocalProtocol(mapping);
+type Hosts = Record<string, string>;
+
+export interface LocalProtocolConfig extends ProtocolOptions {
+  hosts: Hosts | (() => Hosts | Promise<Hosts>);
+}
+
+export function localProtocol(scheme: string, config: LocalProtocolConfig): Protocol {
+  const { hosts, ...options } = config;
   const protocol: Protocol = {
     scheme,
-    handler: async req => {
-      const method = req.method.toLowerCase() as Method;
-      const resp = await local.handle(method as Method, req.url, normalizeHeaders(req.headers));
-      return makeResponse(resp);
+    handler: async () => {
+      const h = typeof hosts === 'function' ? await hosts() : hosts;
+      const local = localProtocolBinding(h);
+      return {
+        handle: async req => {
+          const method = req.method.toLowerCase() as Method;
+          const resp = await local.handle(method as Method, req.url, normalizeHeaders(req.headers));
+          return makeResponse(resp);
+        },
+      };
     },
     options,
   };
   return protocol;
 }
 
-export function bundleProtocol(scheme: string, basedir: string, options?: ProtocolOptions): Protocol {
-  const bundle = new BundleProtocol(basedir);
+export interface BundleProtocolConfig extends ProtocolOptions {}
+
+export function bundleProtocol(scheme: string, config: BundleProtocolConfig = {}): Protocol {
+  const { ...options } = config;
   const protocol: Protocol = {
     scheme,
-    handler: async req => {
-      const method = req.method.toLowerCase() as Method;
-      const resp = await bundle.handle(method as Method, req.url, normalizeHeaders(req.headers));
-      return makeResponse(resp);
+    handler: async () => {
+      const source = await getSource();
+      const bundle = bundleProtocolBinding(source);
+      return {
+        handle: async req => {
+          const method = req.method.toLowerCase() as Method;
+          const resp = await bundle.handle(method as Method, req.url, normalizeHeaders(req.headers));
+          return makeResponse(resp);
+        },
+      };
     },
     options,
   };

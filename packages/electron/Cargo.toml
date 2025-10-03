@@ -1,0 +1,20 @@
+[package]
+edition = "2021"
+name    = "webview-bundle-electron"
+publish = false
+version = "0.0.0"
+
+[lib]
+crate-type = ["cdylib"]
+doctest    = false
+path       = "binding/lib.rs"
+test       = false
+
+[dependencies]
+napi           = { workspace = true, features = ["napi8", "async"] }
+napi-derive    = { workspace = true }
+thiserror      = { workspace = true }
+webview-bundle = { workspace = true, features = ["protocol", "protocol-local"] }
+
+[build-dependencies]
+napi-build = { workspace = true }

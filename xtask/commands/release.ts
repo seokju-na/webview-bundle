@@ -100,7 +100,7 @@ export class Release extends Command {
     const packages = await Package.loadAll(config);
     for (const pkg of packages) {
       const prefix = `[${pkg.name}]`;
-      const changes = Changes.tryFromGitTag(repo, pkg.versionedGitTag, pkg.config.scopes);
+      const changes = Changes.tryFromGitTag(repo, pkg.versionedGitTag, pkg.scopes);
       let bumpRule = changes.getBumpRule();
       if (bumpRule == null) {
         console.log(`${colors.warn(prefix)} no changes found. skip release.`);
@@ -117,7 +117,7 @@ export class Release extends Command {
         const line = i === changes.changes.length - 1 ? '└─' : '├─';
         console.log(`   ${colors.dim(`${line} ${change.toString()}`)}`);
       }
-      const changelog = pkg.config.changelog != null ? await Changelog.load(pkg.config.changelog) : null;
+      const changelog = await Changelog.load(pkg.changelog);
       targets.push({ package: pkg, changes, changelog });
     }
     return targets;
@@ -182,8 +182,8 @@ export class Release extends Command {
 
   async publish(targets: ReleaseTarget[]) {
     for (const target of targets) {
-      if (target.package.config.beforePublishScripts != null) {
-        const actions = target.package.config.beforePublishScripts.map(
+      if (target.package.beforePublishScripts.length > 0) {
+        const actions = target.package.beforePublishScripts.map(
           (script): Action => ({
             type: 'command',
             cmd: script.command,

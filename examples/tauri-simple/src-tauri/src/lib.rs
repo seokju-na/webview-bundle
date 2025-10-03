@@ -1,4 +1,5 @@
-use webview_bundle_tauri::{Config, Protocol};
+use tauri::Manager;
+use webview_bundle_tauri::{Config, Protocol, Source};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -11,7 +12,18 @@ pub fn run() {
   tauri::Builder::default()
     .plugin(webview_bundle_tauri::init(
       Config::new()
-        .protocol(Protocol::bundle("bundle").dir("../../examples/tauri-simple/bundles"))
+        .source(Source::new().builtin_dir_fn(|app| {
+          let resources_dir = app.path().resource_dir()?;
+          Ok(
+            resources_dir
+              .join("..")
+              .join("..")
+              .join("examples")
+              .join("tauri-simple")
+              .join("bundles"),
+          )
+        }))
+        .protocol(Protocol::bundle("bundle"))
         .protocol(Protocol::local("local").host("example.com", "http://localhost:1420")),
     ))
     .invoke_handler(tauri::generate_handler![greet])

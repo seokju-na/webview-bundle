@@ -1,0 +1,20 @@
+{
+  "name": "@bench/electron",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "vitest bench --run"
+  },
+  "dependencies": {
+    "@webview-bundle/electron": "workspace:^",
+    "electron-serve": "2.1.1"
+  },
+  "devDependencies": {
+    "@bench/tools": "workspace:^",
+    "electron": "^35.7.5",
+    "esbuild": "0.25.3",
+    "execa": "^9",
+    "playwright": "1.48.2",
+    "vitest": "3.2.4"
+  }
+}

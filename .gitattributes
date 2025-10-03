@@ -3,12 +3,7 @@
 /.yarn/plugins/**/*  binary
 /.pnp.*              binary linguist-generated
 
-/packages/electron-binding/index.js linguist-generated=true
-/packages/electron-binding/index.d.ts linguist-generated=true
-/packages/electron-binding/index.cjs linguist-generated=true
-/packages/electron-binding/index.d.cts linguist-generated=true
-
-/packages/node-binding/index.js linguist-generated=true
-/packages/node-binding/index.d.ts linguist-generated=true
-/packages/node-binding/index.cjs linguist-generated=true
-/packages/node-binding/index.d.cts linguist-generated=true
+/packages/**/binding.js linguist-generated=true
+/packages/**/binding.d.ts linguist-generated=true
+/packages/**/binding.cjs linguist-generated=true
+/packages/**/binding.d.cts linguist-generated=true
