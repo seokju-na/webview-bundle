@@ -68,7 +68,7 @@
   },
   "overrides": [
     {
-      "includes": ["benchmarks/fixtures/**"],
+      "includes": ["bench/fixtures/**"],
       "linter": {
         "rules": {
           "correctness": {
