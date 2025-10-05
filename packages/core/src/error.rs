@@ -30,34 +30,29 @@ pub enum Error {
   InvalidIndexChecksum,
   #[error("checksum mismatch")]
   ChecksumMismatch,
+  #[error("bundle not found")]
+  BundleNotFound,
   #[cfg(feature = "_serde")]
   #[error("json error: {0}")]
   Json(#[from] serde_json::Error),
   #[cfg(feature = "protocol-local")]
   #[error("cannot resolve local host")]
   CannotResolveLocalHost,
-  #[error("source bundle not found")]
-  SourceBundleNotFound,
-  #[error("invalid remote config: {0}")]
-  InvalidRemoteConfig(String),
   #[cfg(feature = "_reqwest")]
   #[error("reqwest error: {0}")]
   Reqwest(#[from] reqwest::Error),
   #[cfg(feature = "remote")]
-  #[error("remote bundle not found: {0}")]
-  RemoteBundleNotFund(String),
-  #[cfg(feature = "remote")]
-  #[error("remote bundle name not exists")]
-  RemoteBundleNameNotExists,
-  #[cfg(feature = "remote")]
-  #[error("remote bundle version not exists")]
-  RemoteBundleVersionNotExists,
-  #[cfg(feature = "remote")]
   #[error("remote http error with status {status}")]
   RemoteHttp { status: u16 },
+  #[cfg(feature = "remote")]
+  #[error("invalid remote config: {0}")]
+  InvalidRemoteConfig(String),
   #[cfg(feature = "_opendal")]
   #[error("opendal error: {0}")]
   Opendal(#[from] opendal::Error),
+  #[cfg(feature = "napi")]
+  #[error("napi error: {0}")]
+  Napi(#[from] napi::Error),
 }
 
 impl Error {

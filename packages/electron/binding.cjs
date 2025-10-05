@@ -508,10 +508,27 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
+module.exports.Bundle = nativeBinding.Bundle
+module.exports.JsBundle = nativeBinding.JsBundle
+module.exports.BundleBuilder = nativeBinding.BundleBuilder
+module.exports.JsNapiBundleBuilder = nativeBinding.JsNapiBundleBuilder
+module.exports.BundleManifest = nativeBinding.BundleManifest
+module.exports.JsBundleManifest = nativeBinding.JsBundleManifest
 module.exports.BundleProtocol = nativeBinding.BundleProtocol
+module.exports.JsBundleProtocol = nativeBinding.JsBundleProtocol
 module.exports.BundleSource = nativeBinding.BundleSource
+module.exports.JsBundleSource = nativeBinding.JsBundleSource
+module.exports.Header = nativeBinding.Header
+module.exports.JsHeader = nativeBinding.JsHeader
+module.exports.Index = nativeBinding.Index
+module.exports.JsIndex = nativeBinding.JsIndex
 module.exports.LocalProtocol = nativeBinding.LocalProtocol
-module.exports.bundleProtocol = nativeBinding.bundleProtocol
-module.exports.initBundleSource = nativeBinding.initBundleSource
-module.exports.localProtocol = nativeBinding.localProtocol
-module.exports.Method = nativeBinding.Method
+module.exports.JsLocalProtocol = nativeBinding.JsLocalProtocol
+module.exports.Remote = nativeBinding.Remote
+module.exports.JsRemote = nativeBinding.JsRemote
+module.exports.BundleSourceVersionType = nativeBinding.BundleSourceVersionType
+module.exports.JsBundleSourceVersionKind = nativeBinding.JsBundleSourceVersionKind
+module.exports.HttpMethod = nativeBinding.HttpMethod
+module.exports.JsHttpMethod = nativeBinding.JsHttpMethod
+module.exports.Version = nativeBinding.Version
+module.exports.JsVersion = nativeBinding.JsVersion

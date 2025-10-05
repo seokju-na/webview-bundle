@@ -34,3 +34,6 @@ webview-bundle-tauri = { version = "0.0.0", path = "./packages/tauri" }
 [profile.release]
 lto   = true
 strip = "symbols"
+
+#[lints.clippy]
+#module_inception = "allow"

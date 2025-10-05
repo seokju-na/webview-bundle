@@ -1,13 +1,13 @@
 import { Buffer } from 'node:buffer';
 import {
-  type Response as BindingResponse,
-  bundleProtocol as bundleProtocolBinding,
-  localProtocol as localProtocolBinding,
-  type Method,
+  BundleProtocol,
+  type BundleSource,
+  type HttpMethod,
+  type HttpResponse,
+  LocalProtocol,
 } from '@webview-bundle/electron/binding';
 import type { Protocol as ElectronProtocol, Privileges } from 'electron';
 import { app, protocol as electronProtocol } from 'electron';
-import { getSource } from './source.js';
 import { makeError } from './utils.js';
 
 export interface ProtocolHandler {
@@ -20,9 +20,14 @@ export interface ProtocolOptions {
   onError?: (e: Error) => void;
 }
 
+export interface ProtocolHandlerBuildContext {
+  source: BundleSource;
+}
+export type ProtocolHandlerBuild = (ctx: ProtocolHandlerBuildContext) => ProtocolHandler | Promise<ProtocolHandler>;
+
 export interface Protocol {
   scheme: string;
-  handler: ProtocolHandler | (() => ProtocolHandler | Promise<ProtocolHandler>);
+  handler: ProtocolHandler | ProtocolHandlerBuild;
   options?: ProtocolOptions;
 }
 
@@ -37,7 +42,7 @@ const DEFAULT_PRIVILEGES: Privileges = {
   codeCache: true,
 };
 
-export async function registerProtocol(protocol: Protocol): Promise<void> {
+export async function registerProtocol(protocol: Protocol, source: BundleSource): Promise<void> {
   const { scheme, handler, options = {} } = protocol;
   const { protocol: getProtocol, privileges, onError } = options;
 
@@ -49,7 +54,7 @@ export async function registerProtocol(protocol: Protocol): Promise<void> {
   ]);
 
   await app.whenReady();
-  const h = typeof handler === 'function' ? await handler() : handler;
+  const h = typeof handler === 'function' ? await handler({ source }) : handler;
   const p = getProtocol?.() ?? electronProtocol;
   if (typeof p.handle === 'function') {
     p.handle(scheme, async req => {
@@ -96,11 +101,11 @@ export function localProtocol(scheme: string, config: LocalProtocolConfig): Prot
     scheme,
     handler: async () => {
       const h = typeof hosts === 'function' ? await hosts() : hosts;
-      const local = localProtocolBinding(h);
+      const local = new LocalProtocol(h);
       return {
         handle: async req => {
-          const method = req.method.toLowerCase() as Method;
-          const resp = await local.handle(method as Method, req.url, normalizeHeaders(req.headers));
+          const method = req.method.toLowerCase() as HttpMethod;
+          const resp = await local.handle(method, req.url, normalizeHeaders(req.headers));
           return makeResponse(resp);
         },
       };
@@ -116,13 +121,12 @@ export function bundleProtocol(scheme: string, config: BundleProtocolConfig = {}
   const { ...options } = config;
   const protocol: Protocol = {
     scheme,
-    handler: async () => {
-      const source = await getSource();
-      const bundle = bundleProtocolBinding(source);
+    handler: ({ source }) => {
+      const bundle = new BundleProtocol(source);
       return {
         handle: async req => {
-          const method = req.method.toLowerCase() as Method;
-          const resp = await bundle.handle(method as Method, req.url, normalizeHeaders(req.headers));
+          const method = req.method.toLowerCase() as HttpMethod;
+          const resp = await bundle.handle(method, req.url, normalizeHeaders(req.headers));
           return makeResponse(resp);
         },
       };
@@ -140,7 +144,7 @@ function normalizeHeaders(headers: Headers): Record<string, string> {
   return map;
 }
 
-function makeResponse(resp: BindingResponse): Response {
+function makeResponse(resp: HttpResponse): Response {
   const { status, headers: respHeaders, body } = resp;
   const headers = new Headers();
   for (const [key, value] of Object.entries(respHeaders)) {

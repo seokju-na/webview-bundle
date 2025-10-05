@@ -509,7 +509,22 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.Bundle = nativeBinding.Bundle
+module.exports.JsBundle = nativeBinding.JsBundle
 module.exports.BundleBuilder = nativeBinding.BundleBuilder
-module.exports.readBundle = nativeBinding.readBundle
+module.exports.JsNapiBundleBuilder = nativeBinding.JsNapiBundleBuilder
+module.exports.BundleManifest = nativeBinding.BundleManifest
+module.exports.JsBundleManifest = nativeBinding.JsBundleManifest
+module.exports.BundleSource = nativeBinding.BundleSource
+module.exports.JsBundleSource = nativeBinding.JsBundleSource
+module.exports.Header = nativeBinding.Header
+module.exports.JsHeader = nativeBinding.JsHeader
+module.exports.Index = nativeBinding.Index
+module.exports.JsIndex = nativeBinding.JsIndex
+module.exports.Remote = nativeBinding.Remote
+module.exports.JsRemote = nativeBinding.JsRemote
+module.exports.BundleSourceVersionType = nativeBinding.BundleSourceVersionType
+module.exports.JsBundleSourceVersionKind = nativeBinding.JsBundleSourceVersionKind
+module.exports.HttpMethod = nativeBinding.HttpMethod
+module.exports.JsHttpMethod = nativeBinding.JsHttpMethod
 module.exports.Version = nativeBinding.Version
-module.exports.writeBundle = nativeBinding.writeBundle
+module.exports.JsVersion = nativeBinding.JsVersion

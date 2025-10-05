@@ -9,8 +9,7 @@ pub fn init<R: Runtime>(
   app: &AppHandle<R>,
   config: Arc<Config<R>>,
 ) -> crate::Result<WebviewBundle<R>> {
-  let webview_bundle =
-    tauri::async_runtime::block_on(async move { WebviewBundle::init(app.clone(), config).await })?;
+  let webview_bundle = WebviewBundle::init(app.clone(), config)?;
   Ok(webview_bundle)
 }
 
@@ -23,14 +22,11 @@ pub struct WebviewBundle<R: Runtime> {
 }
 
 impl<R: Runtime> WebviewBundle<R> {
-  pub(crate) async fn init(app: AppHandle<R>, config: Arc<Config<R>>) -> crate::Result<Self> {
-    let source = Arc::new(
-      BundleSource::init(
-        config.source.resolve_builtin_dir(&app)?.as_path(),
-        config.source.resolve_remote_dir(&app)?.as_path(),
-      )
-      .await?,
-    );
+  pub(crate) fn init(app: AppHandle<R>, config: Arc<Config<R>>) -> crate::Result<Self> {
+    let source = Arc::new(BundleSource::new(
+      config.source.resolve_builtin_dir(&app)?.as_path(),
+      config.source.resolve_remote_dir(&app)?.as_path(),
+    ));
     let mut protocols = HashMap::with_capacity(config.protocols.len());
     for protocol_config in &config.protocols {
       let scheme = protocol_config.scheme().to_string();

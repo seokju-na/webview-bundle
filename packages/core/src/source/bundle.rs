@@ -1,5 +1,7 @@
 use crate::source::versions::{BundleVersions, ReadOnly, ReadWrite};
-use crate::{AsyncBundleReader, AsyncReader, Bundle, BundleManifest, EXTENSION};
+use crate::{
+  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleManifest, EXTENSION,
+};
 use dashmap::DashMap;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
@@ -23,71 +25,78 @@ impl Deref for BundleSourceVersion {
   }
 }
 
+pub struct ListBundles {
+  pub builtin: Vec<String>,
+  pub remote: Vec<String>,
+}
+
 pub struct BundleSource {
   builtin_dir: PathBuf,
-  builtin_versions: Arc<BundleVersions<ReadOnly>>,
+  builtin_versions: OnceCell<Arc<BundleVersions<ReadOnly>>>,
   remote_dir: PathBuf,
-  remote_versions: Arc<BundleVersions<ReadWrite>>,
+  remote_versions: OnceCell<Arc<BundleVersions<ReadWrite>>>,
   manifests: DashMap<String, Arc<OnceCell<Arc<BundleManifest>>>>,
 }
 
 impl BundleSource {
-  pub async fn init(builtin_dir: &Path, remote_dir: &Path) -> crate::Result<Self> {
-    let builtin_versions =
-      BundleVersions::load(&builtin_dir.join("versions.json"), ReadOnly).await?;
-    let remote_version =
-      match BundleVersions::load(&remote_dir.join("versions.json"), ReadWrite).await {
-        Ok(x) => Ok(x),
-        Err(e) => match e {
-          crate::Error::Io(io_err) => {
-            if io_err.kind() == std::io::ErrorKind::NotFound {
-              Ok(BundleVersions::new(remote_dir, ReadWrite))
-            } else {
-              Err(crate::Error::from(io_err))
-            }
-          }
-          _ => Err(e),
-        },
-      }?;
-    Ok(Self {
+  pub fn new(builtin_dir: &Path, remote_dir: &Path) -> Self {
+    Self {
       builtin_dir: builtin_dir.to_path_buf(),
-      builtin_versions: Arc::new(builtin_versions),
+      builtin_versions: OnceCell::new(),
       remote_dir: remote_dir.to_path_buf(),
-      remote_versions: Arc::new(remote_version),
+      remote_versions: OnceCell::new(),
       manifests: DashMap::default(),
-    })
+    }
   }
 
-  pub fn get_filepath(&self, bundle_name: &str) -> Option<PathBuf> {
-    self
+  pub async fn list_bundles(&self) -> crate::Result<ListBundles> {
+    let builtin = self.list_bundles_fs(&self.builtin_dir).await?;
+    let remote = self.list_bundles_fs(&self.remote_dir).await?;
+    Ok(ListBundles { builtin, remote })
+  }
+
+  pub async fn get_filepath(&self, bundle_name: &str) -> crate::Result<Option<PathBuf>> {
+    let filepath = self
       .get_version(bundle_name)
-      .map(|version| self.filepath(bundle_name, &version))
+      .await?
+      .map(|version| self.filepath(bundle_name, &version));
+    Ok(filepath)
   }
 
-  pub fn get_version(&self, bundle_name: &str) -> Option<BundleSourceVersion> {
-    self
-      .remote_versions
+  pub async fn get_version(&self, bundle_name: &str) -> crate::Result<Option<BundleSourceVersion>> {
+    match self
+      .remote_versions()
+      .await?
       .get_version(bundle_name)
       .map(BundleSourceVersion::Remote)
-      .or_else(|| {
+    {
+      Some(x) => Ok(Some(x)),
+      None => Ok(
         self
-          .builtin_versions
+          .builtin_versions()
+          .await?
           .get_version(bundle_name)
-          .map(BundleSourceVersion::Builtin)
-      })
+          .map(BundleSourceVersion::Builtin),
+      ),
+    }
   }
 
-  pub fn set_version(&self, bundle_name: &str, version: &str) {
-    self.remote_versions.set_version(bundle_name, version);
+  pub async fn set_version(&self, bundle_name: &str, version: &str) -> crate::Result<()> {
+    self
+      .remote_versions()
+      .await?
+      .set_version(bundle_name, version);
+    Ok(())
   }
 
   pub async fn reader(&self, bundle_name: &str) -> crate::Result<File> {
     let filepath = self
       .get_filepath(bundle_name)
-      .ok_or(crate::Error::SourceBundleNotFound)?;
+      .await?
+      .ok_or(crate::Error::BundleNotFound)?;
     let file = File::open(filepath).await.map_err(|e| {
       if e.kind() == std::io::ErrorKind::NotFound {
-        return crate::Error::SourceBundleNotFound;
+        return crate::Error::BundleNotFound;
       }
       crate::Error::from(e)
     })?;
@@ -131,13 +140,93 @@ impl BundleSource {
     self.manifests.remove(bundle_name).is_some()
   }
 
+  pub async fn is_exists(
+    &self,
+    bundle_name: &str,
+    version: &BundleSourceVersion,
+  ) -> crate::Result<bool> {
+    let filepath = self.filepath(bundle_name, version);
+    let exists = tokio::fs::metadata(&filepath).await.is_ok();
+    Ok(exists)
+  }
+
+  pub async fn write_bundle(
+    &self,
+    bundle_name: &str,
+    version: &str,
+    bundle: &Bundle,
+  ) -> crate::Result<()> {
+    let filepath = self.filepath(
+      bundle_name,
+      &BundleSourceVersion::Remote(version.to_string()),
+    );
+    let mut file = File::create(&filepath).await?;
+    AsyncBundleWriter::new(&mut file).write(bundle).await?;
+    Ok(())
+  }
+
   fn filepath(&self, bundle_name: &str, version: &BundleSourceVersion) -> PathBuf {
     // TODO: normalize bundle name
     let filename = format!("{bundle_name}_{}.{EXTENSION}", **version);
     match version {
-      BundleSourceVersion::Builtin(_) => self.builtin_dir.join(filename),
-      BundleSourceVersion::Remote(_) => self.remote_dir.join(filename),
+      BundleSourceVersion::Builtin(_) => self.builtin_dir.join(bundle_name).join(filename),
+      BundleSourceVersion::Remote(_) => self.remote_dir.join(bundle_name).join(filename),
     }
+  }
+
+  async fn builtin_versions(&self) -> crate::Result<&Arc<BundleVersions<ReadOnly>>> {
+    let filepath = self.builtin_dir.join("versions.json");
+    self
+      .builtin_versions
+      .get_or_try_init(|| async {
+        let versions = BundleVersions::load(&filepath, ReadOnly).await?;
+        Ok::<Arc<BundleVersions<ReadOnly>>, crate::Error>(Arc::new(versions))
+      })
+      .await
+  }
+
+  async fn remote_versions(&self) -> crate::Result<&Arc<BundleVersions<ReadWrite>>> {
+    let filepath = self.remote_dir.join("versions.json");
+    self
+      .remote_versions
+      .get_or_try_init(|| async {
+        let versions = match BundleVersions::load(&filepath, ReadWrite).await {
+          Ok(x) => Ok(x),
+          Err(e) => match e {
+            crate::Error::Io(io_err) => {
+              if io_err.kind() == std::io::ErrorKind::NotFound {
+                Ok(BundleVersions::new(&filepath, ReadWrite))
+              } else {
+                Err(crate::Error::from(io_err))
+              }
+            }
+            _ => Err(e),
+          },
+        }?;
+        Ok::<Arc<BundleVersions<ReadWrite>>, crate::Error>(Arc::new(versions))
+      })
+      .await
+  }
+
+  async fn list_bundles_fs(&self, dir: &Path) -> crate::Result<Vec<String>> {
+    let mut entries = match tokio::fs::read_dir(dir).await {
+      Ok(read_dir) => Ok(read_dir),
+      Err(e) => {
+        if e.kind() == std::io::ErrorKind::NotFound {
+          return Ok(vec![]);
+        }
+        Err(e)
+      }
+    }?;
+    let mut bundles = Vec::new();
+    while let Some(entry) = entries.next_entry().await? {
+      let is_dir = entry.file_type().await.map(|x| x.is_dir()).unwrap_or(false);
+      if is_dir {
+        let name = entry.file_name().to_string_lossy().to_string();
+        bundles.push(name);
+      }
+    }
+    Ok(bundles)
   }
 }
 
@@ -151,9 +240,7 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-      .await
-      .unwrap();
+    let source = BundleSource::new(&base_dir.join("builtin"), &base_dir.join("remote"));
     let bundle = source.fetch("nextjs").await.unwrap();
     bundle.get_data("/index.html").unwrap().unwrap();
   }
@@ -164,9 +251,7 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-      .await
-      .unwrap();
+    let source = BundleSource::new(&base_dir.join("builtin"), &base_dir.join("remote"));
     let manifest = source.fetch_manifest("nextjs").await.unwrap();
     assert!(manifest.index().contains_path("/index.html"));
     let reader = source.reader("nextjs").await.unwrap();
@@ -183,11 +268,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let mut handles = Vec::new();
     for _i in 0..10 {
       let s = source.clone();
@@ -208,14 +292,9 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-      .await
-      .unwrap();
+    let source = BundleSource::new(&base_dir.join("builtin"), &base_dir.join("remote"));
     let bundle = source.fetch("not-found").await;
-    assert!(matches!(
-      bundle.unwrap_err(),
-      crate::Error::SourceBundleNotFound
-    ));
+    assert!(matches!(bundle.unwrap_err(), crate::Error::BundleNotFound));
   }
 
   #[tokio::test]
@@ -224,11 +303,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let mut handles = Vec::new();
     for _i in 0..10 {
       let s = source.clone();
@@ -248,11 +326,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
 
     let m1 = source.load_manifest("nextjs").await.unwrap();
     assert!(
@@ -284,11 +361,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
 
     // 1) initial loads. test singleflight
     let n = 5usize;
@@ -357,5 +433,17 @@ mod tests {
     for m in &after_jobs[1..] {
       assert!(Arc::ptr_eq(&after_jobs[0], m));
     }
+  }
+
+  #[tokio::test]
+  async fn list_bundles() {
+    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+      .join("tests")
+      .join("fixtures")
+      .join("bundles");
+    let source = BundleSource::new(&base_dir.join("builtin"), &base_dir.join("remote"));
+    let res = source.list_bundles().await.unwrap();
+    assert_eq!(res.builtin, vec!["nextjs"]);
+    assert_eq!(res.remote, vec!["nextjs"]);
   }
 }

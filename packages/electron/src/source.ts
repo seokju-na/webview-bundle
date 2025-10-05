@@ -1,28 +1,15 @@
 import path from 'node:path';
-import { type BundleSource, initBundleSource } from '@webview-bundle/electron/binding';
+import { BundleSource } from '@webview-bundle/electron/binding';
 import { app } from 'electron';
-
-let globalSource: Promise<BundleSource> | null = null;
-
-export function getSource(): Promise<BundleSource> {
-  if (globalSource == null) {
-    throw new Error('Cannot get bundle source. Please make sure you have initialized the webview bundle.');
-  }
-  return globalSource;
-}
 
 export interface SourceOptions {
   builtinDir?: string;
   remoteDir?: string;
 }
 
-export function initSource(options: SourceOptions = {}): Promise<BundleSource> {
-  if (globalSource != null) {
-    return globalSource;
-  }
+export function bundleSource(options: SourceOptions = {}): BundleSource {
   const { builtinDir = defaultBuiltinDir(), remoteDir = defaultRemoteDir() } = options;
-  globalSource = initBundleSource(builtinDir, remoteDir);
-  return globalSource;
+  return new BundleSource(builtinDir, remoteDir);
 }
 
 function defaultBuiltinDir(): string {

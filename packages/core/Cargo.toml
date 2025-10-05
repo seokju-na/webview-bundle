@@ -21,6 +21,8 @@ futures-util     = { workspace = true, optional = true }
 http             = { workspace = true }
 infer            = { workspace = true, optional = true }
 lz4_flex         = { workspace = true }
+napi             = { workspace = true, optional = true }
+napi-derive      = { workspace = true, optional = true }
 opendal          = { workspace = true, optional = true }
 percent-encoding = { workspace = true, optional = true }
 reqwest          = { workspace = true, default-features = false, optional = true }
@@ -41,6 +43,7 @@ _opendal = ["dep:opendal"]
 _reqwest = ["dep:reqwest"]
 _serde = ["dep:serde", "dep:serde_json"]
 async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs", "tokio/sync"]
+napi = ["dep:napi", "napi/napi8", "napi/async", "dep:napi-derive"]
 protocol = ["source", "dep:bytes", "dep:infer", "dep:percent-encoding"]
 protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
 remote = [
@@ -57,3 +60,7 @@ remote = [
 ]
 remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
 source = ["dep:dashmap", "async", "_serde"]
+updater = ["remote", "source"]
+
+[lints.clippy]
+module_inception = "allow"

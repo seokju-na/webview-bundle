@@ -12,17 +12,13 @@ pub struct RemoteBundleInfo {
   pub integrity: Option<String>,
 }
 
-#[derive(Debug, Clone)]
-pub struct RemoteBundle {
-  pub info: RemoteBundleInfo,
-  pub bundle: Bundle,
-}
+type OnDownload = dyn Fn(u64, u64) + Send + Sync + 'static;
 
 #[derive(Default, Clone)]
 #[non_exhaustive]
 pub struct RemoteConfig {
   pub endpoint: String,
-  pub on_download: Option<Arc<dyn Fn(u64, u64)>>,
+  pub on_download: Option<Arc<OnDownload>>,
   pub http: Option<HttpConfig>,
 }
 
@@ -39,6 +35,14 @@ impl RemoteBuilder {
 
   pub fn http(mut self, http: HttpConfig) -> Self {
     self.config.http = Some(http);
+    self
+  }
+
+  pub fn on_download<F>(mut self, on_download: F) -> Self
+  where
+    F: Fn(u64, u64) + Send + Sync + 'static,
+  {
+    self.config.on_download = Some(Arc::new(on_download));
     self
   }
 
@@ -69,40 +73,41 @@ impl Remote {
     RemoteBuilder::default()
   }
 
-  pub async fn list_bundles(&self) -> crate::Result<Vec<String>> {
-    let resp = self.client.get(self.api_url(None)).send().await?;
+  /// GET /bundles
+  pub async fn get_info_all(&self) -> crate::Result<Vec<RemoteBundleInfo>> {
+    let resp = self.client.get(self.api_url("/bundles")).send().await?;
     match resp.status().is_success() {
-      true => Ok(resp.json::<Vec<String>>().await?),
+      true => Ok(resp.json::<Vec<RemoteBundleInfo>>().await?),
       false => Err(crate::Error::RemoteHttp {
         status: resp.status().as_u16(),
       }),
     }
   }
 
-  pub async fn get_bundle_info(&self, bundle_name: &str) -> crate::Result<RemoteBundleInfo> {
-    let api_path = format!("/{bundle_name}");
+  /// GET /bundles/:name
+  pub async fn get_info(&self, bundle_name: &str) -> crate::Result<RemoteBundleInfo> {
     let resp = self
       .client
-      .head(self.api_url(Some(api_path)))
+      .get(self.api_url(format!("/bundles/{bundle_name}")))
       .send()
       .await?;
-    if !resp.status().is_success() {
-      return Err(crate::Error::RemoteHttp {
+    match resp.status().is_success() {
+      true => Ok(resp.json::<RemoteBundleInfo>().await?),
+      false => Err(crate::Error::RemoteHttp {
         status: resp.status().as_u16(),
-      });
+      }),
     }
-    self.parse_bundle_info(&resp)
   }
 
-  pub async fn download_bundle(&self, bundle_name: &str) -> crate::Result<RemoteBundle> {
-    let api_path = format!("/{bundle_name}");
-    let resp = self.client.get(self.api_url(Some(api_path))).send().await?;
+  /// GET /bundles/:name/download/:version
+  pub async fn download(&self, info: &RemoteBundleInfo) -> crate::Result<Bundle> {
+    let api_path = format!("/bundles/{}/download/{}", info.name, info.version);
+    let resp = self.client.get(self.api_url(api_path)).send().await?;
     if !resp.status().is_success() {
       return Err(crate::Error::RemoteHttp {
         status: resp.status().as_u16(),
       });
     }
-    let info = self.parse_bundle_info(&resp)?;
     let total_size = resp.content_length().unwrap();
     let mut stream = resp.bytes_stream();
     let mut downloaded_bytes: u64 = 0;
@@ -117,45 +122,16 @@ impl Remote {
     }
     let mut reader = Cursor::new(data);
     let bundle = Reader::<Bundle>::read(&mut BundleReader::new(&mut reader))?;
-    Ok(RemoteBundle { info, bundle })
+    Ok(bundle)
   }
 
-  fn api_url(&self, path: Option<String>) -> String {
-    match path {
-      Some(p) => {
-        let endpoint = self
-          .config
-          .endpoint
-          .strip_suffix('/')
-          .unwrap_or(&self.config.endpoint);
-        format!("{}/{}", endpoint, p.strip_prefix('/').unwrap_or(&p))
-      }
-      None => self.config.endpoint.to_string(),
-    }
-  }
-
-  fn parse_bundle_info(&self, resp: &reqwest::Response) -> crate::Result<RemoteBundleInfo> {
-    let name = resp
-      .headers()
-      .get("webview-bundle-name")
-      .cloned()
-      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string())
-      .ok_or(crate::Error::RemoteBundleNameNotExists)?;
-    let version = resp
-      .headers()
-      .get("webview-bundle-version")
-      .cloned()
-      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string())
-      .ok_or(crate::Error::RemoteBundleVersionNotExists)?;
-    let integrity = resp
-      .headers()
-      .get("webview-bundle-integrity")
-      .cloned()
-      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
-    Ok(RemoteBundleInfo {
-      name,
-      version,
-      integrity,
-    })
+  fn api_url(&self, path: impl Into<String>) -> String {
+    let endpoint = self
+      .config
+      .endpoint
+      .strip_suffix('/')
+      .unwrap_or(&self.config.endpoint);
+    let p = path.into();
+    format!("{}/{}", endpoint, p.strip_prefix('/').unwrap_or(&p))
   }
 }
