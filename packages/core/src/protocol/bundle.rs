@@ -26,7 +26,7 @@ impl super::Protocol for BundleProtocol {
     let name = self
       .uri_resolver
       .resolve_bundle(request.uri())
-      .ok_or(crate::Error::SourceBundleNotFound)?;
+      .ok_or(crate::Error::BundleNotFound)?;
     let path = self.uri_resolver.resolve_path(request.uri());
 
     let mut resp = Response::builder();
@@ -78,11 +78,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
@@ -133,11 +132,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
@@ -158,11 +156,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
@@ -214,11 +211,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
@@ -270,11 +266,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
@@ -295,11 +290,10 @@ mod tests {
       .join("tests")
       .join("fixtures")
       .join("bundles");
-    let source = Arc::new(
-      BundleSource::init(&base_dir.join("builtin"), &base_dir.join("remote"))
-        .await
-        .unwrap(),
-    );
+    let source = Arc::new(BundleSource::new(
+      &base_dir.join("builtin"),
+      &base_dir.join("remote"),
+    ));
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let err = protocol
       .handle(
@@ -311,6 +305,6 @@ mod tests {
       )
       .await
       .unwrap_err();
-    assert!(matches!(err, crate::Error::SourceBundleNotFound));
+    assert!(matches!(err, crate::Error::BundleNotFound));
   }
 }

@@ -29,3 +29,5 @@ pub mod protocol;
 pub mod remote;
 #[cfg(feature = "source")]
 pub mod source;
+#[cfg(feature = "updater")]
+pub mod updater;

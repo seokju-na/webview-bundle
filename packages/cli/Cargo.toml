@@ -11,11 +11,9 @@ path       = "binding/lib.rs"
 test       = false
 
 [dependencies]
-napi           = { workspace = true, features = ["napi8"] }
-napi-derive    = { workspace = true }
-thiserror      = { workspace = true }
-tokio          = { workspace = true, features = ["fs"] }
-webview-bundle = { workspace = true, features = ["async"] }
+napi                = { workspace = true, features = ["napi8"] }
+napi-derive         = { workspace = true }
+webview-bundle-napi = { workspace = true }
 
 [build-dependencies]
 napi-build = { workspace = true }

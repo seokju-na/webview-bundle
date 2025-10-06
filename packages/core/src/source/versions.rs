@@ -43,6 +43,10 @@ where
     })
   }
 
+  pub fn filepath(&self) -> &Path {
+    &self.filepath
+  }
+
   async fn save_inner(&self) -> crate::Result<()> {
     let raw = {
       let json = self.json.read().unwrap();

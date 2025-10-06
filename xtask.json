@@ -5,6 +5,9 @@
     "core": {
       "path": "packages/core"
     },
+    "napi": {
+      "path": "packages/napi"
+    },
     "tauri": {
       "path": "packages/tauri"
     },

@@ -32,7 +32,6 @@ twox-hash        = { workspace = true, features = ["serialize"] }
 urlencoding      = { workspace = true, optional = true }
 
 [dev-dependencies]
-skipif    = { workspace = true }
 tiny_http = { workspace = true }
 tokio     = { workspace = true, features = ["full"] }
 
@@ -57,3 +56,7 @@ remote = [
 ]
 remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
 source = ["dep:dashmap", "async", "_serde"]
+updater = ["remote", "source"]
+
+[lints.clippy]
+module_inception = "allow"

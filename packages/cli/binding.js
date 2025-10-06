@@ -508,9 +508,30 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Bundle, BundleBuilder, readBundle, Version, writeBundle } = nativeBinding
+const { Bundle, JsBundle, BundleBuilder, JsNapiBundleBuilder, BundleManifest, JsBundleManifest, BundleProtocol, JsBundleProtocol, BundleSource, JsBundleSource, Header, JsHeader, Index, JsIndex, LocalProtocol, JsLocalProtocol, Remote, JsRemote, BundleSourceVersionType, JsBundleSourceVersionKind, HttpMethod, JsHttpMethod, readBundle, Version, JsVersion, writeBundle } = nativeBinding
 export { Bundle }
+export { JsBundle }
 export { BundleBuilder }
+export { JsNapiBundleBuilder }
+export { BundleManifest }
+export { JsBundleManifest }
+export { BundleProtocol }
+export { JsBundleProtocol }
+export { BundleSource }
+export { JsBundleSource }
+export { Header }
+export { JsHeader }
+export { Index }
+export { JsIndex }
+export { LocalProtocol }
+export { JsLocalProtocol }
+export { Remote }
+export { JsRemote }
+export { BundleSourceVersionType }
+export { JsBundleSourceVersionKind }
+export { HttpMethod }
+export { JsHttpMethod }
 export { readBundle }
 export { Version }
+export { JsVersion }
 export { writeBundle }
