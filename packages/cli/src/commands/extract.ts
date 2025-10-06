@@ -4,7 +4,6 @@ import { readBundle } from '@webview-bundle/cli/binding';
 import { Command, Option } from 'clipanion';
 import { c } from '../console.js';
 import { formatByteLength } from '../utils/format.js';
-import { intoHeaders } from '../utils/headers.js';
 import { BaseCommand } from './base.js';
 
 export class ExtractCommand extends BaseCommand {
@@ -35,17 +34,22 @@ If not provided, will use webview bundle file name as directory.`,
     const filepath = path.isAbsolute(this.file) ? this.file : path.join(process.cwd(), this.file);
     const bundle = await readBundle(filepath);
     this.logger.info(`Webview Bundle info for ${c.info(filepath)}`);
-    this.logger.info(`Version: ${c.bold(c.info(bundle.version))}`);
+    this.logger.info(`Version: ${c.bold(c.info(bundle.manifest().header().version()))}`);
     this.logger.info(`Entries:`);
-    const paths = bundle.paths();
-    paths.sort();
-    for (const p of paths) {
+    const entries = Object.entries(bundle.manifest().index().entries());
+    entries.sort((a, b) => {
+      if (a[0] < b[0]) {
+        return -1;
+      } else if (a[0] > b[0]) {
+        return 1;
+      }
+      return 0;
+    });
+    for (const [p, entry] of entries) {
       const data = bundle.getData(p)!;
       const bytes = formatByteLength(data.byteLength);
       this.logger.info(`${c.info(p)} ${c.bytes(bytes)}`);
-
-      const headers = intoHeaders(bundle.getHeaders(p)!);
-      for (const h of headers.entries()) {
+      for (const h of Object.entries(entry.headers)) {
         this.logger.info(`  ${c.header(h)}`);
       }
     }
@@ -66,7 +70,8 @@ If not provided, will use webview bundle file name as directory.`,
       this.logger.error(`Outdir already exists: ${outdirPath}`);
       return 1;
     }
-    for (const p of bundle.paths()) {
+    const entryPaths = Object.keys(bundle.manifest().index().entries());
+    for (const p of entryPaths) {
       const filepath = path.join(outdirPath, p);
       await fs.mkdir(path.dirname(filepath), { recursive: true });
       await fs.writeFile(filepath, bundle.getData(p)!);

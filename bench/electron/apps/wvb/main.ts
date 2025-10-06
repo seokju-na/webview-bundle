@@ -6,7 +6,10 @@ import { app, BrowserWindow } from 'electron';
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 wvb({
-  protocols: [bundleProtocol('app', path.join(dirname, '..', '..', '..', 'fixtures', 'next'))],
+  source: {
+    builtinDir: path.join(dirname, '..', '..', '..', 'fixtures', 'bundles'),
+  },
+  protocols: [bundleProtocol('app')],
 });
 
 let mainWindow: BrowserWindow;
@@ -14,5 +17,5 @@ let mainWindow: BrowserWindow;
 (async () => {
   await app.whenReady();
   mainWindow = new BrowserWindow();
-  await mainWindow.loadURL('app://out.wvb');
+  await mainWindow.loadURL('app://next.wvb');
 })();

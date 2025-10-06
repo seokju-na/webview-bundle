@@ -88,18 +88,20 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
     }
     await fs.mkdir(path.dirname(outfilePath), { recursive: true });
     const size = await writeBundle(bundle, outfilePath);
-    this.logger.info(`Output: ${c.bold(c.success(outfile))} ${c.bytes(formatByteLength(size))}`);
+    this.logger.info(`Output: ${c.bold(c.success(outfile))} ${c.bytes(formatByteLength(Number(size)))}`);
   }
 
-  private getHeaders(file: string): Array<[string, string]> | undefined {
-    const value: Array<[string, string]> = [];
+  private getHeaders(file: string): Record<string, string> | undefined {
+    let isEmpty = true;
+    const value: Record<string, string> = {};
     for (const header of this.headers) {
       const [pattern, headerName, headerValue] = header;
       if (pm.isMatch(file, pattern)) {
-        value.push([headerName, headerValue]);
+        isEmpty = false;
+        value[headerName] = headerValue;
       }
     }
-    if (value.length === 0) {
+    if (isEmpty) {
       return undefined;
     }
     return value;

@@ -73,7 +73,7 @@
     "electron": ">= 15"
   },
   "devDependencies": {
-    "@napi-rs/cli": "3.1.5",
+    "@napi-rs/cli": "3.3.0",
     "@types/node": "22.18.3",
     "electron": "^35.7.5",
     "tsdown": "0.15.1",

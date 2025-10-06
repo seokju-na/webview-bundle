@@ -21,7 +21,10 @@ export function listFixtures(): FixtureInfo[] {
     const dir = path.join(fixturesDir, name);
     const stat = fs.statSync(dir);
     if (stat.isDirectory()) {
-      list.push({ name, dir });
+      try {
+        fs.accessSync(path.join(dir, 'package.json'));
+        list.push({ name, dir });
+      } catch {}
     }
   }
   return list;
@@ -36,7 +39,7 @@ export function getFixtureOutDir(name: string): string {
 }
 
 export function getFixtureOutWebviewBundleFilePath(name: string): string {
-  return path.join(getFixtureDir(name), 'out.wvb');
+  return path.join(fixturesDir, 'bundles', name, `${name}_1.0.0.wvb`);
 }
 
 export interface FixtureFile {

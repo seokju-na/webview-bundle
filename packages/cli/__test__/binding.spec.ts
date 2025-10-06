@@ -23,8 +23,8 @@ describe('builder', () => {
     expect(builder.insertEntry('/index.html', INDEX_HTML_BUF)).toBe(false);
     expect(builder.insertEntry('/index.html', INDEX_HTML_BUF)).toBe(true);
     expect(builder.entryPaths()).toHaveLength(2);
-    expect(builder.hasEntry('/index.js')).toBe(true);
-    expect(builder.hasEntry('/index.html')).toBe(true);
+    expect(builder.containsEntry('/index.js')).toBe(true);
+    expect(builder.containsEntry('/index.html')).toBe(true);
     expect(() => builder.build()).not.toThrowError();
   });
 
@@ -49,13 +49,13 @@ describe('bundle', () => {
   it('version', () => {
     const builder = new BundleBuilder('v1');
     const bundle = builder.build();
-    expect(bundle.version).toEqual('v1');
+    expect(bundle.manifest().header().version()).toEqual('v1');
   });
 
   it('default version', () => {
     const builder = new BundleBuilder();
     const bundle = builder.build();
-    expect(bundle.version).toEqual(DEFAULT_VERSION);
+    expect(bundle.manifest().header().version()).toEqual(DEFAULT_VERSION);
   });
 
   it('get data', () => {
@@ -63,19 +63,24 @@ describe('bundle', () => {
     builder.insertEntry('/index.js', INDEX_JS_BUF);
     builder.insertEntry('/index.html', INDEX_HTML_BUF);
     const bundle = builder.build();
-    expect(bundle.hasPath('/index.js')).toBe(true);
-    expect(bundle.hasPath('/index.html')).toBe(true);
-    expect(bundle.hasPath('/not_exists')).toBe(false);
-    expect(bundle.getData('/index.js')).toEqual(Uint8Array.from(INDEX_JS_BUF));
-    expect(bundle.getData('/index.html')).toEqual(Uint8Array.from(INDEX_HTML_BUF));
+    expect(bundle.manifest().index().containsPath('/index.js')).toBe(true);
+    expect(bundle.manifest().index().containsPath('/index.html')).toBe(true);
+    expect(bundle.manifest().index().containsPath('/not_exists')).toBe(false);
+    expect(bundle.getData('/index.js')).toEqual(Buffer.from(INDEX_JS_BUF));
+    expect(bundle.getData('/index.html')).toEqual(Buffer.from(INDEX_HTML_BUF));
     expect(bundle.getData('/not_exists')).toBeNull();
   });
 
   it('get headers', () => {
     const builder = new BundleBuilder();
-    builder.insertEntry('/index.js', INDEX_JS_BUF, [['content-type', 'text/javascript']]);
+    builder.insertEntry('/index.js', INDEX_JS_BUF, {
+      'content-type': 'text/javascript',
+    });
     const bundle = builder.build();
-    expect(bundle.getHeaders('/index.js')).toEqual([['content-type', 'text/javascript']]);
+    const entry = bundle.manifest().index().getEntry('/index.js');
+    expect(entry?.headers).toEqual({
+      'content-type': 'text/javascript',
+    });
   });
 });
 
@@ -100,10 +105,11 @@ describe('read/write', () => {
     const bundle = builder.build();
 
     await writeBundle(bundle, path.join(tmpdir, 'bundle.wvb'));
-    const bundleFromFs = await readBundle(path.join(tmpdir, 'bundle.wvb'));
-    expect(bundleFromFs.version).toEqual('v1');
-    expect(bundleFromFs.paths()).toHaveLength(2);
-    expect(bundleFromFs.hasPath('/index.js')).toBe(true);
-    expect(bundleFromFs.hasPath('/index.html')).toBe(true);
+    const loadedBundle = await readBundle(path.join(tmpdir, 'bundle.wvb'));
+    expect(loadedBundle.manifest().header().version()).toEqual('v1');
+    const index = loadedBundle.manifest().index();
+    expect(Object.keys(index.entries())).toHaveLength(2);
+    expect(index.containsPath('/index.js')).toBe(true);
+    expect(index.containsPath('/index.html')).toBe(true);
   });
 });

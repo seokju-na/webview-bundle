@@ -1,14 +1,16 @@
 use crate::napi::http::JsHttpHeaders;
 use crate::napi::version::JsVersion;
 use crate::{
-  Bundle, BundleBuilder, BundleBuilderOptions, BundleManifest, Header, HeaderWriterOptions, Index,
-  IndexEntry, IndexWriterOptions,
+  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleBuilder,
+  BundleBuilderOptions, BundleManifest, Header, HeaderWriterOptions, Index, IndexEntry,
+  IndexWriterOptions,
 };
 use http::HeaderMap;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
 use std::ops::Deref;
+use tokio::fs;
 
 #[napi(js_name = "Header")]
 pub struct JsHeader {
@@ -143,6 +145,21 @@ impl JsBundle {
     let checksum = self.inner.get_data_checksum(&path)?;
     Ok(checksum)
   }
+}
+
+#[napi]
+pub async fn read_bundle(filepath: String) -> crate::Result<JsBundle> {
+  let mut file = fs::File::open(&filepath).await?;
+  let bundle = AsyncReader::<Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
+  Ok(JsBundle { inner: bundle })
+}
+
+#[napi]
+pub async fn write_bundle(bundle: &JsBundle, filepath: String) -> crate::Result<usize> {
+  let mut file = fs::File::create(&filepath).await?;
+  let size =
+    AsyncWriter::<Bundle>::write(&mut AsyncBundleWriter::new(&mut file), &bundle.inner).await?;
+  Ok(size)
 }
 
 #[napi(object, js_name = "BuildOptions")]

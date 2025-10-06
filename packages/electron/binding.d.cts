@@ -127,6 +127,8 @@ export interface IndexEntry {
   headers: Record<string, string>
 }
 
+export declare function readBundle(filepath: string): Promise<Bundle>
+
 export interface RemoteBundleInfo {
   name: string
   version: string
@@ -143,3 +145,5 @@ export interface RemoteOptions {
 }
 
 export type Version =  'v1';
+
+export declare function writeBundle(bundle: Bundle, filepath: string): Promise<bigint>

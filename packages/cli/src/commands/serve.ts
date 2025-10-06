@@ -39,12 +39,12 @@ export class ServeCommand extends BaseCommand {
     );
     app.get('*', async c => {
       const p = this.resolvePath(c.req.path);
-      if (!bundle.hasPath(p)) {
+      if (!bundle.manifest().index().containsPath(p)) {
         return c.notFound();
       }
-      const headers = bundle.getHeaders(p) ?? [];
+      const entry = bundle.manifest().index().getEntry(p)!;
       const data = bundle.getData(p)!;
-      for (const [name, value] of headers) {
+      for (const [name, value] of Object.entries(entry.headers)) {
         c.header(name, value, { append: true });
       }
       if (!c.res.headers.has('content-type')) {

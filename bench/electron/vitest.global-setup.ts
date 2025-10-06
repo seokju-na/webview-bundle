@@ -1,7 +1,7 @@
 import { buildAllFixtures } from '@bench/tools';
 import { build } from 'esbuild';
 
-const external = ['electron', '@webview-bundle/electron-binding'];
+const external = ['electron', '@webview-bundle/electron'];
 
 export default async function setup(): Promise<void> {
   await buildAllFixtures();

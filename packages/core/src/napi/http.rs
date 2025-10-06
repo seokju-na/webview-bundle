@@ -91,7 +91,20 @@ pub struct JsHttpResponse {
   pub body: Buffer,
 }
 
-#[cfg(feature = "protocol")]
+impl From<http::Response<Cow<'static, [u8]>>> for JsHttpResponse {
+  fn from(value: http::Response<Cow<'static, [u8]>>) -> Self {
+    let status = value.status().as_u16();
+    let headers = JsHttpHeaders::from(value.headers()).0;
+    let body = Buffer::from(value.body().as_ref());
+    JsHttpResponse {
+      status,
+      headers,
+      body,
+    }
+  }
+}
+
+#[cfg(any(feature = "protocol", feature = "protocol-local"))]
 pub(crate) fn request(
   method: JsHttpMethod,
   uri: String,
@@ -107,17 +120,4 @@ pub(crate) fn request(
   }
   let req = req.body(vec![])?;
   Ok(req)
-}
-
-impl From<http::Response<Cow<'static, [u8]>>> for JsHttpResponse {
-  fn from(value: http::Response<Cow<'static, [u8]>>) -> Self {
-    let status = value.status().as_u16();
-    let headers = JsHttpHeaders::from(value.headers()).0;
-    let body = Buffer::from(value.body().as_ref());
-    JsHttpResponse {
-      status,
-      headers,
-      body,
-    }
-  }
 }
