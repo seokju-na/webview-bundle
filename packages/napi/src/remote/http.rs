@@ -1,7 +1,7 @@
-use crate::remote::HttpConfig;
-use http::{HeaderMap, HeaderName, HeaderValue};
 use napi_derive::napi;
 use std::collections::HashMap;
+use webview_bundle::http::{HeaderMap, HeaderName, HeaderValue};
+use webview_bundle::remote::HttpConfig;
 
 #[napi(object, js_name = "HttpOptions")]
 pub struct JsHttpOptions {
@@ -18,7 +18,7 @@ pub struct JsHttpOptions {
 }
 
 impl TryFrom<JsHttpOptions> for HttpConfig {
-  type Error = crate::napi::http::Error;
+  type Error = crate::Error;
   fn try_from(value: JsHttpOptions) -> Result<Self, Self::Error> {
     let mut config = HttpConfig::new();
     if let Some(default_headers) = value.default_headers {

@@ -50,9 +50,6 @@ pub enum Error {
   #[cfg(feature = "_opendal")]
   #[error("opendal error: {0}")]
   Opendal(#[from] opendal::Error),
-  #[cfg(feature = "napi")]
-  #[error("napi error: {0}")]
-  Napi(#[from] napi::Error),
 }
 
 impl Error {

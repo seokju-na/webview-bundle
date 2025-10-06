@@ -1,16 +1,16 @@
-use crate::napi::http::JsHttpHeaders;
-use crate::napi::version::JsVersion;
-use crate::{
-  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleBuilder,
-  BundleBuilderOptions, BundleManifest, Header, HeaderWriterOptions, Index, IndexEntry,
-  IndexWriterOptions,
-};
-use http::HeaderMap;
+use crate::http::JsHttpHeaders;
+use crate::version::JsVersion;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
 use std::ops::Deref;
 use tokio::fs;
+use webview_bundle::http::HeaderMap;
+use webview_bundle::{
+  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleBuilder,
+  BundleBuilderOptions, BundleManifest, Header, HeaderWriterOptions, Index, IndexEntry,
+  IndexWriterOptions,
+};
 
 #[napi(js_name = "Header")]
 pub struct JsHeader {
@@ -149,14 +149,18 @@ impl JsBundle {
 
 #[napi]
 pub async fn read_bundle(filepath: String) -> crate::Result<JsBundle> {
-  let mut file = fs::File::open(&filepath).await?;
+  let mut file = fs::File::open(&filepath)
+    .await
+    .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
   let bundle = AsyncReader::<Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
   Ok(JsBundle { inner: bundle })
 }
 
 #[napi]
 pub async fn write_bundle(bundle: &JsBundle, filepath: String) -> crate::Result<usize> {
-  let mut file = fs::File::create(&filepath).await?;
+  let mut file = fs::File::create(&filepath)
+    .await
+    .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
   let size =
     AsyncWriter::<Bundle>::write(&mut AsyncBundleWriter::new(&mut file), &bundle.inner).await?;
   Ok(size)
@@ -249,10 +253,7 @@ impl JsNapiBundleBuilder {
     headers: Option<HashMap<String, String>>,
   ) -> crate::Result<bool> {
     let headers = if let Some(h) = headers {
-      Some(
-        HeaderMap::try_from(JsHttpHeaders::from(h))
-          .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?,
-      )
+      Some(HeaderMap::try_from(JsHttpHeaders::from(h))?)
     } else {
       None
     };

@@ -1,13 +1,13 @@
-use crate::napi::bundle::JsBundle;
-use crate::napi::remote::JsHttpOptions;
-use crate::remote::HttpConfig;
-use crate::remote::Remote;
+use crate::bundle::JsBundle;
+use crate::remote::JsHttpOptions;
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::ThreadsafeCallContext;
 use napi::threadsafe_function::ThreadsafeFunctionCallMode;
 use napi::Status;
 use napi_derive::napi;
 use std::sync::Arc;
+use webview_bundle::remote::HttpConfig;
+use webview_bundle::remote::{Remote, RemoteBundleInfo};
 
 #[napi(object, js_name = "RemoteOptions")]
 pub struct JsRemoteOptions {
@@ -27,8 +27,8 @@ pub struct JsRemoteBundleInfo {
   pub integrity: Option<String>,
 }
 
-impl From<crate::remote::RemoteBundleInfo> for JsRemoteBundleInfo {
-  fn from(value: crate::remote::RemoteBundleInfo) -> Self {
+impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
+  fn from(value: RemoteBundleInfo) -> Self {
     Self {
       name: value.name,
       version: value.version,
@@ -37,7 +37,7 @@ impl From<crate::remote::RemoteBundleInfo> for JsRemoteBundleInfo {
   }
 }
 
-impl From<JsRemoteBundleInfo> for crate::remote::RemoteBundleInfo {
+impl From<JsRemoteBundleInfo> for RemoteBundleInfo {
   fn from(value: JsRemoteBundleInfo) -> Self {
     Self {
       name: value.name,

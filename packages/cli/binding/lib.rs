@@ -1,1 +1,1 @@
-pub use webview_bundle::napi::*;
+pub use webview_bundle_napi::*;

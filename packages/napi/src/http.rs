@@ -1,17 +1,10 @@
-use http::HeaderMap;
 use napi::bindgen_prelude::Buffer;
 use napi_derive::napi;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-  #[error(transparent)]
-  InvalidHeaderName(#[from] http::header::InvalidHeaderName),
-  #[error(transparent)]
-  InvalidHeaderValue(#[from] http::header::InvalidHeaderValue),
-}
+use webview_bundle::http;
+use webview_bundle::http::HeaderMap;
 
 #[napi(string_enum = "lowercase", js_name = "HttpMethod")]
 pub enum JsHttpMethod {
@@ -58,7 +51,7 @@ impl From<HashMap<String, String>> for JsHttpHeaders {
 }
 
 impl TryFrom<JsHttpHeaders> for HeaderMap {
-  type Error = Error;
+  type Error = crate::Error;
   fn try_from(value: JsHttpHeaders) -> Result<Self, Self::Error> {
     let mut headers = HeaderMap::with_capacity(value.len());
     for (n, v) in value.0 {
@@ -104,7 +97,6 @@ impl From<http::Response<Cow<'static, [u8]>>> for JsHttpResponse {
   }
 }
 
-#[cfg(any(feature = "protocol", feature = "protocol-local"))]
 pub(crate) fn request(
   method: JsHttpMethod,
   uri: String,
@@ -118,6 +110,8 @@ pub(crate) fn request(
       req = req.header(key, value);
     }
   }
-  let req = req.body(vec![])?;
+  let req = req
+    .body(vec![])
+    .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
   Ok(req)
 }

@@ -1,12 +1,13 @@
-use crate::napi::http::request;
-use crate::napi::http::{JsHttpMethod, JsHttpResponse};
-use crate::napi::source::JsBundleSource;
-use crate::protocol;
-use crate::protocol::Protocol;
+use crate::http::request;
+use crate::http::JsHttpMethod;
+use crate::http::JsHttpResponse;
+use crate::source::JsBundleSource;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
 use std::sync::Arc;
+use webview_bundle::protocol;
+use webview_bundle::protocol::Protocol;
 
 #[napi(js_name = "BundleProtocol")]
 pub struct JsBundleProtocol {
@@ -37,21 +38,19 @@ impl JsBundleProtocol {
         .handle(req)
         .await
         .map(JsHttpResponse::from)
-        .map_err(Error::from)
+        .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))
+        .map_err(|e| e.into())
     })
     .build(&env)?;
     Ok(resp)
   }
 }
 
-#[cfg(feature = "protocol-local")]
 #[napi(js_name = "LocalProtocol")]
 pub struct JsLocalProtocol {
   pub(crate) inner: Arc<protocol::LocalProtocol>,
 }
 
-#[cfg(feature = "protocol-local")]
-#[cfg(feature = "protocol-local")]
 #[napi]
 impl JsLocalProtocol {
   #[napi(constructor)]
@@ -76,7 +75,8 @@ impl JsLocalProtocol {
         .handle(req)
         .await
         .map(JsHttpResponse::from)
-        .map_err(Error::from)
+        .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))
+        .map_err(|e| e.into())
     })
     .build(&env)?;
     Ok(resp)

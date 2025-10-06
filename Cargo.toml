@@ -1,5 +1,5 @@
 [workspace]
-members  = ["packages/core", "packages/electron", "packages/cli", "examples/tauri-simple/src-tauri"]
+members  = ["packages/core", "packages/napi", "packages/electron", "packages/cli", "examples/tauri-simple/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -29,6 +29,7 @@ tokio                = "1.47.1"
 twox-hash            = "2.1.0"
 urlencoding          = "2.1.3"
 webview-bundle       = { version = "0.0.0", path = "./packages/core" }
+webview-bundle-napi  = { version = "0.0.0", path = "./packages/napi" }
 webview-bundle-tauri = { version = "0.0.0", path = "./packages/tauri" }
 
 [profile.release]

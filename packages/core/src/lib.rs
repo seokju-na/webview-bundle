@@ -23,8 +23,6 @@ pub use writer::*;
 pub use http;
 
 mod consts;
-#[cfg(feature = "napi")]
-pub mod napi;
 #[cfg(feature = "protocol")]
 pub mod protocol;
 #[cfg(feature = "remote")]

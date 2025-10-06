@@ -1,8 +1,10 @@
-use crate::napi::bundle::{JsBundle, JsBundleManifest, JsBundleManifestInner};
-use crate::source::{BundleSource, BundleSourceVersion};
+use crate::bundle::JsBundle;
+use crate::bundle::JsBundleManifest;
+use crate::bundle::JsBundleManifestInner;
 use napi_derive::napi;
 use std::path::Path;
 use std::sync::Arc;
+use webview_bundle::source::{BundleSource, BundleSourceVersion};
 
 #[napi(string_enum = "lowercase", js_name = "BundleSourceVersionType")]
 pub enum JsBundleSourceVersionKind {

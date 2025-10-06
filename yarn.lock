@@ -1113,7 +1113,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/prompts@npm:^7.8.4":
+"@inquirer/prompts@npm:^7.4.0":
   version: 7.8.6
   resolution: "@inquirer/prompts@npm:7.8.6"
   dependencies:
@@ -1325,24 +1325,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/cli@npm:3.3.0":
-  version: 3.3.0
-  resolution: "@napi-rs/cli@npm:3.3.0"
+"@napi-rs/cli@npm:3.1.5":
+  version: 3.1.5
+  resolution: "@napi-rs/cli@npm:3.1.5"
   dependencies:
-    "@inquirer/prompts": "npm:^7.8.4"
-    "@napi-rs/cross-toolchain": "npm:^1.0.3"
-    "@napi-rs/wasm-tools": "npm:^1.0.1"
+    "@inquirer/prompts": "npm:^7.4.0"
+    "@napi-rs/cross-toolchain": "npm:^1.0.0"
+    "@napi-rs/wasm-tools": "npm:^1.0.0"
     "@octokit/rest": "npm:^22.0.0"
     clipanion: "npm:^4.0.0-rc.4"
     colorette: "npm:^2.0.20"
-    debug: "npm:^4.4.1"
-    emnapi: "npm:^1.5.0"
-    es-toolkit: "npm:^1.39.10"
+    debug: "npm:^4.4.0"
+    emnapi: "npm:^1.4.0"
+    es-toolkit: "npm:^1.39.8"
+    find-up: "npm:^7.0.0"
     js-yaml: "npm:^4.1.0"
-    semver: "npm:^7.7.2"
+    semver: "npm:^7.7.1"
     typanion: "npm:^3.14.0"
   peerDependencies:
-    "@emnapi/runtime": ^1.5.0
+    "@emnapi/runtime": ^1.1.0
+    emnapi: ^1.1.0
   peerDependenciesMeta:
     "@emnapi/runtime":
       optional: true
@@ -1351,11 +1353,11 @@ __metadata:
   bin:
     napi: dist/cli.js
     napi-raw: cli.mjs
-  checksum: 10c0/fa86720c0d9434b46c71b9bd39f877b52c95309120f61413821067ed4544f49f4dda878752462ed590c2683113a6cf230d931df0c9186c00a576131e04a23a91
+  checksum: 10c0/fe28bcc40f81eb4c368b4f23156f1057583de21a41400b78821829fa1aa95db8268a33fa824741c864af28a464530f05712df135a10013c6b0e4ceef4c31f324
   languageName: node
   linkType: hard
 
-"@napi-rs/cross-toolchain@npm:^1.0.3":
+"@napi-rs/cross-toolchain@npm:^1.0.0":
   version: 1.0.3
   resolution: "@napi-rs/cross-toolchain@npm:1.0.3"
   dependencies:
@@ -1854,7 +1856,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/wasm-tools@npm:^1.0.1":
+"@napi-rs/wasm-tools@npm:^1.0.0":
   version: 1.0.1
   resolution: "@napi-rs/wasm-tools@npm:1.0.1"
   dependencies:
@@ -3221,7 +3223,7 @@ __metadata:
   dependencies:
     "@hono/node-server": "npm:^1.19.2"
     "@logtape/logtape": "npm:1.0.4"
-    "@napi-rs/cli": "npm:3.3.0"
+    "@napi-rs/cli": "npm:3.1.5"
     "@types/node": "npm:22.18.3"
     "@types/picomatch": "npm:^4"
     ci-info: "npm:^4.2.0"
@@ -3313,7 +3315,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@webview-bundle/electron@workspace:packages/electron"
   dependencies:
-    "@napi-rs/cli": "npm:3.3.0"
+    "@napi-rs/cli": "npm:3.1.5"
     "@types/node": "npm:22.18.3"
     electron: "npm:^35.7.5"
     tsdown: "npm:0.15.1"
@@ -4105,7 +4107,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"emnapi@npm:^1.5.0":
+"emnapi@npm:^1.4.0":
   version: 1.5.0
   resolution: "emnapi@npm:1.5.0"
   peerDependencies:
@@ -4335,7 +4337,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-toolkit@npm:^1.39.10":
+"es-toolkit@npm:^1.39.8":
   version: 1.39.10
   resolution: "es-toolkit@npm:1.39.10"
   dependenciesMeta:
@@ -4624,6 +4626,17 @@ __metadata:
   dependencies:
     to-regex-range: "npm:^5.0.1"
   checksum: 10c0/b75b691bbe065472f38824f694c2f7449d7f5004aa950426a2c28f0306c60db9b880c0b0e4ed819997ffb882d1da02cfcfc819bddc94d71627f5269682edf018
+  languageName: node
+  linkType: hard
+
+"find-up@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "find-up@npm:7.0.0"
+  dependencies:
+    locate-path: "npm:^7.2.0"
+    path-exists: "npm:^5.0.0"
+    unicorn-magic: "npm:^0.1.0"
+  checksum: 10c0/e6ee3e6154560bc0ab3bc3b7d1348b31513f9bdf49a5dd2e952495427d559fa48cdf33953e85a309a323898b43fa1bfbc8b80c880dfc16068384783034030008
   languageName: node
   linkType: hard
 
@@ -5401,6 +5414,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"locate-path@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "locate-path@npm:7.2.0"
+  dependencies:
+    p-locate: "npm:^6.0.0"
+  checksum: 10c0/139e8a7fe11cfbd7f20db03923cacfa5db9e14fa14887ea121345597472b4a63c1a42a8a5187defeeff6acf98fd568da7382aa39682d38f0af27433953a97751
+  languageName: node
+  linkType: hard
+
 "log-update@npm:^6.1.0":
   version: 6.1.0
   resolution: "log-update@npm:6.1.0"
@@ -5936,6 +5958,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"p-limit@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "p-limit@npm:4.0.0"
+  dependencies:
+    yocto-queue: "npm:^1.0.0"
+  checksum: 10c0/a56af34a77f8df2ff61ddfb29431044557fcbcb7642d5a3233143ebba805fc7306ac1d448de724352861cb99de934bc9ab74f0d16fe6a5460bdbdf938de875ad
+  languageName: node
+  linkType: hard
+
+"p-locate@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "p-locate@npm:6.0.0"
+  dependencies:
+    p-limit: "npm:^4.0.0"
+  checksum: 10c0/d72fa2f41adce59c198270aa4d3c832536c87a1806e0f69dffb7c1a7ca998fb053915ca833d90f166a8c082d3859eabfed95f01698a3214c20df6bb8de046312
+  languageName: node
+  linkType: hard
+
 "p-map@npm:^4.0.0":
   version: 4.0.0
   resolution: "p-map@npm:4.0.0"
@@ -5986,6 +6026,13 @@ __metadata:
   version: 6.0.1
   resolution: "parse5@npm:6.0.1"
   checksum: 10c0/595821edc094ecbcfb9ddcb46a3e1fe3a718540f8320eff08b8cf6742a5114cce2d46d45f95c26191c11b184dcaf4e2960abcd9c5ed9eb9393ac9a37efcfdecb
+  languageName: node
+  linkType: hard
+
+"path-exists@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "path-exists@npm:5.0.0"
+  checksum: 10c0/b170f3060b31604cde93eefdb7392b89d832dfbc1bed717c9718cbe0f230c1669b7e75f87e19901da2250b84d092989a0f9e44d2ef41deb09aa3ad28e691a40a
   languageName: node
   linkType: hard
 
@@ -7357,6 +7404,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unicorn-magic@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "unicorn-magic@npm:0.1.0"
+  checksum: 10c0/e4ed0de05b0a05e735c7d8a2930881e5efcfc3ec897204d5d33e7e6247f4c31eac92e383a15d9a6bccb7319b4271ee4bea946e211bf14951fec6ff2cbbb66a92
+  languageName: node
+  linkType: hard
+
 "unicorn-magic@npm:^0.3.0":
   version: 0.3.0
   resolution: "unicorn-magic@npm:0.3.0"
@@ -7754,6 +7808,13 @@ __metadata:
     buffer-crc32: "npm:~0.2.3"
     fd-slicer: "npm:~1.1.0"
   checksum: 10c0/f265002af7541b9ec3589a27f5fb8f11cf348b53cc15e2751272e3c062cd73f3e715bc72d43257de71bbaecae446c3f1b14af7559e8ab0261625375541816422
+  languageName: node
+  linkType: hard
+
+"yocto-queue@npm:^1.0.0":
+  version: 1.2.1
+  resolution: "yocto-queue@npm:1.2.1"
+  checksum: 10c0/5762caa3d0b421f4bdb7a1926b2ae2189fc6e4a14469258f183600028eb16db3e9e0306f46e8ebf5a52ff4b81a881f22637afefbef5399d6ad440824e9b27f9f
   languageName: node
   linkType: hard
 

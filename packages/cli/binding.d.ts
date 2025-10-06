@@ -24,6 +24,12 @@ export declare class BundleManifest {
 }
 export type JsBundleManifest = BundleManifest
 
+export declare class BundleProtocol {
+  constructor(source: JsBundleSource)
+  handle(method: HttpMethod, uri: string, headers?: Record<string, string> | undefined | null): Promise<HttpResponse>
+}
+export type JsBundleProtocol = BundleProtocol
+
 export declare class BundleSource {
   constructor(builtinDir: string, remoteDir: string)
   getFilepath(bundleName: string): Promise<string | null>
@@ -48,6 +54,12 @@ export declare class Index {
   containsPath(path: string): boolean
 }
 export type JsIndex = Index
+
+export declare class LocalProtocol {
+  constructor(hosts: Record<string, string>)
+  handle(method: HttpMethod, uri: string, headers?: Record<string, string> | undefined | null): Promise<HttpResponse>
+}
+export type JsLocalProtocol = LocalProtocol
 
 export declare class Remote {
   constructor(endpoint: string, options?: RemoteOptions | undefined | null, onDownload?: (data: RemoteOnDownloadData) => void)
