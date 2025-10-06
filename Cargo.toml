@@ -11,7 +11,7 @@ futures-util         = "0.3.31"
 http                 = { version = "1" }
 infer                = "0.19.0"
 lz4_flex             = "0.11.3"
-napi                 = { version = "3.2.4" }
+napi                 = "3.3.0"
 napi-build           = "2.2.3"
 napi-derive          = "3.2.5"
 opendal              = "0.54"
@@ -34,6 +34,3 @@ webview-bundle-tauri = { version = "0.0.0", path = "./packages/tauri" }
 [profile.release]
 lto   = true
 strip = "symbols"
-
-#[lints.clippy]
-#module_inception = "allow"
