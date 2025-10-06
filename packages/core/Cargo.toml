@@ -34,7 +34,6 @@ twox-hash        = { workspace = true, features = ["serialize"] }
 urlencoding      = { workspace = true, optional = true }
 
 [dev-dependencies]
-skipif    = { workspace = true }
 tiny_http = { workspace = true }
 tokio     = { workspace = true, features = ["full"] }
 
