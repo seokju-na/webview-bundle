@@ -23,6 +23,9 @@ export async function listBundleStores(
     limit: Math.min(limit, MAX_LIMIT),
     cursor,
   });
+  if (keysResult.keys.length === 0) {
+    return { items: [], nextCursor: undefined };
+  }
   const valuesResult = await context.kv.get(
     keysResult.keys.map(x => x.name),
     {
