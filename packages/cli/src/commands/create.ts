@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { BundleBuilder, writeBundle } from '@webview-bundle/cli/binding';
+import { BundleBuilder, writeBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import pm from 'picomatch';
 import { glob } from 'tinyglobby';

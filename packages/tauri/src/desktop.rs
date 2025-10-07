@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Runtime};
 use webview_bundle::protocol;
+use webview_bundle::remote::Remote;
 use webview_bundle::source::BundleSource;
+use webview_bundle::updater::Updater;
 
 pub fn init<R: Runtime>(
   app: &AppHandle<R>,
@@ -13,11 +15,12 @@ pub fn init<R: Runtime>(
   Ok(webview_bundle)
 }
 
-/// Access to the tauri APIs.
 pub struct WebviewBundle<R: Runtime> {
   _app: AppHandle<R>,
   _config: Arc<Config<R>>,
-  _source: Arc<BundleSource>,
+  source: Arc<BundleSource>,
+  remote: Option<Arc<Remote>>,
+  updater: Option<Arc<Updater>>,
   protocols: HashMap<String, Arc<dyn protocol::Protocol>>,
 }
 
@@ -39,12 +42,31 @@ impl<R: Runtime> WebviewBundle<R> {
       }
       protocols.insert(scheme, protocol);
     }
+    let remote = config.build_remote()?.map(Arc::new);
+    let updater = remote
+      .clone()
+      .map(|x| Updater::new(source.clone(), x))
+      .map(Arc::new);
     Ok(Self {
       _app: app,
       _config: config,
-      _source: source,
+      source,
+      remote,
+      updater,
       protocols,
     })
+  }
+
+  pub fn source(&self) -> &Arc<BundleSource> {
+    &self.source
+  }
+
+  pub fn remote(&self) -> Option<&Arc<Remote>> {
+    self.remote.as_ref()
+  }
+
+  pub fn updater(&self) -> Option<&Arc<Updater>> {
+    self.updater.as_ref()
   }
 
   pub(crate) fn get_protocol(&self, scheme: &str) -> Option<&Arc<dyn protocol::Protocol>> {

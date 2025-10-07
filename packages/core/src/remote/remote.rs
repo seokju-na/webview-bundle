@@ -22,7 +22,7 @@ pub struct RemoteConfig {
   pub http: Option<HttpConfig>,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct RemoteBuilder {
   config: RemoteConfig,
 }

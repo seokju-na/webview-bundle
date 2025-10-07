@@ -89,6 +89,11 @@ impl BundleSource {
     Ok(())
   }
 
+  pub async fn save_versions(&self) -> crate::Result<()> {
+    self.remote_versions().await?.save().await?;
+    Ok(())
+  }
+
   pub async fn reader(&self, bundle_name: &str) -> crate::Result<File> {
     let filepath = self
       .get_filepath(bundle_name)

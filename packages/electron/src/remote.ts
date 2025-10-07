@@ -1,8 +1,4 @@
-import {
-  Remote,
-  type RemoteOptions as RemoteBindingOptions,
-  type RemoteOnDownloadData,
-} from '@webview-bundle/electron/binding';
+import { Remote, type RemoteOptions as RemoteBindingOptions, type RemoteOnDownloadData } from '@webview-bundle/node';
 
 export interface RemoteOptions extends RemoteBindingOptions {
   onDownload?: (data: RemoteOnDownloadData) => void;

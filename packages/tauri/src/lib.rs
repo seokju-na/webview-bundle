@@ -5,7 +5,7 @@ use tauri::{
   Manager, Runtime, UriSchemeContext,
 };
 
-pub use config::{Config, Protocol, Source};
+pub use config::{Config, Http, Protocol, Remote, Source};
 
 #[cfg(desktop)]
 mod desktop;
@@ -21,6 +21,9 @@ use desktop::WebviewBundle;
 /// Extensions to [`tauri::App`], [`tauri::AppHandle`] and [`tauri::Window`] to access the tauri APIs.
 pub trait WebviewBundleExtra<R: Runtime> {
   fn webview_bundle(&self) -> &WebviewBundle<R>;
+  fn wvb(&self) -> &WebviewBundle<R> {
+    self.webview_bundle()
+  }
 }
 
 impl<R: Runtime, T: Manager<R>> WebviewBundleExtra<R> for T {

@@ -1,4 +1,4 @@
-import type { BundleSource, Remote } from '@webview-bundle/electron/binding';
+import { type BundleSource, type Remote, Updater } from '@webview-bundle/node';
 import { type Protocol, registerProtocol } from './protocol.js';
 import { type RemoteOptions, remote } from './remote.js';
 import { bundleSource, type SourceOptions } from './source.js';
@@ -15,7 +15,8 @@ export interface WebviewBundleConfig {
 
 export class WebviewBundle {
   private readonly _source: BundleSource;
-  private _remote: Remote | null = null;
+  private readonly _remote: Remote | null = null;
+  private readonly _updater: Updater | null = null;
   private readonly _whenProtocolRegistered: Promise<void>;
 
   constructor(private readonly config: WebviewBundleConfig) {
@@ -23,6 +24,7 @@ export class WebviewBundle {
     if (config.remote != null) {
       const { endpoint, ...remoteOptions } = config.remote;
       this._remote = remote(endpoint, remoteOptions);
+      this._updater = new Updater(this._source, this._remote);
     }
     this._whenProtocolRegistered = new Promise<void>((resolve, reject) => {
       Promise.all(config.protocols.map(p => registerProtocol(p, this._source)))
@@ -43,9 +45,8 @@ export class WebviewBundle {
     return this._remote;
   }
 
-  setRemote(endpoint: string, options?: RemoteOptions): this {
-    this._remote = remote(endpoint, options);
-    return this;
+  get updater(): Updater | null {
+    return this._updater;
   }
 
   whenProtocolRegistered(): Promise<void> {

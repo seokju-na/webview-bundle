@@ -2,10 +2,13 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
+use webview_bundle::remote;
+
+pub use webview_bundle::remote::HttpConfig as Http;
 
 type DynamicDirFn<R> = fn(app: &AppHandle<R>) -> Result<PathBuf, Box<dyn std::error::Error>>;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub(crate) enum Dir<R: Runtime> {
   Static(String),
   Dynamic(DynamicDirFn<R>),
@@ -23,7 +26,7 @@ impl<R: Runtime> Dir<R> {
   }
 }
 
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default)]
 pub struct Source<R: Runtime> {
   pub(crate) builtin_dir: Option<Dir<R>>,
   pub(crate) remote_dir: Option<Dir<R>>,
@@ -90,7 +93,37 @@ impl<R: Runtime> Source<R> {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default)]
+pub struct Remote {
+  builder: remote::RemoteBuilder,
+}
+
+impl Remote {
+  pub fn new(endpoint: impl Into<String>) -> Self {
+    let builder = remote::Remote::builder().endpoint(endpoint);
+    Self { builder }
+  }
+
+  pub fn http(mut self, http: Http) -> Self {
+    self.builder = self.builder.http(http);
+    self
+  }
+
+  pub fn on_download<F>(mut self, on_download: F) -> Self
+  where
+    F: Fn(u64, u64) + Send + Sync + 'static,
+  {
+    self.builder = self.builder.on_download(on_download);
+    self
+  }
+
+  pub(crate) fn build(self) -> crate::Result<remote::Remote> {
+    let remote = self.builder.build()?;
+    Ok(remote)
+  }
+}
+
+#[derive(Clone)]
 pub struct BundleProtocolConfig {
   scheme: String,
 }
@@ -103,7 +136,7 @@ impl BundleProtocolConfig {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct LocalProtocolConfig {
   scheme: String,
   pub(crate) hosts: HashMap<String, String>,
@@ -135,7 +168,7 @@ impl LocalProtocolConfig {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Protocol {
   Bundle(BundleProtocolConfig),
   Local(LocalProtocolConfig),
@@ -170,10 +203,11 @@ impl From<LocalProtocolConfig> for Protocol {
   }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct Config<R: Runtime> {
   pub(crate) source: Source<R>,
   pub(crate) protocols: Vec<Protocol>,
+  pub(crate) remote: Option<Remote>,
 }
 
 impl<R: Runtime> Config<R> {
@@ -181,6 +215,7 @@ impl<R: Runtime> Config<R> {
     Self {
       source: Source::new(),
       protocols: vec![],
+      remote: Default::default(),
     }
   }
 
@@ -192,5 +227,19 @@ impl<R: Runtime> Config<R> {
   pub fn protocol<P: Into<Protocol>>(mut self, protocol: P) -> Self {
     self.protocols.push(protocol.into());
     self
+  }
+
+  pub fn remote(mut self, remote: Remote) -> Self {
+    self.remote = Some(remote);
+    self
+  }
+
+  pub(crate) fn build_remote(&self) -> crate::Result<Option<remote::Remote>> {
+    if let Some(ref remote_config) = self.remote {
+      let remote = remote_config.clone().build()?;
+      Ok(Some(remote))
+    } else {
+      Ok(None)
+    }
   }
 }
