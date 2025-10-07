@@ -5,14 +5,8 @@
     "core": {
       "path": "packages/core"
     },
-    "napi": {
-      "path": "packages/napi"
-    },
-    "tauri": {
-      "path": "packages/tauri"
-    },
-    "cli": {
-      "path": "packages/cli",
+    "node": {
+      "path": "packages/napi",
       "beforePublishScripts": [
         {
           "command": "yarn",
@@ -21,27 +15,22 @@
         }
       ]
     },
+    "tauri": {
+      "path": "packages/tauri"
+    },
+    "cli": {
+      "path": "packages/cli"
+    },
     "electron": {
-      "path": "packages/electron",
-      "beforePublishScripts": [
-        {
-          "command": "yarn",
-          "args": ["artifacts"],
-          "cwd": "packages/electron"
-        }
-      ]
+      "path": "packages/electron"
     }
   },
   "artifacts": {
     "dir": "artifacts-merged",
     "files": [
       {
-        "source": "packages/cli/*.node",
-        "dist": "packages/cli/artifacts"
-      },
-      {
-        "source": "packages/electron/*.node",
-        "dist": "packages/electron/artifacts"
+        "source": "packages/node/*.node",
+        "dist": "packages/node/artifacts"
       }
     ]
   },

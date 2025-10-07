@@ -5,7 +5,7 @@ import {
   type HttpMethod,
   type HttpResponse,
   LocalProtocol,
-} from '@webview-bundle/electron/binding';
+} from '@webview-bundle/node';
 import type { Protocol as ElectronProtocol, Privileges } from 'electron';
 import { app, protocol as electronProtocol } from 'electron';
 import { makeError } from './utils.js';

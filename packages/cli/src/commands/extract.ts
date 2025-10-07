@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readBundle } from '@webview-bundle/cli/binding';
+import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { c } from '../console.js';
 import { formatByteLength } from '../utils/format.js';

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@ltd/j-toml": "^1.38.0",
+    "@napi-rs/cli": "3.1.5",
     "@octokit/rest": "^21.1.1",
     "@taplo/lib": "^0.5.0",
     "ci-info": "^4.2.0",

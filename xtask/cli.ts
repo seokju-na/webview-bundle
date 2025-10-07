@@ -4,6 +4,7 @@ import { ArtifactsMergeCommand } from './commands/artifacts-merge.ts';
 import { ArtifactsNapiCommand } from './commands/artifacts-napi.ts';
 import { ArtifactsSpreadCommand } from './commands/artifacts-spread.ts';
 import { AttwCommand } from './commands/attw.ts';
+import { NapiBuildCommand } from './commands/napi-build.ts';
 import { Release } from './commands/release.ts';
 
 const [node, app, ...args] = process.argv;
@@ -19,4 +20,5 @@ cli.register(ArtifactsSpreadCommand);
 cli.register(ArtifactsMergeCommand);
 cli.register(ArtifactsNapiCommand);
 cli.register(AttwCommand);
+cli.register(NapiBuildCommand);
 cli.runExit(args);

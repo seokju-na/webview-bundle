@@ -1,8 +1,4 @@
 export type {
-  BundleSource,
-  Remote,
-} from '@webview-bundle/electron/binding';
-export type {
   Protocol,
   ProtocolHandler,
   ProtocolOptions,

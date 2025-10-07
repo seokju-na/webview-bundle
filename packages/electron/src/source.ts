@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { BundleSource } from '@webview-bundle/electron/binding';
+import { BundleSource } from '@webview-bundle/node';
 import { app } from 'electron';
 
 export interface SourceOptions {
