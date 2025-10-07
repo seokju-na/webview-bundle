@@ -71,6 +71,12 @@ export declare class Remote {
 }
 export type JsRemote = Remote
 
+export declare class S3Uploader {
+  constructor(bucket: string, options?: S3UploaderOptions | undefined | null)
+  uploadBundle(bundleName: string, version: string, bundle: Bundle): Promise<void>
+}
+export type JsS3Uploader = S3Uploader
+
 export declare class Updater {
   constructor(source: BundleSource, remote: Remote)
   getUpdateAll(): Promise<Array<BundleUpdateInfo>>
@@ -165,6 +171,21 @@ export interface RemoteOnDownloadData {
 }
 
 export interface RemoteOptions {
+  http?: HttpOptions
+}
+
+export interface S3UploaderOptions {
+  accessKeyId?: string
+  secretAccessKey?: string
+  sessionToken?: string
+  region?: string
+  endpoint?: string
+  roleArn?: string
+  roleSessionName?: string
+  externalId?: string
+  writeConcurrent?: number
+  writeChunk?: number
+  cacheControl?: string
   http?: HttpOptions
 }
 

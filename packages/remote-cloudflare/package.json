@@ -1,6 +1,6 @@
 {
-  "name": "@webview-bundle/electron",
-  "description": "Webview Bundle API for Electron",
+  "name": "@webview-bundle/remote-cloudflare",
+  "description": "Webview Bundle remote for Cloudflare",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/electron"
+    "directory": "packages/remote-cloudflare"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -35,20 +35,22 @@
   "scripts": {
     "prepack": "yarn build",
     "build": "tsdown",
-    "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "electron": ">= 15"
+    "typecheck": "tsc --noEmit",
+    "sample-dev": "wrangler dev",
+    "sample-types": "wrangler types",
+    "sample-upload": "dotenvx run -- wvb remote s3 upload ./test.wvb 1.0.0 --bucket=wvb-testing"
   },
   "dependencies": {
-    "@webview-bundle/node": "workspace:^"
+    "hono": "^4.9.7",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@napi-rs/cli": "3.1.5",
+    "@dotenvx/dotenvx": "^1.51.0",
     "@types/node": "22.18.3",
-    "electron": "^35.7.5",
+    "@webview-bundle/cli": "workspace:^",
     "tsdown": "0.15.1",
     "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "vitest": "3.2.4",
+    "wrangler": "^4.42.0"
   }
 }

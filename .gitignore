@@ -24,3 +24,4 @@ artifacts-merged/
 /Cargo.lock
 xtask.$schema.json
 **/package.tgz
+**/*.env

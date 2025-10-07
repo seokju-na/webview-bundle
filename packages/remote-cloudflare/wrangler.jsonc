@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "webview-bundle-remote-cloudflare-sample",
+  "main": "./sample/main.ts",
+  "compatibility_date": "2025-10-04",
+  "r2_buckets": [
+    {
+      "binding": "TEST_BUCKET",
+      "bucket_name": "wvb-testing",
+      "remote": true
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "TEST_KV",
+      "id": "6656b1e710504afeb26daef38f397615",
+      "remote": true
+    }
+  ]
+}
