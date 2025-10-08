@@ -1,9 +1,9 @@
-import type { RemoteBundleInfo } from '@webview-bundle/node';
 import { Hono } from 'hono';
 import type { Context } from './context.js';
 import { getBundleData } from './operations/getBundleData.js';
 import { getBundleStore } from './operations/getBundleStore.js';
 import { listAllBundleStores } from './operations/listAllBundleStores.js';
+import type { RemoteBundleInfo } from './types/info.js';
 
 export type { Context } from './context.js';
 

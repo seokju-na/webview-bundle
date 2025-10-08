@@ -5,3 +5,4 @@ export const RemoteBundleInfoSchema = z.object({
   version: z.string(),
   integrity: z.string().optional(),
 });
+export type RemoteBundleInfo = z.infer<typeof RemoteBundleInfoSchema>;

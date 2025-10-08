@@ -1,6 +1,6 @@
 {
-  "name": "@webview-bundle/remote-cloudflare",
-  "description": "Webview Bundle remote for Cloudflare",
+  "name": "@webview-bundle/remote-cloudflare-pulumi",
+  "description": "Webview Bundle remote pulumi configuration for Cloudflare",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/remote-cloudflare"
+    "directory": "packages/remote-cloudflare-pulumi"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -34,17 +34,22 @@
   "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
-    "build": "tsdown",
+    "build": "yarn build-js && yarn build-worker-script",
+    "build-js": "tsdown",
+    "build-worker-script": "esbuild ./worker-script.ts --minify --bundle --format=esm --platform=neutral --target=node18 --sourcemap=external --outfile=./dist/worker-script.js",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "hono": "^4"
-  },
-  "dependencies": {
-    "zod": "^4.0.5"
+    "@pulumi/cloudflare": "*",
+    "@pulumi/pulumi": "*"
   },
   "devDependencies": {
+    "@pulumi/cloudflare": "^6.10.0",
+    "@pulumi/pulumi": "^3.201.0",
     "@types/node": "22.18.3",
+    "@webview-bundle/cli": "workspace:^",
+    "@webview-bundle/remote-cloudflare": "workspace:^",
+    "esbuild": "0.25.3",
     "hono": "^4.9.7",
     "tsdown": "0.15.1",
     "typescript": "5.9.2",

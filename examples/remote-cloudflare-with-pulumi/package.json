@@ -1,0 +1,14 @@
+{
+  "name": "@example/remote-cloudflare-with-pulumi",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "@pulumi/cloudflare": "^6.10.0",
+    "@pulumi/pulumi": "^3.113.0",
+    "@webview-bundle/remote-cloudflare-pulumi": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.3",
+    "typescript": "5.9.2"
+  }
+}
