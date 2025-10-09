@@ -10,7 +10,7 @@ pre-commit:
       run: yarn taplo fmt --colors=never {staged_files}
       stage_fixed: true
     format:biome:
-      glob: "*.{js,ts,jsx,tsx,cjs,mjs,cts,mts}"
+      glob: "*.{js,ts,jsx,tsx,cjs,mjs,cts,mts,json}"
       run: yarn biome format --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       stage_fixed: true
     check:rust:
