@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "vcs": {
     "enabled": true,
@@ -14,7 +14,7 @@
       "**/*.js",
       "**/*.cjs",
       "**/*.json",
-      "!.yarn/**",
+      "!.yarn",
       "!**/*.js",
       "!**/*.cjs",
       "!**/*.d.ts",
@@ -80,7 +80,7 @@
       }
     },
     {
-      "includes": ["xtask/**"],
+      "includes": ["xtask/**/*.ts"],
       "linter": {
         "rules": {
           "correctness": {

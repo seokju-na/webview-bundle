@@ -1,5 +1,5 @@
 import { execa } from 'execa';
-// @ts-ignore
+// @ts-expect-error
 import type { ExecaArrayLong } from 'execa/types/methods/main-async.js';
 
 export interface RunCommandOptions {
