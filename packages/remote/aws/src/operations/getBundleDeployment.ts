@@ -1,6 +1,6 @@
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { type Context, type RemoteBundleDeployment, RemoteBundleDeploymentSchema } from '../types.js';
-import { isNotFoundError } from '../utils.js';
+import { isNoSuchKeyError } from '../utils.js';
 
 export async function getBundleDeployment(
   context: Context,
@@ -20,7 +20,7 @@ export async function getBundleDeployment(
     const json = JSON.parse(raw);
     return RemoteBundleDeploymentSchema.parse(json);
   } catch (e) {
-    if (isNotFoundError(e)) {
+    if (isNoSuchKeyError(e)) {
       return null;
     }
     throw e;
