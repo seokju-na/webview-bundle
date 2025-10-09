@@ -1,14 +1,14 @@
 import type { Context } from '../context.js';
-import { type RemoteBundleStore, RemoteBundleStoreSchema } from '../types/store.js';
+import { type RemoteBundleDeployment, RemoteBundleDeploymentSchema } from '../types.js';
 
-export interface ListBundleStoresOptions {
+export interface ListBundleDeploymentsOptions {
   limit?: number;
   cacheTtl?: number;
   cursor?: string;
 }
 
-export interface ListBundleStoresResult {
-  items: RemoteBundleStore[];
+export interface ListBundleDeploymentsResult {
+  deployments: RemoteBundleDeployment[];
   nextCursor?: string;
 }
 
@@ -16,15 +16,15 @@ const MAX_LIMIT = 100;
 
 export async function listBundleStores(
   context: Context,
-  options: ListBundleStoresOptions = {}
-): Promise<ListBundleStoresResult> {
+  options: ListBundleDeploymentsOptions = {}
+): Promise<ListBundleDeploymentsResult> {
   const { limit = MAX_LIMIT, cacheTtl, cursor } = options;
   const keysResult = await context.kv.list({
     limit: Math.min(limit, MAX_LIMIT),
     cursor,
   });
   if (keysResult.keys.length === 0) {
-    return { items: [], nextCursor: undefined };
+    return { deployments: [], nextCursor: undefined };
   }
   const valuesResult = await context.kv.get(
     keysResult.keys.map(x => x.name),
@@ -33,18 +33,18 @@ export async function listBundleStores(
       cacheTtl,
     }
   );
-  const items: RemoteBundleStore[] = [];
+  const deployments: RemoteBundleDeployment[] = [];
   for (const value of Object.values(valuesResult)) {
     if (value == null) {
       continue;
     }
-    const parsed = RemoteBundleStoreSchema.safeParse(value);
+    const parsed = RemoteBundleDeploymentSchema.safeParse(value);
     if (parsed.success) {
-      items.push(parsed.data);
+      deployments.push(parsed.data);
     }
   }
   return {
-    items,
+    deployments,
     nextCursor: keysResult.list_complete ? undefined : keysResult.cursor,
   };
 }

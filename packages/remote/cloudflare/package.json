@@ -21,7 +21,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/remote-cloudflare"
+    "directory": "packages/remote/cloudflare"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -37,15 +37,12 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "hono": "^4"
-  },
   "dependencies": {
+    "hono": "^4",
     "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/node": "22.18.3",
-    "hono": "^4.9.7",
     "tsdown": "0.15.1",
     "typescript": "5.9.2",
     "vitest": "3.2.4"
