@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use webview_bundle::http::{HeaderMap, HeaderName, HeaderValue};
 use webview_bundle::remote::HttpConfig;
 
+#[derive(Default)]
 #[napi(object, js_name = "HttpOptions")]
 pub struct JsHttpOptions {
   pub default_headers: Option<HashMap<String, String>>,

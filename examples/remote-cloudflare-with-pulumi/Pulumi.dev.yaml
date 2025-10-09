@@ -1,0 +1,2 @@
+config:
+  remote-cloudflare:accountId: $YOUR_ACCOUNT_ID

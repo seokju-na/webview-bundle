@@ -1,6 +1,7 @@
 pub mod bundle;
 mod error;
 pub mod http;
+pub mod js;
 pub mod protocol;
 pub mod remote;
 pub mod source;

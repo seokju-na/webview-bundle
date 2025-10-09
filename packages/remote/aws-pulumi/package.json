@@ -1,0 +1,58 @@
+{
+  "name": "@webview-bundle/remote-aws-pulumi",
+  "description": "Webview Bundle remote pulumi configuration for AWS",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/remote/aws-pulumi"
+  },
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "license": "MIT",
+  "scripts": {
+    "prepack": "yarn build",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test-lambda-gen": "rm -rf dist-lambda && node testgen.js"
+  },
+  "peerDependencies": {
+    "@pulumi/aws": "*",
+    "@pulumi/pulumi": "*"
+  },
+  "dependencies": {
+    "@webview-bundle/remote-aws": "workspace:^",
+    "es-toolkit": "^1.37.1",
+    "rolldown": "1.0.0-beta.42"
+  },
+  "devDependencies": {
+    "@pulumi/aws": "^7.8.0",
+    "@pulumi/pulumi": "^3.201.0",
+    "@types/node": "22.18.3",
+    "tsdown": "0.15.1",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
+  }
+}

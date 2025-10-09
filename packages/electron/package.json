@@ -1,6 +1,6 @@
 {
   "name": "@webview-bundle/electron",
-  "description": "Webview bundle API for Electron",
+  "description": "Webview Bundle API for Electron",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.js",

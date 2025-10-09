@@ -14,8 +14,7 @@
       "**/*.js",
       "**/*.cjs",
       "**/*.json",
-      "!.yarn/**",
-      "!**/*.json",
+      "!.yarn",
       "!**/*.js",
       "!**/*.cjs",
       "!**/*.d.ts",
@@ -81,7 +80,7 @@
       }
     },
     {
-      "includes": ["xtask/**"],
+      "includes": ["xtask/**/*.ts"],
       "linter": {
         "rules": {
           "correctness": {

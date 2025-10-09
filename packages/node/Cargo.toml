@@ -33,3 +33,6 @@ napi-build = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
+
+[lints.clippy]
+module_inception = "allow"

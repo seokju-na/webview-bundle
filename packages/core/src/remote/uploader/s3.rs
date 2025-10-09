@@ -71,7 +71,7 @@ impl S3UploaderBuilder {
     self
   }
 
-  pub fn build(self) -> crate::Result<impl Uploader> {
+  pub fn build(self) -> crate::Result<S3Uploader> {
     let service = self.build_service();
     let mut op = opendal::Operator::new(service)
       .map_err(|e| {

@@ -11,7 +11,7 @@
         {
           "command": "yarn",
           "args": ["artifacts"],
-          "cwd": "packages/cli"
+          "cwd": "packages/node"
         }
       ]
     },
@@ -23,6 +23,14 @@
     },
     "electron": {
       "path": "packages/electron"
+    },
+    "remote-cloudflare": {
+      "path": "packages/remote-cloudflare",
+      "scopes": ["remote"]
+    },
+    "remote-cloudflare-pulumi": {
+      "path": "packages/remote-cloudflare-pulumi",
+      "scopes": ["remote"]
     }
   },
   "artifacts": {
