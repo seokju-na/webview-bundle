@@ -6,7 +6,7 @@
       "path": "packages/core"
     },
     "node": {
-      "path": "packages/napi",
+      "path": "packages/node",
       "beforePublishScripts": [
         {
           "command": "yarn",
@@ -23,6 +23,14 @@
     },
     "electron": {
       "path": "packages/electron"
+    },
+    "remote-aws": {
+      "path": "packages/remote/aws",
+      "scopes": ["remote"]
+    },
+    "remote-aws-pulumi": {
+      "path": "packages/remote/aws-pulumi",
+      "scopes": ["remote"]
     },
     "remote-cloudflare": {
       "path": "packages/remote-cloudflare",
