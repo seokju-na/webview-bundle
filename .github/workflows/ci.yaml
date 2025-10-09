@@ -192,6 +192,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+      - name: Setup tauri for linux
+        uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
       - name: Setup Rust
