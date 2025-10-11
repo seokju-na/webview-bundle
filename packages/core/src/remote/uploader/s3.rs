@@ -148,7 +148,14 @@ impl Uploader for S3Uploader {
     bundle: &crate::Bundle,
   ) -> crate::Result<()> {
     let path = self.config.opendal.resolve_path(bundle_name, version);
-    let mut writer = self.op.writer_with(&path).content_type(MIME_TYPE);
+    let mut writer = self
+      .op
+      .writer_with(&path)
+      .content_type(MIME_TYPE)
+      .user_metadata([
+        ("webview-bundle-name".to_string(), bundle_name.to_string()),
+        ("webview-bundle-version".to_string(), version.to_string()),
+      ]);
     if let Some(concurrent) = self.config.opendal.write_concurrent {
       writer = writer.concurrent(concurrent);
     }

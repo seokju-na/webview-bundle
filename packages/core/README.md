@@ -66,3 +66,132 @@
   - This field has dynamic bytes size which can be determined each file offset and length from Index.
   - The content of data is compressed with [lz4 block format](https://github.com/lz4/lz4/blob/dev/doc/lz4_Block_format.md).
   - The last 4 bytes are the checksum which is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the compressed data as input.
+
+
+## Remote HTTP Spec
+
+### List bundles (`GET /bundles`)
+
+This returns a list of bundle names.
+
+Remote bundles must be version-specified. Therefore, bundles with un-deployed versions should be excluded from the response.
+
+```http request
+GET /bundles
+Host: wvb.example.com
+Accept: application/json
+
+### Response
+HTTP 200 OK
+Content-Type: application/json
+
+["bundle_name_1", "bundle_name_2"]
+```
+
+### Get the current bundle info (`HEAD /bundles/{name}`)
+
+Get a bundle metadata with the specified name.
+
+Bundle metadata includes the following metadata in response headers:
+
+- `webview-bundle-name` : The name of this bundle.
+- `webview-bundle-version` : Currently deployed version of this bundle.
+- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for verification.
+
+```http request
+HEAD /bundles/{name}
+Host: wvb.example.com
+
+### Response
+HTTP 200 OK
+Content-Type: application/webview-bundle
+Webview-Bundle-Name: bundle_name_1
+Webview-Bundle-Version: 1.0.0
+Webview-Bundle-Integrity: ...
+```
+
+#### Exceptions
+
+If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found response.
+
+```http request
+HEAD /bundles/{name}
+Host: wvb.example.com
+
+### Response
+HTTP 404 Not Found
+```
+
+### Download the current bundle (`GET /bundles/{name}`)
+
+Download the current bundle with the specified name.
+
+Bundle metadata includes the following metadata in response headers:
+
+- `webview-bundle-name` : The name of this bundle.
+- `webview-bundle-version` : Currently deployed version of this bundle.
+- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for verification.
+
+```http request
+GET /bundles/{name}
+Host: wvb.example.com
+
+### Response
+HTTP 200 OK
+Content-Type: application/webview-bundle
+Webview-Bundle-Name: bundle_name_1
+Webview-Bundle-Version: 1.0.0
+Webview-Bundle-Integrity: ...
+```
+
+#### Exceptions
+
+If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found response.
+
+```http request
+HEAD /bundles/{name}
+Host: wvb.example.com
+
+### Response
+HTTP 404 Not Found
+```
+
+### Download a specific version of the bundle (`GET /bundles/{name}/{version}`)
+
+Get a specific version of the bundle with the specified name and version.
+
+In the enterprise cases, you may want to prevent downloading specific versions. You can disable this feature by using the `allowOnlyLatest` option.
+
+```http request
+GET /bundles/{name}/{version}
+Host: wvb.example.com
+
+### Response
+HTTP 200 OK
+Content-Type: application/webview-bundle
+Webview-Bundle-Name: bundle_name_1
+Webview-Bundle-Version: 1.0.0
+Webview-Bundle-Integrity: ...
+```
+
+#### Exceptions
+
+If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found response.
+
+```http request
+GET /bundles/{name}/{version}
+Host: wvb.example.com
+
+### Response
+HTTP 404 Not Found
+```
+
+If the `allowOnlyLatest` option is enabled, the server will return a 403 Forbidden response.
+
+```http request
+GET /bundles/{name}/{version}
+Host: wvb.example.com
+
+### Response
+HTTP 403 Forbidden
+```

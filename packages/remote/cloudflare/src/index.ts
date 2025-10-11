@@ -5,7 +5,6 @@ import type { Context } from './context.js';
 import { getBundleDataResponse } from './operations/getBundleDataResponse.js';
 import { getBundleDeployment } from './operations/getBundleDeployment.js';
 import { listAllBundleDeployments } from './operations/listAllBundleDeployments.js';
-import type { RemoteBundleInfo } from './types.js';
 
 export type { Context } from './context.js';
 
@@ -22,35 +21,11 @@ export function webviewBundleRemote(options: WebviewBundleRemoteOptions = {}): W
 
   app.get('/bundles', async c => {
     const deployments = await listAllBundleDeployments(c.env);
-    const bundles = deployments
-      .map(deployment => {
-        if (deployment.version == null) {
-          return null;
-        }
-        const info: RemoteBundleInfo = {
-          name: deployment.name,
-          version: deployment.version,
-        };
-        return info;
-      })
-      .filter(x => x != null);
+    const bundles = deployments.filter(x => x.version != null).map(x => x.name);
     return c.json(bundles);
   });
 
   app.get('/bundles/:name', async c => {
-    const bundleName = c.req.param('name');
-    const deployment = await getBundleDeployment(c.env, bundleName);
-    if (deployment == null || deployment.version == null) {
-      return c.notFound();
-    }
-    const info: RemoteBundleInfo = {
-      name: deployment.name,
-      version: deployment.version,
-    };
-    return c.json(info);
-  });
-
-  app.get('/bundles/:name/download', async c => {
     const bundleName = c.req.param('name');
     const deployment = await getBundleDeployment(c.env, bundleName);
     if (deployment == null || deployment.version == null) {
@@ -63,7 +38,7 @@ export function webviewBundleRemote(options: WebviewBundleRemoteOptions = {}): W
     return resp;
   });
 
-  app.get('/bundles/:name/download/:version', async c => {
+  app.get('/bundles/:name/:version', async c => {
     if (allowOnlyLatest) {
       return new Response(null, { status: 403 });
     }

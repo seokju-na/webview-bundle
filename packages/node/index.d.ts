@@ -65,9 +65,10 @@ export type JsLocalProtocol = LocalProtocol
 
 export declare class Remote {
   constructor(endpoint: string, options?: RemoteOptions | undefined | null, onDownload?: (data: RemoteOnDownloadData) => void)
-  getInfoAll(): Promise<Array<RemoteBundleInfo>>
+  listBundles(): Promise<Array<string>>
   getInfo(bundleName: string): Promise<RemoteBundleInfo>
-  download(info: RemoteBundleInfo): Promise<Bundle>
+  download(bundleName: string): Promise<[RemoteBundleInfo, Bundle]>
+  downloadVersion(bundleName: string, version: string): Promise<[RemoteBundleInfo, Bundle]>
 }
 export type JsRemote = Remote
 
@@ -79,10 +80,10 @@ export type JsS3Uploader = S3Uploader
 
 export declare class Updater {
   constructor(source: BundleSource, remote: Remote)
-  getUpdateAll(): Promise<Array<BundleUpdateInfo>>
+  listRemotes(): Promise<Array<string>>
   getUpdate(bundleName: string): Promise<BundleUpdateInfo>
-  downloadUpdate(info: BundleUpdateInfo): Promise<void>
-  applyUpdate(info: BundleUpdateInfo): Promise<void>
+  downloadUpdate(bundleName: string, version?: string | undefined | null): Promise<RemoteBundleInfo>
+  applyUpdate(bundleName: string, version: string): Promise<void>
 }
 export type JsUpdater = Updater
 
@@ -159,6 +160,8 @@ export interface ListBundles {
 
 export declare function readBundle(filepath: string): Promise<Bundle>
 
+export declare function readBundleFromBuffer(buffer: Buffer): Bundle
+
 export interface RemoteBundleInfo {
   name: string
   version: string
@@ -192,3 +195,5 @@ export interface S3UploaderOptions {
 export type Version =  'v1';
 
 export declare function writeBundle(bundle: Bundle, filepath: string): Promise<bigint>
+
+export declare function writeBundleIntoBuffer(bundle: Bundle): Buffer
