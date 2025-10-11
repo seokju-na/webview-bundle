@@ -42,8 +42,20 @@ pub enum Error {
   #[error("reqwest error: {0}")]
   Reqwest(#[from] reqwest::Error),
   #[cfg(feature = "remote")]
+  #[error("invalid remote bundle: {0}")]
+  InvalidRemoteBundle(String),
+  #[cfg(feature = "remote")]
+  #[error("remote bundle not found")]
+  RemoteBundleNotFound,
+  #[cfg(feature = "remote")]
+  #[error("remote forbidden")]
+  RemoteForbidden,
+  #[cfg(feature = "remote")]
   #[error("remote http error with status {status}")]
-  RemoteHttp { status: u16 },
+  RemoteHttp {
+    status: u16,
+    message: Option<String>,
+  },
   #[cfg(feature = "remote")]
   #[error("invalid remote config: {0}")]
   InvalidRemoteConfig(String),
@@ -56,5 +68,18 @@ impl Error {
   #[cfg(feature = "remote")]
   pub(crate) fn invalid_remote_config(message: impl Into<String>) -> Self {
     Self::InvalidRemoteConfig(message.into())
+  }
+
+  #[cfg(feature = "remote")]
+  pub(crate) fn invalid_remote_bundle(message: impl Into<String>) -> Self {
+    Self::InvalidRemoteBundle(message.into())
+  }
+
+  #[cfg(feature = "remote")]
+  pub(crate) fn remote_http(status: http::StatusCode, message: Option<impl Into<String>>) -> Self {
+    Self::RemoteHttp {
+      status: status.as_u16(),
+      message: message.map(|x| x.into()),
+    }
   }
 }

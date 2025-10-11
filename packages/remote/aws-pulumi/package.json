@@ -14,6 +14,7 @@
   },
   "files": [
     "dist",
+    "lambda",
     "README.md",
     "CHANGELOG.md"
   ],
@@ -35,8 +36,7 @@
   "scripts": {
     "prepack": "yarn build",
     "build": "tsdown",
-    "typecheck": "tsc --noEmit",
-    "test-lambda-gen": "rm -rf dist-lambda && node testgen.js"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@pulumi/aws": "*",

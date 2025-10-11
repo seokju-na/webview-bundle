@@ -93,20 +93,33 @@ impl JsRemote {
   }
 
   #[napi]
-  pub async fn get_info_all(&self) -> crate::Result<Vec<JsRemoteBundleInfo>> {
-    let res = self.inner.get_info_all().await?;
-    Ok(res.into_iter().map(JsRemoteBundleInfo::from).collect())
+  pub async fn list_bundles(&self) -> crate::Result<Vec<String>> {
+    let bundles = self.inner.list_bundles().await?;
+    Ok(bundles)
   }
 
   #[napi]
   pub async fn get_info(&self, bundle_name: String) -> crate::Result<JsRemoteBundleInfo> {
-    let res = self.inner.get_info(&bundle_name).await?;
-    Ok(JsRemoteBundleInfo::from(res))
+    let info = self.inner.get_current_info(&bundle_name).await?;
+    Ok(info.into())
   }
 
   #[napi]
-  pub async fn download(&self, info: JsRemoteBundleInfo) -> crate::Result<JsBundle> {
-    let inner = self.inner.download(&info.into()).await?;
-    Ok(JsBundle { inner })
+  pub async fn download(
+    &self,
+    bundle_name: String,
+  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle)> {
+    let (info, inner) = self.inner.download(&bundle_name).await?;
+    Ok((info.into(), JsBundle { inner }))
+  }
+
+  #[napi]
+  pub async fn download_version(
+    &self,
+    bundle_name: String,
+    version: String,
+  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle)> {
+    let (info, inner) = self.inner.download_version(&bundle_name, &version).await?;
+    Ok((info.into(), JsBundle { inner }))
   }
 }

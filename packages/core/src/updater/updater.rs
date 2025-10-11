@@ -33,43 +33,59 @@ impl Updater {
     Self { source, remote }
   }
 
-  pub async fn get_update_all(&self) -> crate::Result<Vec<BundleUpdateInfo>> {
-    let remote_infos = self.remote.get_info_all().await?;
-    let mut updates = Vec::with_capacity(remote_infos.len());
-    for info in remote_infos {
-      updates.push(self.to_update_info(info).await?);
-    }
-    Ok(updates)
+  pub async fn list_remotes(&self) -> crate::Result<Vec<String>> {
+    self.remote.list_bundles().await
   }
 
-  pub async fn get_update(&self, bundle_name: &str) -> crate::Result<BundleUpdateInfo> {
-    let remote_info = self.remote.get_info(bundle_name).await?;
+  pub async fn get_update(
+    &self,
+    bundle_name: impl Into<String>,
+  ) -> crate::Result<BundleUpdateInfo> {
+    let remote_info = self.remote.get_current_info(&bundle_name.into()).await?;
     let info = self.to_update_info(remote_info).await?;
     Ok(info)
   }
 
-  pub async fn download_update(&self, info: &BundleUpdateInfo) -> crate::Result<()> {
-    let bundle = self.remote.download(&info.into()).await?;
+  pub async fn download_update(
+    &self,
+    bundle_name: impl Into<String>,
+    version: Option<impl Into<String>>,
+  ) -> crate::Result<RemoteBundleInfo> {
+    let (info, bundle) = match version {
+      Some(ver) => {
+        self
+          .remote
+          .download_version(&bundle_name.into(), &ver.into())
+          .await
+      }
+      None => self.remote.download(&bundle_name.into()).await,
+    }?;
     self
       .source
       .write_bundle(&info.name, &info.version, &bundle)
       .await?;
-    Ok(())
+    Ok(info)
   }
 
-  pub async fn apply_update(&self, info: &BundleUpdateInfo) -> crate::Result<()> {
+  pub async fn apply_update(
+    &self,
+    bundle_name: impl Into<String>,
+    version: impl Into<String>,
+  ) -> crate::Result<()> {
+    let bundle_name = bundle_name.into();
+    let version = version.into();
     let exists = self
       .source
       .is_exists(
-        &info.name,
-        &BundleSourceVersion::Remote(info.version.to_string()),
+        &bundle_name,
+        &BundleSourceVersion::Remote(version.to_string()),
       )
       .await?;
     if !exists {
       return Err(crate::Error::BundleNotFound);
     }
-    self.source.set_version(&info.name, &info.version).await?;
-    self.source.unload_manifest(&info.name);
+    self.source.set_version(&bundle_name, &version).await?;
+    self.source.unload_manifest(&bundle_name);
     Ok(())
   }
 

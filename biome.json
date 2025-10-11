@@ -18,7 +18,8 @@
       "!**/*.js",
       "!**/*.cjs",
       "!**/*.d.ts",
-      "!**/*.d.cts"
+      "!**/*.d.cts",
+      "!**/permissions/**/schema.json"
     ]
   },
   "formatter": {

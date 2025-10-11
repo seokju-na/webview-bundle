@@ -12,14 +12,18 @@ export async function getBundleDataResponse(
   }
   const headers = new Headers();
   if (obj.httpMetadata?.contentType != null) {
-    headers.append('content-type', obj.httpMetadata.contentType);
+    headers.set('content-type', obj.httpMetadata.contentType);
+  } else {
+    headers.set('content-type', 'application/webview-bundle');
   }
   if (obj.httpMetadata?.contentDisposition != null) {
-    headers.append('content-disposition', obj.httpMetadata.contentDisposition);
+    headers.set('content-disposition', obj.httpMetadata.contentDisposition);
   }
   if (obj.httpMetadata?.cacheControl != null) {
-    headers.append('cache-control', obj.httpMetadata.cacheControl);
+    headers.set('cache-control', obj.httpMetadata.cacheControl);
   }
+  headers.set('webview-bundle-name', bundleName);
+  headers.set('webview-bundle-version', version);
   return new Response(obj.body, {
     status: 200,
     headers,

@@ -1,16 +1,28 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import * as aws from '@pulumi/aws';
 import type * as inputs from '@pulumi/aws/types/input.js';
 import * as pulumi from '@pulumi/pulumi';
 import type { AssetArchive } from '@pulumi/pulumi/asset/archive.js';
-import type { WebviewBundleRemoteConfig } from '@webview-bundle/remote-aws';
 import { uniq } from 'es-toolkit';
-import { generateCode } from './code.js';
-import { getLambdaRuntimeTarget, type LambdaRuntime } from './types.js';
+import { getLambdaCode } from './lambda.js';
+import type { LambdaRuntime } from './types.js';
 
-const dirname =
-  typeof import.meta.dirname === 'string' ? import.meta.dirname : path.dirname(fileURLToPath(import.meta.url));
+export interface WebviewBundleRemoteLambdaCodeConfig {
+  name?: pulumi.Input<string>;
+  architecture?: pulumi.Input<pulumi.Input<'x8664' | 'arm64'>[]>;
+  environment?: pulumi.Input<inputs.lambda.FunctionEnvironment>;
+  description?: pulumi.Input<string>;
+  layers?: pulumi.Input<pulumi.Input<string>[]>;
+  code?: pulumi.Input<AssetArchive>;
+  codeEsm?: pulumi.Input<boolean>;
+  codeSourcemap?: pulumi.Input<boolean>;
+  codeMinify?: pulumi.Input<boolean>;
+  codeTreeshake?: pulumi.Input<boolean>;
+  runtime?: pulumi.Input<LambdaRuntime>;
+  handler?: pulumi.Input<string>;
+  timeout?: pulumi.Input<number>;
+  memorySize?: pulumi.Input<number>;
+  tags?: pulumi.Input<{ [key: string]: pulumi.Input<string> }>;
+}
 
 export interface WebviewBundleRemoteProviderConfig {
   name?: string;
@@ -18,24 +30,11 @@ export interface WebviewBundleRemoteProviderConfig {
   bucketName?: string;
   bucketForceDestroy?: pulumi.Input<boolean>;
   bucketTags?: pulumi.Input<{ [key: string]: pulumi.Input<string> }>;
-  lambdaName?: pulumi.Input<string>;
-  lambdaArchitecture?: pulumi.Input<pulumi.Input<'x8664' | 'arm64'>[]>;
-  lambdaEnvironment?: pulumi.Input<inputs.lambda.FunctionEnvironment>;
-  lambdaDescription?: pulumi.Input<string>;
-  lambdaLayers?: pulumi.Input<pulumi.Input<string>[]>;
-  lambdaCode?: pulumi.Input<AssetArchive>;
-  lambdaCodeEsm?: pulumi.Input<boolean>;
-  lambdaCodeSourcemap?: pulumi.Input<boolean>;
-  lambdaCodeMinify?: pulumi.Input<boolean>;
-  lambdaCodeTreeshake?: pulumi.Input<boolean>;
-  lambdaRuntime?: pulumi.Input<LambdaRuntime>;
-  lambdaHandler?: pulumi.Input<string>;
+  lambdaOriginRequest?: WebviewBundleRemoteLambdaCodeConfig;
+  lambdaOriginResponse?: WebviewBundleRemoteLambdaCodeConfig;
   lambdaRoleName?: pulumi.Input<string>;
   lambdaPolicyActions?: string[];
   lambdaRolePolicyName?: pulumi.Input<string>;
-  lambdaTimeout?: pulumi.Input<number>;
-  lambdaMemorySize?: pulumi.Input<number>;
-  lambdaTags?: pulumi.Input<{ [key: string]: pulumi.Input<string> }>;
   cloudfrontAliases?: pulumi.Input<pulumi.Input<string>[]>;
   cloudfrontComment?: pulumi.Input<string>;
   cloudfrontViewerCertificate?: aws.cloudfront.DistributionArgs['viewerCertificate'];
@@ -50,7 +49,8 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
   public readonly bucketId: pulumi.Output<string>;
   public readonly bucketName: pulumi.Output<string>;
   public readonly bucketDomainName: pulumi.Output<string>;
-  public readonly lambdaArn: pulumi.Output<string>;
+  public readonly lambdaOriginRequestArn: pulumi.Output<string>;
+  public readonly lambdaOriginResponseArn: pulumi.Output<string>;
   public readonly cloudfrontDistributionId: pulumi.Output<string>;
   public readonly cloudfrontDistributionArn: pulumi.Output<string>;
   public readonly cloudfrontDistributionDomainName: pulumi.Output<string>;
@@ -64,24 +64,11 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
       bucketName = `${baseName}-bucket`,
       bucketForceDestroy,
       bucketTags,
-      lambdaName = `${baseName}-lambda`,
-      lambdaArchitecture,
-      lambdaRuntime = 'nodejs22.x',
-      lambdaDescription = `${baseName} lambda function (${lambdaRuntime})`,
-      lambdaEnvironment,
-      lambdaLayers,
-      lambdaCodeEsm = true,
-      lambdaCodeSourcemap = true,
-      lambdaCodeMinify = true,
-      lambdaCodeTreeshake = true,
-      lambdaCode,
-      lambdaHandler = 'origin-request.handler',
+      lambdaOriginRequest,
+      lambdaOriginResponse,
       lambdaRoleName = `${baseName}-lambda-role`,
       lambdaPolicyActions = [],
       lambdaRolePolicyName = `${baseName}-lambda-role-policy`,
-      lambdaTimeout,
-      lambdaTags,
-      lambdaMemorySize,
       cloudfrontAliases,
       cloudfrontEnabled = true,
       cloudfrontHttpVersion = 'http2and3',
@@ -221,60 +208,78 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
       { provider: usEast1Provider, parent: this }
     );
 
-    const code =
-      lambdaCode ??
-      pulumi
-        .all([
-          bucket.bucket,
+    const originRequestCode =
+      lambdaOriginRequest?.code ??
+      getLambdaCode(
+        'origin-request.ts',
+        {
+          bucket: bucket.bucket,
           region,
-          lambdaRuntime,
-          lambdaCodeEsm,
-          lambdaCodeSourcemap,
-          lambdaCodeMinify,
-          lambdaCodeTreeshake,
-        ])
-        .apply(async ([bucketName, region, runtime, esm, sourcemap, minify, treeshake]) => {
-          const config: WebviewBundleRemoteConfig = {
-            bucketName,
-            region,
-            allowOnlyLatest,
-          };
-          const input = path.join(dirname, '..', 'lambda', 'origin-request.ts');
-          const codes = await generateCode(input, {
-            platform: 'node',
-            target: getLambdaRuntimeTarget(runtime),
-            format: esm ? 'esm' : 'cjs',
-            sourcemap,
-            treeshake,
-            minify,
-            define: {
-              __CONFIG__: JSON.stringify(config),
-            },
-          });
-          const assets = Object.fromEntries(
-            codes.map(code => {
-              return [code.fileName, new pulumi.asset.StringAsset(code.content)];
-            })
-          );
-          return new pulumi.asset.AssetArchive(assets);
-        });
+          runtime: lambdaOriginRequest?.runtime,
+          esm: lambdaOriginRequest?.codeEsm,
+          sourcemap: lambdaOriginRequest?.codeSourcemap,
+          minify: lambdaOriginRequest?.codeMinify,
+          treeshake: lambdaOriginRequest?.codeTreeshake,
+        },
+        allowOnlyLatest
+      );
 
-    const lambdaOriginRequest = new aws.lambda.Function(
+    const lambdaOriginRequestFn = new aws.lambda.Function(
       'lambda_origin_request',
       {
         publish: true,
-        architectures: lambdaArchitecture,
-        environment: lambdaEnvironment,
-        layers: lambdaLayers,
-        tags: lambdaTags,
-        name: lambdaName,
-        description: lambdaDescription,
+        architectures: lambdaOriginRequest?.architecture,
+        environment: lambdaOriginRequest?.environment,
+        layers: lambdaOriginRequest?.layers,
+        tags: lambdaOriginRequest?.tags,
+        name: lambdaOriginRequest?.name ?? `${baseName}-lambda-origin-request`,
+        description: lambdaOriginRequest?.description ?? `${baseName} lambda origin request function`,
         role: lambdaRole.arn,
-        runtime: lambdaRuntime,
-        timeout: lambdaTimeout,
-        memorySize: lambdaMemorySize,
-        code,
-        handler: lambdaHandler,
+        runtime: lambdaOriginRequest?.runtime ?? 'nodejs22.x',
+        timeout: lambdaOriginRequest?.timeout,
+        memorySize: lambdaOriginRequest?.memorySize,
+        code: originRequestCode,
+        handler: lambdaOriginRequest?.handler ?? 'origin-request.handler',
+      },
+      {
+        provider: usEast1Provider,
+        parent: this,
+        dependsOn: [bucket, lambdaRolePolicy],
+      }
+    );
+
+    const originResponseCode =
+      lambdaOriginResponse?.code ??
+      getLambdaCode(
+        'origin-response.ts',
+        {
+          bucket: bucket.bucket,
+          region,
+          runtime: lambdaOriginResponse?.runtime,
+          esm: lambdaOriginResponse?.codeEsm,
+          sourcemap: lambdaOriginResponse?.codeSourcemap,
+          minify: lambdaOriginResponse?.codeMinify,
+          treeshake: lambdaOriginResponse?.codeTreeshake,
+        },
+        allowOnlyLatest
+      );
+
+    const lambdaOriginResponseFn = new aws.lambda.Function(
+      'lambda_origin_response',
+      {
+        publish: true,
+        architectures: lambdaOriginResponse?.architecture,
+        environment: lambdaOriginResponse?.environment,
+        layers: lambdaOriginResponse?.layers,
+        tags: lambdaOriginResponse?.tags,
+        name: lambdaOriginResponse?.name ?? `${baseName}-lambda-origin-response`,
+        description: lambdaOriginResponse?.description ?? `${baseName} lambda origin response function`,
+        role: lambdaRole.arn,
+        runtime: lambdaOriginResponse?.runtime ?? 'nodejs22.x',
+        timeout: lambdaOriginResponse?.timeout,
+        memorySize: lambdaOriginResponse?.memorySize,
+        code: originResponseCode,
+        handler: lambdaOriginResponse?.handler ?? 'origin-response.handler',
       },
       {
         provider: usEast1Provider,
@@ -324,7 +329,11 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
           lambdaFunctionAssociations: [
             {
               eventType: 'origin-request',
-              lambdaArn: lambdaOriginRequest.qualifiedArn,
+              lambdaArn: lambdaOriginRequestFn.qualifiedArn,
+            },
+            {
+              eventType: 'origin-response',
+              lambdaArn: lambdaOriginResponseFn.qualifiedArn,
             },
           ],
         },
@@ -339,7 +348,8 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
     this.bucketId = bucket.id;
     this.bucketName = bucket.bucket;
     this.bucketDomainName = bucket.bucketDomainName;
-    this.lambdaArn = lambdaOriginRequest.qualifiedArn;
+    this.lambdaOriginRequestArn = lambdaOriginRequestFn.qualifiedArn;
+    this.lambdaOriginResponseArn = lambdaOriginResponseFn.qualifiedArn;
     this.cloudfrontDistributionId = cloudfrontDistribution.id;
     this.cloudfrontDistributionArn = cloudfrontDistribution.arn;
     this.cloudfrontDistributionDomainName = cloudfrontDistribution.domainName;
@@ -347,7 +357,8 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
       bucketId: this.bucketId,
       bucketName: this.bucketName,
       bucketDomainName: this.bucketDomainName,
-      lambdaArn: this.lambdaArn,
+      lambdaOriginRequestArn: this.lambdaOriginRequestArn,
+      lambdaOriginResponseArn: this.lambdaOriginResponseArn,
       cloudfrontDistributionId: this.cloudfrontDistributionId,
       cloudfrontDistributionArn: this.cloudfrontDistributionArn,
       cloudfrontDistributionDomainName: this.cloudfrontDistributionDomainName,

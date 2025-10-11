@@ -1,4 +1,4 @@
-use crate::remote::JsRemote;
+use crate::remote::{JsRemote, JsRemoteBundleInfo};
 use crate::source::JsBundleSource;
 use napi_derive::napi;
 use webview_bundle::updater::{BundleUpdateInfo, Updater};
@@ -53,15 +53,9 @@ impl JsUpdater {
   }
 
   #[napi]
-  pub async fn get_update_all(&self) -> crate::Result<Vec<JsBundleUpdateInfo>> {
-    let updates = self
-      .inner
-      .get_update_all()
-      .await?
-      .into_iter()
-      .map(JsBundleUpdateInfo::from)
-      .collect::<Vec<_>>();
-    Ok(updates)
+  pub async fn list_remotes(&self) -> crate::Result<Vec<String>> {
+    let remotes = self.inner.list_remotes().await?;
+    Ok(remotes)
   }
 
   #[napi]
@@ -71,14 +65,18 @@ impl JsUpdater {
   }
 
   #[napi]
-  pub async fn download_update(&self, info: JsBundleUpdateInfo) -> crate::Result<()> {
-    self.inner.download_update(&info.into()).await?;
-    Ok(())
+  pub async fn download_update(
+    &self,
+    bundle_name: String,
+    version: Option<String>,
+  ) -> crate::Result<JsRemoteBundleInfo> {
+    let info = self.inner.download_update(bundle_name, version).await?;
+    Ok(info.into())
   }
 
   #[napi]
-  pub async fn apply_update(&self, info: JsBundleUpdateInfo) -> crate::Result<()> {
-    self.inner.apply_update(&info.into()).await?;
+  pub async fn apply_update(&self, bundle_name: String, version: String) -> crate::Result<()> {
+    self.inner.apply_update(bundle_name, version).await?;
     Ok(())
   }
 }

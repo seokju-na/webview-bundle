@@ -3,13 +3,14 @@ use crate::version::JsVersion;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
+use std::io::Cursor;
 use std::ops::Deref;
 use tokio::fs;
 use webview_bundle::http::HeaderMap;
 use webview_bundle::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleBuilder,
-  BundleBuilderOptions, BundleManifest, Header, HeaderWriterOptions, Index, IndexEntry,
-  IndexWriterOptions,
+  BundleBuilderOptions, BundleManifest, BundleReader, BundleWriter, Header, HeaderWriterOptions,
+  Index, IndexEntry, IndexWriterOptions, Reader, Writer,
 };
 
 #[napi(js_name = "Header")]
@@ -148,6 +149,13 @@ impl JsBundle {
 }
 
 #[napi]
+pub fn read_bundle_from_buffer(buffer: BufferSlice) -> crate::Result<JsBundle> {
+  let cursor = Cursor::new(buffer.as_ref());
+  let bundle = Reader::<Bundle>::read(&mut BundleReader::new(cursor))?;
+  Ok(JsBundle { inner: bundle })
+}
+
+#[napi]
 pub async fn read_bundle(filepath: String) -> crate::Result<JsBundle> {
   let mut file = fs::File::open(&filepath)
     .await
@@ -164,6 +172,13 @@ pub async fn write_bundle(bundle: &JsBundle, filepath: String) -> crate::Result<
   let size =
     AsyncWriter::<Bundle>::write(&mut AsyncBundleWriter::new(&mut file), &bundle.inner).await?;
   Ok(size)
+}
+
+#[napi]
+pub fn write_bundle_into_buffer(bundle: &JsBundle) -> crate::Result<Buffer> {
+  let mut buf = vec![];
+  Writer::<Bundle>::write(&mut BundleWriter::new(&mut buf), &bundle.inner)?;
+  Ok(buf.into())
 }
 
 #[napi(object, js_name = "BuildOptions")]
