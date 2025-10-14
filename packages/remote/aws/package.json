@@ -10,6 +10,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./origin-request": {
+      "import": "./dist/origin-request/index.js",
+      "require": "./dist/origin-request/index.cjs"
+    },
+    "./origin-response": {
+      "import": "./dist/origin-response/index.js",
+      "require": "./dist/origin-response/index.cjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [

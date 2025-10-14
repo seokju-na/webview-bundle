@@ -1,3 +1,3 @@
-import { originResponseHandler } from '@webview-bundle/remote-aws';
+import { originResponse } from '@webview-bundle/remote-aws/origin-response';
 
-export const handler = originResponseHandler();
+export const handler = originResponse();

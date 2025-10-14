@@ -1,6 +1,5 @@
-import { type WebviewBundleRemoteConfig, wvbRemote } from '@webview-bundle/remote-aws';
-import { handle } from 'hono/lambda-edge';
+import { originRequest } from '@webview-bundle/remote-aws/origin-request';
 
-declare const __CONFIG__: WebviewBundleRemoteConfig;
+declare const __CONFIG__: any;
 
-export const handler: any = handle(wvbRemote(__CONFIG__));
+export const handler = originRequest(__CONFIG__);

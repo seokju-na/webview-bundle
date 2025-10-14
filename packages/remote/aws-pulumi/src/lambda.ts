@@ -15,7 +15,6 @@ export interface LambdaCodeConfig {
   esm?: pulumi.Input<boolean>;
   sourcemap?: pulumi.Input<boolean>;
   minify?: pulumi.Input<boolean>;
-  treeshake?: pulumi.Input<boolean>;
 }
 
 export function getLambdaCode(
@@ -31,9 +30,8 @@ export function getLambdaCode(
       config.esm ?? true,
       config.sourcemap ?? true,
       config.minify ?? true,
-      config.treeshake ?? true,
     ])
-    .apply(async ([bucketName, region, runtime, esm, sourcemap, minify, treeshake]) => {
+    .apply(async ([bucketName, region, runtime, esm, sourcemap, minify]) => {
       const config: WebviewBundleRemoteConfig = {
         bucketName,
         region,
@@ -45,7 +43,6 @@ export function getLambdaCode(
         target: getLambdaRuntimeTarget(runtime),
         format: esm ? 'esm' : 'cjs',
         sourcemap,
-        treeshake,
         minify,
         define: {
           __CONFIG__: JSON.stringify(config),
