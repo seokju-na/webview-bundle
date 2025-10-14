@@ -2,10 +2,12 @@
   "name": "@example/electron-simple",
   "private": true,
   "type": "module",
-  "main": "./dist/index.mjs",
+  "main": "./dist/main.mjs",
   "scripts": {
     "start": "electron .",
-    "out": "esbuild src/index.ts --bundle --outfile=./dist/index.mjs --target=node20 --format=esm --platform=node --external:electron --external:@webview-bundle/electron --sourcemap",
+    "out": "yarn out:main && yarn out:preload",
+    "out:main": "esbuild src/main.ts --bundle --outfile=./dist/main.mjs --target=node20 --format=esm --platform=node --external:electron --external:@webview-bundle/electron --sourcemap",
+    "out:preload": "esbuild src/preload.ts --bundle --outfile=./dist/preload.js --target=node20 --format=cjs --platform=node --external:electron --sourcemap",
     "create-bundle": "wvb create renderer --outfile ./bundles/out/out_1.0.0.wvb --truncate"
   },
   "dependencies": {

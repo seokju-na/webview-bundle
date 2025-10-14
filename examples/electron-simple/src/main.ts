@@ -1,7 +1,11 @@
+import path from 'node:path';
 import { bundleProtocol, localProtocol, wvb } from '@webview-bundle/electron';
 import { app, BrowserWindow } from 'electron';
 
 wvb({
+  remote: {
+    endpoint: 'https://dkff9jdtl2tsb.cloudfront.net',
+  },
   protocols: [
     localProtocol('app-local', {
       hosts: {
@@ -18,6 +22,11 @@ async function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    webPreferences: {
+      preload: path.join(import.meta.dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
   });
 
   await mainWindow.loadURL('app://out.wvb');
