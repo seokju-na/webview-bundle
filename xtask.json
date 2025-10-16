@@ -33,11 +33,11 @@
       "scopes": ["remote"]
     },
     "remote-cloudflare": {
-      "path": "packages/remote-cloudflare",
+      "path": "packages/remote/cloudflare",
       "scopes": ["remote"]
     },
     "remote-cloudflare-pulumi": {
-      "path": "packages/remote-cloudflare-pulumi",
+      "path": "packages/remote/cloudflare-pulumi",
       "scopes": ["remote"]
     }
   },
