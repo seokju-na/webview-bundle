@@ -1,6 +1,8 @@
-import type { CloudFrontResponseEvent, CloudFrontResponseResult } from 'aws-lambda';
+import type { CloudFrontResponseEvent, CloudFrontResponseResult, Handler } from 'aws-lambda';
 
-export function originResponseHandler() {
+export type OriginResponseHandler = Handler<CloudFrontResponseEvent, CloudFrontResponseResult>;
+
+export function originResponse(): OriginResponseHandler {
   return async function handle(event: CloudFrontResponseEvent): Promise<CloudFrontResponseResult> {
     const request = event.Records[0]?.cf?.request;
     const response = event.Records[0]?.cf?.response;

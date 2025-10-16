@@ -16,7 +16,6 @@ export interface WebviewBundleRemoteLambdaCodeConfig {
   codeEsm?: pulumi.Input<boolean>;
   codeSourcemap?: pulumi.Input<boolean>;
   codeMinify?: pulumi.Input<boolean>;
-  codeTreeshake?: pulumi.Input<boolean>;
   runtime?: pulumi.Input<LambdaRuntime>;
   handler?: pulumi.Input<string>;
   timeout?: pulumi.Input<number>;
@@ -219,7 +218,6 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
           esm: lambdaOriginRequest?.codeEsm,
           sourcemap: lambdaOriginRequest?.codeSourcemap,
           minify: lambdaOriginRequest?.codeMinify,
-          treeshake: lambdaOriginRequest?.codeTreeshake,
         },
         allowOnlyLatest
       );
@@ -259,7 +257,6 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
           esm: lambdaOriginResponse?.codeEsm,
           sourcemap: lambdaOriginResponse?.codeSourcemap,
           minify: lambdaOriginResponse?.codeMinify,
-          treeshake: lambdaOriginResponse?.codeTreeshake,
         },
         allowOnlyLatest
       );

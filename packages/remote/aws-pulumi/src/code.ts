@@ -12,7 +12,6 @@ export interface GenerateCodeOptions {
   define?: Record<string, string>;
   minify?: boolean;
   sourcemap?: boolean;
-  treeshake?: boolean;
 }
 
 export async function generateCode(input: string, options?: GenerateCodeOptions): Promise<Code[]> {
@@ -20,7 +19,6 @@ export async function generateCode(input: string, options?: GenerateCodeOptions)
     input,
     platform: options?.platform,
     external: () => false,
-    treeshake: options?.treeshake,
     transform: {
       target: options?.target,
     },
