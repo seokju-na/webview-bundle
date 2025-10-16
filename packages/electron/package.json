@@ -10,6 +10,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./preload": {
+      "import": "./dist/preload/index.js",
+      "require": "./dist/preload/index.cjs"
+    },
+    "./renderer": {
+      "import": "./dist/renderer/index.js",
+      "require": "./dist/renderer/index.cjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [

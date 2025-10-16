@@ -1,4 +1,5 @@
 import { type BundleSource, type Remote, Updater } from '@webview-bundle/node';
+import { registerIpc } from './ipc.js';
 import { type Protocol, registerProtocol } from './protocol.js';
 import { type RemoteOptions, remote } from './remote.js';
 import { bundleSource, type SourceOptions } from './source.js';
@@ -55,7 +56,9 @@ export class WebviewBundle {
 }
 
 export function webviewBundle(config: WebviewBundleConfig): WebviewBundle {
-  return new WebviewBundle(config);
+  const instance = new WebviewBundle(config);
+  registerIpc(instance);
+  return instance;
 }
 
 export const wvb: typeof webviewBundle = webviewBundle;

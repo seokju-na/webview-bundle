@@ -1,3 +1,4 @@
+export type { IpcChannel } from './ipc-spec.js';
 export type {
   Protocol,
   ProtocolHandler,
