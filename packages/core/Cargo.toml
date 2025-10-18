@@ -14,9 +14,13 @@ doctest = false
 
 [dependencies]
 async-trait      = { workspace = true }
+base64ct         = { workspace = true, optional = true }
 bincode          = { workspace = true }
 bytes            = { workspace = true, optional = true }
 dashmap          = { workspace = true, optional = true }
+ecdsa            = { workspace = true, optional = true }
+ed25519          = { workspace = true, optional = true }
+ed25519-dalek    = { workspace = true, optional = true }
 futures-util     = { workspace = true, optional = true }
 http             = { workspace = true }
 infer            = { workspace = true, optional = true }
@@ -26,6 +30,7 @@ percent-encoding = { workspace = true, optional = true }
 reqwest          = { workspace = true, default-features = false, optional = true }
 serde            = { workspace = true, optional = true }
 serde_json       = { workspace = true, optional = true }
+sha3             = { workspace = true, optional = true }
 thiserror        = { workspace = true }
 tokio            = { workspace = true, optional = true }
 twox-hash        = { workspace = true, features = ["serialize"] }
@@ -40,6 +45,28 @@ _opendal = ["dep:opendal"]
 _reqwest = ["dep:reqwest"]
 _serde = ["dep:serde", "dep:serde_json"]
 async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs", "tokio/sync"]
+full = [
+  "async",
+  "integrity",
+  "integrity-signature",
+  "integrity-signature-signing",
+  "source",
+  "protocol",
+  "protocol-local",
+  "remote",
+  "remote-uploader-s3",
+]
+integrity = ["_serde", "sha3", "base64ct", "base64ct/alloc"]
+integrity-signature = [
+  "integrity",
+  "ecdsa",
+  "ecdsa/verifying",
+  "ed25519",
+  "ed25519-dalek",
+  "ed25519-dalek/pkcs8",
+  "ed25519-dalek/pem",
+]
+integrity-signature-signing = ["integrity-signature", "ecdsa/signing"]
 protocol = ["source", "dep:bytes", "dep:infer", "dep:percent-encoding"]
 protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
 remote = [

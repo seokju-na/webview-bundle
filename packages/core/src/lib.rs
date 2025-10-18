@@ -23,6 +23,8 @@ pub use writer::*;
 pub use http;
 
 mod consts;
+#[cfg(feature = "integrity")]
+pub mod integrity;
 #[cfg(feature = "protocol")]
 pub mod protocol;
 #[cfg(feature = "remote")]

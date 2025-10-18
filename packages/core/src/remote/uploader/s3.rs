@@ -16,6 +16,8 @@ pub struct S3UploaderConfig {
   pub role_arn: Option<String>,
   pub role_session_name: Option<String>,
   pub external_id: Option<String>,
+  #[cfg(feature = "integrity")]
+  pub integrity_algorithm: Option<crate::integrity::Algorithm>,
   pub(crate) opendal: crate::remote::opendal::OpendalConfig,
 }
 

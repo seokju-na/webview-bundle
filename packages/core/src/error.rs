@@ -62,6 +62,18 @@ pub enum Error {
   #[cfg(feature = "_opendal")]
   #[error("opendal error: {0}")]
   Opendal(#[from] opendal::Error),
+  #[cfg(feature = "integrity-signature")]
+  #[error("invalid signing key")]
+  InvalidSigningKey,
+  #[cfg(feature = "integrity-signature")]
+  #[error("invalid verifying key")]
+  InvalidVerifyingKey,
+  #[cfg(feature = "integrity-signature")]
+  #[error("invalid signature")]
+  InvalidSignature,
+  #[cfg(feature = "integrity-signature")]
+  #[error("verify failed")]
+  VerifyFailed,
 }
 
 impl Error {

@@ -4,9 +4,13 @@ resolver = "2"
 
 [workspace.dependencies]
 async-trait          = "0.1"
+base64ct             = "1.8.0"
 bincode              = "2.0.1"
 bytes                = { version = "1" }
 dashmap              = "7.0.0-rc2"
+ecdsa                = "0.17.0-rc.7"
+ed25519              = "2.2.3"
+ed25519-dalek        = "2.2.0"
 futures-util         = "0.3.31"
 http                 = { version = "1" }
 infer                = "0.19.0"
@@ -19,6 +23,7 @@ percent-encoding     = "2.3.2"
 reqwest              = { version = "0.12", default-features = false }
 serde                = "1.0"
 serde_json           = "1.0"
+sha3                 = "0.10.8"
 tauri                = "2.8.5"
 tauri-build          = "2.4.1"
 tauri-plugin         = "2.4.0"

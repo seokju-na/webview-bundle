@@ -25,7 +25,7 @@ mod remote_uploader_tests {
         .join("bundles")
         .join("builtin")
         .join("nextjs")
-        .join("../../../nextjs.wvb"),
+        .join("nextjs_1.0.0.wvb"),
     )
     .unwrap();
     let bundle = Reader::<Bundle>::read(&mut BundleReader::new(&mut reader)).unwrap();
