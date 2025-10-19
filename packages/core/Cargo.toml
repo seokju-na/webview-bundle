@@ -24,8 +24,12 @@ ed25519-dalek    = { workspace = true, optional = true }
 futures-util     = { workspace = true, optional = true }
 http             = { workspace = true }
 infer            = { workspace = true, optional = true }
+k256             = { workspace = true, optional = true }
 lz4_flex         = { workspace = true }
 opendal          = { workspace = true, optional = true }
+p256             = { workspace = true, optional = true }
+p384             = { workspace = true, optional = true }
+p521             = { workspace = true, optional = true }
 percent-encoding = { workspace = true, optional = true }
 reqwest          = { workspace = true, default-features = false, optional = true }
 serde            = { workspace = true, optional = true }
@@ -49,7 +53,11 @@ full = [
   "async",
   "integrity",
   "integrity-signature",
-  "integrity-signature-signing",
+  "integrity-signature-ecdsa-p256",
+  "integrity-signature-ecdsa-p384",
+  "integrity-signature-ecdsa-p521",
+  "integrity-signature-ecdsa-k256",
+  "integrity-signature-ed25519",
   "source",
   "protocol",
   "protocol-local",
@@ -57,16 +65,12 @@ full = [
   "remote-uploader-s3",
 ]
 integrity = ["_serde", "sha3", "base64ct", "base64ct/alloc"]
-integrity-signature = [
-  "integrity",
-  "ecdsa",
-  "ecdsa/verifying",
-  "ed25519",
-  "ed25519-dalek",
-  "ed25519-dalek/pkcs8",
-  "ed25519-dalek/pem",
-]
-integrity-signature-signing = ["integrity-signature", "ecdsa/signing"]
+integrity-signature = ["integrity"]
+integrity-signature-ecdsa-k256 = ["integrity-signature", "k256"]
+integrity-signature-ecdsa-p256 = ["integrity-signature", "p256"]
+integrity-signature-ecdsa-p384 = ["integrity-signature", "p384"]
+integrity-signature-ecdsa-p521 = ["integrity-signature", "p521"]
+integrity-signature-ed25519 = ["integrity-signature", "ed25519", "ed25519-dalek", "ed25519-dalek/pkcs8"]
 protocol = ["source", "dep:bytes", "dep:infer", "dep:percent-encoding"]
 protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
 remote = [
