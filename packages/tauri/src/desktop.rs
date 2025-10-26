@@ -45,7 +45,7 @@ impl<R: Runtime> WebviewBundle<R> {
     let remote = config.build_remote()?.map(Arc::new);
     let updater = remote
       .clone()
-      .map(|x| Updater::new(source.clone(), x))
+      .map(|x| Updater::new(source.clone(), x, None))
       .map(Arc::new);
     Ok(Self {
       _app: app,

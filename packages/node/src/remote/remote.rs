@@ -1,17 +1,18 @@
 use crate::bundle::JsBundle;
+use crate::js::{JsCallback, JsCallbackExt};
 use crate::remote::JsHttpOptions;
 use napi::bindgen_prelude::*;
-use napi::threadsafe_function::ThreadsafeCallContext;
-use napi::threadsafe_function::ThreadsafeFunctionCallMode;
 use napi::Status;
 use napi_derive::napi;
 use std::sync::Arc;
 use webview_bundle::remote::HttpConfig;
 use webview_bundle::remote::{Remote, RemoteBundleInfo};
 
-#[napi(object, js_name = "RemoteOptions")]
+#[napi(object, js_name = "RemoteOptions", object_to_js = false)]
 pub struct JsRemoteOptions {
   pub http: Option<JsHttpOptions>,
+  #[napi(ts_type = "(data: RemoteOnDownloadData) => void")]
+  pub on_download: Option<JsCallback<JsRemoteOnDownloadData, ()>>,
 }
 
 #[napi(object, js_name = "RemoteOnDownloadData")]
@@ -55,35 +56,22 @@ pub struct JsRemote {
 #[napi]
 impl JsRemote {
   #[napi(constructor)]
-  pub fn new(
-    endpoint: String,
-    options: Option<JsRemoteOptions>,
-    #[napi(ts_arg_type = "(data: RemoteOnDownloadData) => void")] on_download: Option<
-      Function<JsRemoteOnDownloadData, ()>,
-    >,
-  ) -> crate::Result<JsRemote> {
+  pub fn new(endpoint: String, options: Option<JsRemoteOptions>) -> crate::Result<JsRemote> {
     let mut builder = Remote::builder().endpoint(endpoint);
-    if let Some(on_download) = on_download {
-      let cb = on_download.build_threadsafe_function().build_callback(
-        |ctx: ThreadsafeCallContext<(u64, u64)>| {
-          Ok(JsRemoteOnDownloadData {
-            downloaded_bytes: ctx.value.0 as u32,
-            total_bytes: ctx.value.1 as u32,
-          })
-        },
-      )?;
-      builder = builder.on_download(move |downloaded_bytes, total_bytes| {
-        cb.call(
-          (downloaded_bytes, total_bytes),
-          ThreadsafeFunctionCallMode::NonBlocking,
-        );
-      });
-    }
     if let Some(options) = options {
       if let Some(http) = options.http {
         builder = builder.http(
           HttpConfig::try_from(http).map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?,
         );
+      }
+      if let Some(on_download) = options.on_download {
+        builder = builder.on_download(move |downloaded_bytes, total_bytes| {
+          let on_download_fn = Arc::clone(&on_download);
+          let _ = on_download_fn.invoke_sync(JsRemoteOnDownloadData {
+            downloaded_bytes: downloaded_bytes as u32,
+            total_bytes: total_bytes as u32,
+          });
+        });
       }
     }
     let inner = builder.build()?;
@@ -108,9 +96,9 @@ impl JsRemote {
   pub async fn download(
     &self,
     bundle_name: String,
-  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle)> {
-    let (info, inner) = self.inner.download(&bundle_name).await?;
-    Ok((info.into(), JsBundle { inner }))
+  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle, Buffer)> {
+    let (info, inner, data) = self.inner.download(&bundle_name).await?;
+    Ok((info.into(), JsBundle { inner }, data.into()))
   }
 
   #[napi]
@@ -118,8 +106,8 @@ impl JsRemote {
     &self,
     bundle_name: String,
     version: String,
-  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle)> {
-    let (info, inner) = self.inner.download_version(&bundle_name, &version).await?;
-    Ok((info.into(), JsBundle { inner }))
+  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle, Buffer)> {
+    let (info, inner, data) = self.inner.download_version(&bundle_name, &version).await?;
+    Ok((info.into(), JsBundle { inner }, data.into()))
   }
 }

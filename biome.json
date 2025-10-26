@@ -19,7 +19,7 @@
       "!**/*.cjs",
       "!**/*.d.ts",
       "!**/*.d.cts",
-      "!**/permissions/**/schema.json"
+      "!packages/tauri/permissions/**/*"
     ]
   },
   "formatter": {

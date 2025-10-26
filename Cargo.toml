@@ -4,6 +4,7 @@ resolver = "2"
 
 [workspace.dependencies]
 async-trait          = "0.1"
+base64ct             = "1.8.0"
 bincode              = "2.0.1"
 bytes                = { version = "1" }
 dashmap              = "7.0.0-rc2"
@@ -15,10 +16,13 @@ napi                 = "=3.2.4"
 napi-build           = "2.2.3"
 napi-derive          = "=3.2.4"
 opendal              = "0.54"
+p256                 = "0.13.2"
 percent-encoding     = "2.3.2"
+rand_core            = "0.6"
 reqwest              = { version = "0.12", default-features = false }
 serde                = "1.0"
 serde_json           = "1.0"
+sha3                 = "0.10.8"
 tauri                = "2.8.5"
 tauri-build          = "2.4.1"
 tauri-plugin         = "2.4.0"

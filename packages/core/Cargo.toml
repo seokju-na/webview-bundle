@@ -14,6 +14,7 @@ doctest = false
 
 [dependencies]
 async-trait      = { workspace = true }
+base64ct         = { workspace = true, optional = true }
 bincode          = { workspace = true }
 bytes            = { workspace = true, optional = true }
 dashmap          = { workspace = true, optional = true }
@@ -26,12 +27,15 @@ percent-encoding = { workspace = true, optional = true }
 reqwest          = { workspace = true, default-features = false, optional = true }
 serde            = { workspace = true, optional = true }
 serde_json       = { workspace = true, optional = true }
+sha3             = { workspace = true, optional = true }
 thiserror        = { workspace = true }
 tokio            = { workspace = true, optional = true }
 twox-hash        = { workspace = true, features = ["serialize"] }
 urlencoding      = { workspace = true, optional = true }
 
 [dev-dependencies]
+p256      = { workspace = true, features = ["pem", "ecdsa"] }
+rand_core = { workspace = true, features = ["getrandom"] }
 tiny_http = { workspace = true }
 tokio     = { workspace = true, features = ["full"] }
 
@@ -40,6 +44,8 @@ _opendal = ["dep:opendal"]
 _reqwest = ["dep:reqwest"]
 _serde = ["dep:serde", "dep:serde_json"]
 async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs", "tokio/sync"]
+full = ["async", "integrity", "source", "protocol", "protocol-local", "updater", "remote", "remote-uploader-s3"]
+integrity = ["_serde", "sha3", "base64ct", "base64ct/alloc"]
 protocol = ["source", "dep:bytes", "dep:infer", "dep:percent-encoding"]
 protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
 remote = [

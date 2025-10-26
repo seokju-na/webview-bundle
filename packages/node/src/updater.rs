@@ -1,7 +1,14 @@
+use crate::integrity::JsAlgorithm;
+use crate::js::{JsCallback, JsCallbackExt};
 use crate::remote::{JsRemote, JsRemoteBundleInfo};
 use crate::source::JsBundleSource;
+use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use webview_bundle::updater::{BundleUpdateInfo, Updater};
+use std::sync::Arc;
+use webview_bundle::integrity::VerifyArgs;
+use webview_bundle::updater::{
+  BundleUpdateInfo, IntegrityPolicy, IntegrityVerifier, Updater, UpdaterConfig,
+};
 
 #[napi(object, js_name = "BundleUpdateInfo")]
 pub struct JsBundleUpdateInfo {
@@ -36,6 +43,107 @@ impl From<JsBundleUpdateInfo> for BundleUpdateInfo {
   }
 }
 
+#[napi(object, js_name = "VerifyArgs")]
+pub struct JsVerifyArgs {
+  pub original: String,
+  pub signature: String,
+}
+
+impl From<&VerifyArgs> for JsVerifyArgs {
+  fn from(value: &VerifyArgs) -> Self {
+    Self {
+      original: value.original.to_string(),
+      signature: value.signature.to_string(),
+    }
+  }
+}
+
+#[napi(
+  object,
+  js_name = "IntegrityWithSignatureVerifier",
+  object_to_js = false
+)]
+pub struct JsIntegrityWithSignatureVerifier {
+  pub algorithm: JsAlgorithm,
+  #[napi(ts_type = "(args: VerifierArgs) => Promise<boolean>")]
+  pub verifier: JsCallback<JsVerifyArgs, Promise<bool>>,
+}
+
+#[napi(string_enum = "lowercase", js_name = "IntegrityVerifierMode")]
+pub enum JsIntegrityVerifierMode {
+  Default,
+}
+
+impl From<JsIntegrityVerifierMode> for IntegrityVerifier {
+  fn from(value: JsIntegrityVerifierMode) -> Self {
+    match value {
+      JsIntegrityVerifierMode::Default => Self::default(),
+    }
+  }
+}
+
+#[napi(string_enum = "lowercase", js_name = "IntegrityPolicy")]
+pub enum JsIntegrityPolicy {
+  Strict,
+  Optional,
+  None,
+}
+
+impl From<IntegrityPolicy> for JsIntegrityPolicy {
+  fn from(value: IntegrityPolicy) -> Self {
+    match value {
+      IntegrityPolicy::Strict => Self::Strict,
+      IntegrityPolicy::Optional => Self::Optional,
+      IntegrityPolicy::None => Self::None,
+    }
+  }
+}
+
+impl From<JsIntegrityPolicy> for IntegrityPolicy {
+  fn from(value: JsIntegrityPolicy) -> Self {
+    match value {
+      JsIntegrityPolicy::Strict => Self::Strict,
+      JsIntegrityPolicy::Optional => Self::Optional,
+      JsIntegrityPolicy::None => Self::None,
+    }
+  }
+}
+
+#[napi(object, js_name = "UpdaterOptions", object_to_js = false)]
+#[derive(Default)]
+pub struct JsUpdaterOptions {
+  pub integrity_checker: Option<Either<JsIntegrityVerifierMode, JsIntegrityWithSignatureVerifier>>,
+  pub integrity_policy: Option<JsIntegrityPolicy>,
+}
+
+impl From<JsUpdaterOptions> for UpdaterConfig {
+  fn from(value: JsUpdaterOptions) -> Self {
+    let mut config = UpdaterConfig::new();
+    if let Some(checker) = value.integrity_checker {
+      match checker {
+        Either::A(x) => config = config.integrity_checker(x.into()),
+        Either::B(x) => {
+          config = config.integrity_checker(IntegrityVerifier::WithSignature {
+            algorithm: x.algorithm.into(),
+            verify: Arc::new(move |args: &VerifyArgs| {
+              let verify_fn = Arc::clone(&x.verifier);
+              let args = JsVerifyArgs::from(args);
+              Box::pin(async move {
+                let ret = verify_fn.invoke_async(args).await?.await?;
+                Ok(ret)
+              })
+            }),
+          })
+        }
+      }
+    }
+    if let Some(integrity_policy) = value.integrity_policy {
+      config = config.integrity_policy(integrity_policy.into());
+    }
+    config
+  }
+}
+
 #[napi(js_name = "Updater")]
 pub struct JsUpdater {
   pub(crate) inner: Updater,
@@ -44,12 +152,16 @@ pub struct JsUpdater {
 #[napi]
 impl JsUpdater {
   #[napi(constructor)]
-  pub fn new(source: &JsBundleSource, remote: &JsRemote) -> JsUpdater {
+  pub fn new(
+    source: &JsBundleSource,
+    remote: &JsRemote,
+    options: Option<JsUpdaterOptions>,
+  ) -> crate::Result<JsUpdater> {
     let source = source.inner.clone();
     let remote = remote.inner.clone();
-    JsUpdater {
-      inner: Updater::new(source, remote),
-    }
+    Ok(JsUpdater {
+      inner: Updater::new(source, remote, options.map(|x| x.into())),
+    })
   }
 
   #[napi]

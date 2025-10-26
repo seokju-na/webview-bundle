@@ -15,18 +15,11 @@ crate-type = ["cdylib"]
 doctest    = false
 
 [dependencies]
-napi = { workspace = true, features = ["napi8", "async"] }
-napi-derive = { workspace = true }
-thiserror = { workspace = true }
-tokio = { workspace = true, features = ["fs", "io-util"] }
-webview-bundle = { workspace = true, features = [
-  "source",
-  "protocol",
-  "protocol-local",
-  "remote",
-  "remote-uploader-s3",
-  "updater",
-] }
+napi           = { workspace = true, features = ["napi8", "async"] }
+napi-derive    = { workspace = true }
+thiserror      = { workspace = true }
+tokio          = { workspace = true, features = ["fs", "io-util"] }
+webview-bundle = { workspace = true, features = ["full"] }
 
 [build-dependencies]
 napi-build = { workspace = true }

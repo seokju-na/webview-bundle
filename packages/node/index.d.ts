@@ -64,11 +64,11 @@ export declare class LocalProtocol {
 export type JsLocalProtocol = LocalProtocol
 
 export declare class Remote {
-  constructor(endpoint: string, options?: RemoteOptions | undefined | null, onDownload?: (data: RemoteOnDownloadData) => void)
+  constructor(endpoint: string, options?: RemoteOptions | undefined | null)
   listBundles(): Promise<Array<string>>
   getInfo(bundleName: string): Promise<RemoteBundleInfo>
-  download(bundleName: string): Promise<[RemoteBundleInfo, Bundle]>
-  downloadVersion(bundleName: string, version: string): Promise<[RemoteBundleInfo, Bundle]>
+  download(bundleName: string): Promise<[RemoteBundleInfo, Bundle, Buffer]>
+  downloadVersion(bundleName: string, version: string): Promise<[RemoteBundleInfo, Bundle, Buffer]>
 }
 export type JsRemote = Remote
 
@@ -79,13 +79,17 @@ export declare class S3Uploader {
 export type JsS3Uploader = S3Uploader
 
 export declare class Updater {
-  constructor(source: BundleSource, remote: Remote)
+  constructor(source: BundleSource, remote: Remote, options?: UpdaterOptions | undefined | null)
   listRemotes(): Promise<Array<string>>
   getUpdate(bundleName: string): Promise<BundleUpdateInfo>
   downloadUpdate(bundleName: string, version?: string | undefined | null): Promise<RemoteBundleInfo>
   applyUpdate(bundleName: string, version: string): Promise<void>
 }
 export type JsUpdater = Updater
+
+export type Algorithm =  'sha256'|
+'sha384'|
+'sha512';
 
 export interface BuildHeaderOptions {
   checksumSeed?: number
@@ -153,6 +157,22 @@ export interface IndexEntry {
   headers: Record<string, string>
 }
 
+export interface IntegrityMaker {
+  algorithm: Algorithm
+  sign?: JsCallback<SignArgs, Promise<string>>
+}
+
+export type IntegrityPolicy =  'strict'|
+'optional'|
+'none';
+
+export type IntegrityVerifierMode =  'default';
+
+export interface IntegrityWithSignatureVerifier {
+  algorithm: Algorithm
+  verifier: (args: VerifierArgs) => Promise<boolean>
+}
+
 export interface ListBundles {
   builtin: Array<string>
   remote: Array<string>
@@ -175,6 +195,7 @@ export interface RemoteOnDownloadData {
 
 export interface RemoteOptions {
   http?: HttpOptions
+  onDownload?: (data: RemoteOnDownloadData) => void
 }
 
 export interface S3UploaderOptions {
@@ -186,10 +207,25 @@ export interface S3UploaderOptions {
   roleArn?: string
   roleSessionName?: string
   externalId?: string
+  integrityMaker?: IntegrityMaker
   writeConcurrent?: number
   writeChunk?: number
   cacheControl?: string
   http?: HttpOptions
+}
+
+export interface SignArgs {
+  integrity: string
+}
+
+export interface UpdaterOptions {
+  integrityChecker?: IntegrityVerifierMode | IntegrityWithSignatureVerifier
+  integrityPolicy?: IntegrityPolicy
+}
+
+export interface VerifyArgs {
+  original: string
+  signature: string
 }
 
 export type Version =  'v1';

@@ -1,5 +1,5 @@
 mod integrity;
-mod s3;
+mod verify;
 
 pub use integrity::*;
-pub use s3::*;
+pub use verify::*;

@@ -102,7 +102,10 @@ impl Remote {
   }
 
   /// GET /bundles/:name
-  pub async fn download(&self, bundle_name: &str) -> crate::Result<(RemoteBundleInfo, Bundle)> {
+  pub async fn download(
+    &self,
+    bundle_name: &str,
+  ) -> crate::Result<(RemoteBundleInfo, Bundle, Vec<u8>)> {
     self.download_inner(format!("/bundles/{bundle_name}")).await
   }
 
@@ -111,7 +114,7 @@ impl Remote {
     &self,
     bundle_name: &str,
     version: &str,
-  ) -> crate::Result<(RemoteBundleInfo, Bundle)> {
+  ) -> crate::Result<(RemoteBundleInfo, Bundle, Vec<u8>)> {
     self
       .download_inner(format!("/bundles/{bundle_name}/{version}"))
       .await
@@ -172,7 +175,10 @@ impl Remote {
     crate::Error::remote_http(status, message)
   }
 
-  async fn download_inner(&self, path: String) -> crate::Result<(RemoteBundleInfo, Bundle)> {
+  async fn download_inner(
+    &self,
+    path: String,
+  ) -> crate::Result<(RemoteBundleInfo, Bundle, Vec<u8>)> {
     let resp = self.client.get(self.api_url(path)).send().await?;
     if !resp.status().is_success() {
       return Err(self.parse_err(resp).await);
@@ -190,8 +196,8 @@ impl Remote {
         on_download(downloaded_bytes, total_size);
       }
     }
-    let mut reader = Cursor::new(data);
+    let mut reader = Cursor::new(&data);
     let bundle = Reader::<Bundle>::read(&mut BundleReader::new(&mut reader))?;
-    Ok((info, bundle))
+    Ok((info, bundle, data))
   }
 }

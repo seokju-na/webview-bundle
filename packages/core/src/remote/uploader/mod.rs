@@ -1,7 +1,12 @@
 use async_trait::async_trait;
 
+#[cfg(feature = "integrity")]
+mod integrity;
 #[cfg(feature = "remote-uploader-s3")]
 mod s3;
+
+#[cfg(feature = "integrity")]
+pub use integrity::*;
 #[cfg(feature = "remote-uploader-s3")]
 pub use s3::*;
 
