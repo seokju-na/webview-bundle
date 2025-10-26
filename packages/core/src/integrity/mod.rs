@@ -1,6 +1,5 @@
 mod integrity;
+mod verify;
 
 pub use integrity::*;
-
-#[cfg(feature = "integrity-signature")]
-pub mod signature;
+pub use verify::*;

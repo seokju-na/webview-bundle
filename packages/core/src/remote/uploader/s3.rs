@@ -1,10 +1,12 @@
+#[cfg(feature = "integrity")]
+use crate::remote::uploader::integrity::IntegrityMaker;
 use crate::remote::uploader::Uploader;
 use crate::remote::HttpConfig;
 use crate::{impl_opendal_config_for_builder, BundleWriter, Writer, MIME_TYPE};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-#[derive(Default, Clone)]
+#[derive(Default)]
 #[non_exhaustive]
 pub struct S3UploaderConfig {
   pub access_key_id: Option<String>,
@@ -17,7 +19,7 @@ pub struct S3UploaderConfig {
   pub role_session_name: Option<String>,
   pub external_id: Option<String>,
   #[cfg(feature = "integrity")]
-  pub integrity_algorithm: Option<crate::integrity::Algorithm>,
+  pub integrity_maker: Option<IntegrityMaker>,
   pub(crate) opendal: crate::remote::opendal::OpendalConfig,
 }
 
@@ -70,6 +72,12 @@ impl S3UploaderBuilder {
 
   pub fn external_id(mut self, external_id: impl Into<String>) -> Self {
     self.config.external_id = Some(external_id.into());
+    self
+  }
+
+  #[cfg(feature = "integrity")]
+  pub fn integrity_maker(mut self, integrity_maker: IntegrityMaker) -> Self {
+    self.config.integrity_maker = Some(integrity_maker);
     self
   }
 
@@ -142,22 +150,32 @@ impl S3Uploader {
 
 #[async_trait]
 impl Uploader for S3Uploader {
-  // TODO: integrity
   async fn upload_bundle(
     &self,
     bundle_name: &str,
     version: &str,
     bundle: &crate::Bundle,
   ) -> crate::Result<()> {
+    let mut data = vec![];
+    BundleWriter::new(&mut data).write(bundle)?;
+
+    let mut user_metadata = vec![
+      ("webview-bundle-name".to_string(), bundle_name.to_string()),
+      ("webview-bundle-version".to_string(), version.to_string()),
+    ];
+    #[cfg(feature = "integrity")]
+    {
+      if let Some(integrity_maker) = &self.config.integrity_maker {
+        let integrity = integrity_maker.make(&data).await?;
+        user_metadata.push(("webview-bundle-integrity".to_string(), integrity));
+      }
+    }
     let path = self.config.opendal.resolve_path(bundle_name, version);
     let mut writer = self
       .op
       .writer_with(&path)
       .content_type(MIME_TYPE)
-      .user_metadata([
-        ("webview-bundle-name".to_string(), bundle_name.to_string()),
-        ("webview-bundle-version".to_string(), version.to_string()),
-      ]);
+      .user_metadata(user_metadata);
     if let Some(concurrent) = self.config.opendal.write_concurrent {
       writer = writer.concurrent(concurrent);
     }
@@ -175,8 +193,6 @@ impl Uploader for S3Uploader {
       writer = writer.cache_control(cache_control);
     }
     let mut w = writer.await?;
-    let mut data = vec![];
-    BundleWriter::new(&mut data).write(bundle)?;
     w.write(data).await?;
     w.close().await?;
     Ok(())

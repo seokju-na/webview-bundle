@@ -33,8 +33,8 @@ pub enum Error {
   #[error("bundle not found")]
   BundleNotFound,
   #[cfg(feature = "_serde")]
-  #[error("json error: {0}")]
-  Json(#[from] serde_json::Error),
+  #[error("serde json error: {0}")]
+  SerdeJson(#[from] serde_json::Error),
   #[cfg(feature = "protocol-local")]
   #[error("cannot resolve local host")]
   CannotResolveLocalHost,
@@ -62,18 +62,14 @@ pub enum Error {
   #[cfg(feature = "_opendal")]
   #[error("opendal error: {0}")]
   Opendal(#[from] opendal::Error),
-  #[cfg(feature = "integrity-signature")]
-  #[error("invalid signing key")]
-  InvalidSigningKey,
-  #[cfg(feature = "integrity-signature")]
-  #[error("invalid verifying key")]
-  InvalidVerifyingKey,
-  #[cfg(feature = "integrity-signature")]
-  #[error("invalid signature")]
-  InvalidSignature,
-  #[cfg(feature = "integrity-signature")]
-  #[error("verify failed")]
-  VerifyFailed,
+  #[cfg(feature = "integrity")]
+  #[error("invalid integrity: {0}")]
+  InvalidIntegrity(String),
+  #[cfg(feature = "integrity")]
+  #[error("integrity verify failed")]
+  IntegrityVerifyFailed,
+  #[error("unknown error: {0}")]
+  Unknown(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 impl Error {
@@ -93,5 +89,16 @@ impl Error {
       status: status.as_u16(),
       message: message.map(|x| x.into()),
     }
+  }
+
+  #[cfg(feature = "integrity")]
+  pub(crate) fn invalid_integrity(message: impl Into<String>) -> Self {
+    Self::InvalidIntegrity(message.into())
+  }
+
+  pub(crate) fn unknown(
+    error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
+  ) -> Self {
+    Self::Unknown(error.into())
   }
 }

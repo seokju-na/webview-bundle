@@ -1,11 +1,12 @@
 use crate::bundle::JsBundle;
+use crate::remote::uploader::JsIntegrityMaker;
 use crate::remote::JsHttpOptions;
 use napi_derive::napi;
 use std::sync::Arc;
 use webview_bundle::remote::uploader::{S3Uploader, S3UploaderBuilder, Uploader};
 
 #[derive(Default)]
-#[napi(object, js_name = "S3UploaderOptions")]
+#[napi(object, js_name = "S3UploaderOptions", object_to_js = false)]
 pub struct JsS3UploaderOptions {
   pub access_key_id: Option<String>,
   pub secret_access_key: Option<String>,
@@ -15,6 +16,7 @@ pub struct JsS3UploaderOptions {
   pub role_arn: Option<String>,
   pub role_session_name: Option<String>,
   pub external_id: Option<String>,
+  pub integrity_maker: Option<JsIntegrityMaker>,
 
   // config for opendal
   pub write_concurrent: Option<u32>,
@@ -62,6 +64,9 @@ impl TryFrom<JsS3UploaderOptions> for S3UploaderBuilder {
     }
     if let Some(http) = value.http {
       builder = builder.http(http.try_into()?);
+    }
+    if let Some(integrity_maker) = value.integrity_maker {
+      builder = builder.integrity_maker(integrity_maker.into());
     }
     Ok(builder)
   }
