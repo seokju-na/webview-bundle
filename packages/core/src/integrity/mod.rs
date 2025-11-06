@@ -1,5 +1,7 @@
+mod checker;
 mod integrity;
-mod verify;
+mod policy;
 
+pub use checker::*;
 pub use integrity::*;
-pub use verify::*;
+pub use policy::*;

@@ -8,6 +8,7 @@ base64ct             = "1.8.0"
 bincode              = "2.0.1"
 bytes                = { version = "1" }
 dashmap              = "7.0.0-rc2"
+ed25519-dalek        = "2.2.0"
 futures-util         = "0.3.31"
 http                 = { version = "1" }
 infer                = "0.19.0"
@@ -18,7 +19,6 @@ napi-derive          = "=3.2.4"
 opendal              = "0.54"
 p256                 = "0.13.2"
 percent-encoding     = "2.3.2"
-rand_core            = "0.6"
 reqwest              = { version = "0.12", default-features = false }
 serde                = "1.0"
 serde_json           = "1.0"
