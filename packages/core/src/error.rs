@@ -75,6 +75,9 @@ pub enum Error {
   #[error("invalid signing key: {0}")]
   InvalidSigningKey(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
   #[cfg(feature = "signature")]
+  #[error("signature sign failed: {0}")]
+  SignatureSignFailed(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
+  #[cfg(feature = "signature")]
   #[error("invalid verifying key: {0}")]
   InvalidVerifyingKey(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
   #[error("unknown error: {0}")]
@@ -110,6 +113,13 @@ impl Error {
     error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
   ) -> Self {
     Self::InvalidSigningKey(error.into())
+  }
+
+  #[cfg(feature = "signature")]
+  pub(crate) fn signature_sign_failed(
+    error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
+  ) -> Self {
+    Self::SignatureSignFailed(error.into())
   }
 
   #[cfg(feature = "signature")]

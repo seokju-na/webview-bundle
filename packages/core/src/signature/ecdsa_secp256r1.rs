@@ -42,7 +42,10 @@ impl EcdsaSecp256r1Signer {
 
 impl SignatureSigner for EcdsaSecp256r1Signer {
   async fn sign(&self, _bundle: &Bundle, data: &[u8]) -> crate::Result<String> {
-    let signature: Signature = self.key.sign(data);
+    let signature: Signature = self
+      .key
+      .try_sign(data)
+      .map_err(crate::Error::signature_sign_failed)?;
     let encoded = Base64::encode_string(&signature.to_bytes());
     Ok(encoded)
   }

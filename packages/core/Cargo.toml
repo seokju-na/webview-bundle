@@ -68,14 +68,14 @@ remote = [
   "reqwest/json",
   "reqwest/hickory-dns",
   "reqwest/stream",
-  "urlencoding",
+  "dep:urlencoding",
   "dep:futures-util",
   "dep:opendal",
 ]
 remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
 signature = []
-signature-ecdsa_secp256r1 = ["p256"]
-signature-edd25519 = ["ed25519-dalek", "ed25519-dalek/pem", "ed25519-dalek/pkcs8"]
+signature-ecdsa_secp256r1 = ["dep:p256"]
+signature-edd25519 = ["dep:ed25519-dalek", "ed25519-dalek/pem"]
 source = ["dep:dashmap", "async", "_serde"]
 updater = ["remote", "source"]
 
