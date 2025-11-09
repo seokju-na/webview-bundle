@@ -37,7 +37,21 @@ export class Changes {
     if (tag != null) {
       revwalk.hide(tag.id());
     }
-    const changes = [...revwalk]
+    const changes = Changes.getChangesFromCommits(repo, [...revwalk]).filter(change => {
+      if (change.commit.scopes.length === 0) {
+        return false;
+      }
+      return change.commit.scopes.some(x => scopes.includes(x));
+    });
+    return new Changes(changes);
+  }
+
+  static fromCommits(repo: Repository, commits: string[]): Changes {
+    return new Changes(Changes.getChangesFromCommits(repo, commits));
+  }
+
+  private static getChangesFromCommits(repo: Repository, commits: string[]): Change[] {
+    const changes = commits
       .map(oid => repo.findCommit(oid))
       .filter(isNotNil)
       .map(commit => {
@@ -47,14 +61,8 @@ export class Changes {
           return null;
         }
       })
-      .filter(isNotNil)
-      .filter(change => {
-        if (change.commit.scopes.length === 0) {
-          return false;
-        }
-        return change.commit.scopes.some(x => scopes.includes(x));
-      });
-    return new Changes(changes);
+      .filter(isNotNil);
+    return changes;
   }
 
   constructor(changes: Change[]) {

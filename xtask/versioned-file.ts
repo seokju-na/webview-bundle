@@ -22,6 +22,7 @@ export class VersionedFile {
       {
         cwd: ROOT_DIR,
         onlyFiles: true,
+        ignore: ['**/node_modules/**', '**/target', '**/dist'],
       }
     );
     const versionedFiles = await Promise.all(files.map(x => VersionedFile.load(x)));
