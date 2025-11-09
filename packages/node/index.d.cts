@@ -79,7 +79,7 @@ export declare class S3Uploader {
 export type JsS3Uploader = S3Uploader
 
 export declare class Updater {
-  constructor(source: BundleSource, remote: Remote)
+  constructor(source: BundleSource, remote: Remote, options?: UpdaterOptions | undefined | null)
   listRemotes(): Promise<Array<string>>
   getUpdate(bundleName: string): Promise<BundleUpdateInfo>
   downloadUpdate(bundleName: string, version?: string | undefined | null): Promise<RemoteBundleInfo>
@@ -158,6 +158,35 @@ export type IntegrityAlgorithm =  'sha256'|
 'sha384'|
 'sha512';
 
+export interface IntegrityMakerOptions {
+  algorithm?: IntegrityAlgorithm
+}
+
+export type IntegrityPolicy =  'strict'|
+'optional'|
+'none';
+
+export type JsSignatureAlgorithm =  'ecdsaSecp256R1'|
+'ecdsaSecp384R1'|
+'ed25519'|
+'rsaPkcs1V15'|
+'rsaPss';
+
+export type JsSigningKeyFormat =  'sec1Der'|
+'sec1Pem'|
+'pkcs1Der'|
+'pkcs1Pem'|
+'pkcs8Der'|
+'pkcs8Pem'|
+'raw';
+
+export type JsVerifyingKeyFormat =  'spkiDer'|
+'spkiPem'|
+'pkcs1Der'|
+'pkcs1Pem'|
+'sec1'|
+'raw';
+
 export interface ListBundles {
   builtin: Array<string>
   remote: Array<string>
@@ -193,11 +222,38 @@ export interface S3UploaderOptions {
   roleArn?: string
   roleSessionName?: string
   externalId?: string
-  integrityMaker?: IntegrityAlgorithm | ((data: Buffer) => Promise<string>)
+  integrityMaker?: IntegrityMakerOptions | ((data: Uint8Array) => Promise<string>)
+  signatureSigner?: SignatureSignerOptions | ((data: Uint8Array) => Promise<string>
   writeConcurrent?: number
   writeChunk?: number
   cacheControl?: string
   http?: HttpOptions
+}
+
+export interface SignatureSignerOptions {
+  algorithm: JsSignatureAlgorithm
+  key: JsSignatureSigningKeyOptions
+}
+
+export interface SignatureSigningKeyOptions {
+  format: JsSigningKeyFormat
+  data: string | Buffer
+}
+
+export interface SignatureVerifierOptions {
+  algorithm: JsSignatureAlgorithm
+  key: JsSignatureVerifyingKeyOptions
+}
+
+export interface SignatureVerifyingKeyOptions {
+  format: JsVerifyingKeyFormat
+  data: string | Buffer
+}
+
+export interface UpdaterOptions {
+  integrityPolicy?: IntegrityPolicy
+  integrityChecker?: JsCallback<[Buffer, string], Promise<boolean>>
+  signatureVerifier?: JsSignatureVerifier
 }
 
 export type Version =  'v1';

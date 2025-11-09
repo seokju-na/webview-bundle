@@ -5,8 +5,8 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 pub type CustomChecker = dyn Fn(
-    &str,
     &[u8],
+    &str,
   ) -> Pin<
     Box<
       dyn Future<Output = Result<bool, Box<dyn std::error::Error + Send + Sync + 'static>>>
@@ -35,7 +35,7 @@ impl IntegrityChecker {
         Ok(())
       }
       Self::Custom(checker) => {
-        if !checker(integrity, data)
+        if !checker(data, integrity)
           .await
           .map_err(crate::Error::unknown)?
         {

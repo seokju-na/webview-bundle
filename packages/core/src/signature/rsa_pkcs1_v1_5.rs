@@ -14,26 +14,26 @@ pub struct RsaPkcs1V15Signer {
 }
 
 impl RsaPkcs1V15Signer {
-  pub fn from_pkcs8_der(bytes: &[u8]) -> crate::Result<Self> {
-    let key = RsaPrivateKey::from_pkcs8_der(bytes).map_err(crate::Error::invalid_signing_key)?;
-    let key = SigningKey::<Sha256>::new(key);
-    Ok(Self { key })
-  }
-
   pub fn from_pkcs1_der(bytes: &[u8]) -> crate::Result<Self> {
     let key = RsaPrivateKey::from_pkcs1_der(bytes).map_err(crate::Error::invalid_signing_key)?;
     let key = SigningKey::<Sha256>::new(key);
     Ok(Self { key })
   }
 
-  pub fn from_pkcs8_pem(pem: &str) -> crate::Result<Self> {
-    let key = RsaPrivateKey::from_pkcs8_pem(pem).map_err(crate::Error::invalid_signing_key)?;
+  pub fn from_pkcs1_pem(pem: &str) -> crate::Result<Self> {
+    let key = RsaPrivateKey::from_pkcs1_pem(pem).map_err(crate::Error::invalid_signing_key)?;
     let key = SigningKey::<Sha256>::new(key);
     Ok(Self { key })
   }
 
-  pub fn from_pkcs1_pem(pem: &str) -> crate::Result<Self> {
-    let key = RsaPrivateKey::from_pkcs1_pem(pem).map_err(crate::Error::invalid_signing_key)?;
+  pub fn from_pkcs8_der(bytes: &[u8]) -> crate::Result<Self> {
+    let key = RsaPrivateKey::from_pkcs8_der(bytes).map_err(crate::Error::invalid_signing_key)?;
+    let key = SigningKey::<Sha256>::new(key);
+    Ok(Self { key })
+  }
+
+  pub fn from_pkcs8_pem(pem: &str) -> crate::Result<Self> {
+    let key = RsaPrivateKey::from_pkcs8_pem(pem).map_err(crate::Error::invalid_signing_key)?;
     let key = SigningKey::<Sha256>::new(key);
     Ok(Self { key })
   }

@@ -5,7 +5,6 @@ use p256::ecdsa::signature::{Signer, Verifier};
 use p256::ecdsa::{Signature, SigningKey, VerifyingKey};
 use p256::pkcs8::{DecodePrivateKey, DecodePublicKey};
 use p256::SecretKey;
-use rsa::pkcs1::DecodeRsaPrivateKey;
 
 pub struct EcdsaSecp256r1Signer {
   key: SigningKey,
@@ -19,22 +18,29 @@ impl EcdsaSecp256r1Signer {
     Ok(Self { key })
   }
 
-  pub fn from_sec1_der(der_bytes: &[u8]) -> crate::Result<Self> {
-    let key: SigningKey = SecretKey::from_sec1_der(der_bytes)
+  pub fn from_sec1_der(der: &[u8]) -> crate::Result<Self> {
+    let key: SigningKey = SecretKey::from_sec1_der(der)
       .map(Into::into)
       .map_err(crate::Error::invalid_signing_key)?;
     Ok(Self { key })
   }
 
-  pub fn from_sec1_pem(sec1_pem: &str) -> crate::Result<Self> {
-    let key: SigningKey = SecretKey::from_sec1_pem(sec1_pem)
+  pub fn from_sec1_pem(pem: &str) -> crate::Result<Self> {
+    let key: SigningKey = SecretKey::from_sec1_pem(pem)
       .map(Into::into)
       .map_err(crate::Error::invalid_signing_key)?;
     Ok(Self { key })
   }
 
-  pub fn from_pkcs8_pem(pkcs8_pem: &str) -> crate::Result<Self> {
-    let key: SigningKey = SecretKey::from_pkcs8_pem(pkcs8_pem)
+  pub fn from_pkcs8_der(der: &[u8]) -> crate::Result<Self> {
+    let key: SigningKey = SecretKey::from_pkcs8_der(der)
+      .map(Into::into)
+      .map_err(crate::Error::invalid_signing_key)?;
+    Ok(Self { key })
+  }
+
+  pub fn from_pkcs8_pem(pem: &str) -> crate::Result<Self> {
+    let key: SigningKey = SecretKey::from_pkcs8_pem(pem)
       .map(Into::into)
       .map_err(crate::Error::invalid_signing_key)?;
     Ok(Self { key })

@@ -508,7 +508,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Bundle, JsBundle, BundleBuilder, JsNapiBundleBuilder, BundleManifest, JsBundleManifest, BundleProtocol, JsBundleProtocol, BundleSource, JsBundleSource, Header, JsHeader, Index, JsIndex, LocalProtocol, JsLocalProtocol, Remote, JsRemote, S3Uploader, JsS3Uploader, Updater, JsUpdater, BundleSourceVersionType, JsBundleSourceVersionKind, HttpMethod, JsHttpMethod, IntegrityAlgorithm, JsIntegrityAlgorithm, readBundle, readBundleFromBuffer, Version, JsVersion, writeBundle, writeBundleIntoBuffer } = nativeBinding
+const { Bundle, JsBundle, BundleBuilder, JsNapiBundleBuilder, BundleManifest, JsBundleManifest, BundleProtocol, JsBundleProtocol, BundleSource, JsBundleSource, Header, JsHeader, Index, JsIndex, LocalProtocol, JsLocalProtocol, Remote, JsRemote, S3Uploader, JsS3Uploader, Updater, JsUpdater, BundleSourceVersionType, JsBundleSourceVersionKind, HttpMethod, JsHttpMethod, IntegrityAlgorithm, JsIntegrityAlgorithm, IntegrityPolicy, JsIntegrityPolicy, JsSignatureAlgorithm, JsSigningKeyFormat, JsVerifyingKeyFormat, readBundle, readBundleFromBuffer, Version, JsVersion, writeBundle, writeBundleIntoBuffer } = nativeBinding
 export { Bundle }
 export { JsBundle }
 export { BundleBuilder }
@@ -537,6 +537,11 @@ export { HttpMethod }
 export { JsHttpMethod }
 export { IntegrityAlgorithm }
 export { JsIntegrityAlgorithm }
+export { IntegrityPolicy }
+export { JsIntegrityPolicy }
+export { JsSignatureAlgorithm }
+export { JsSigningKeyFormat }
+export { JsVerifyingKeyFormat }
 export { readBundle }
 export { readBundleFromBuffer }
 export { Version }

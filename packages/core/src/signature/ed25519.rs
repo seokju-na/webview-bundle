@@ -14,6 +14,11 @@ impl Ed25519Signer {
     Ok(Self { key })
   }
 
+  pub fn from_pkcs8_der(der: &[u8]) -> crate::Result<Self> {
+    let key = SigningKey::from_pkcs8_der(der).map_err(crate::Error::invalid_signing_key)?;
+    Ok(Self { key })
+  }
+
   pub fn from_pkcs8_pem(pem: &str) -> crate::Result<Self> {
     let key = SigningKey::from_pkcs8_pem(pem).map_err(crate::Error::invalid_signing_key)?;
     Ok(Self { key })

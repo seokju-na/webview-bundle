@@ -3,7 +3,7 @@ use napi::bindgen_prelude::{Buffer, FromNapiValue, Promise, TypeName, ValidateNa
 use napi::{sys, Either};
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::integrity::{IntegrityAlgorithm, IntegrityMaker};
+use webview_bundle::integrity::{IntegrityAlgorithm, IntegrityMaker, IntegrityPolicy};
 
 #[napi(string_enum = "camelCase", js_name = "IntegrityAlgorithm")]
 pub enum JsIntegrityAlgorithm {
@@ -32,11 +32,16 @@ impl From<JsIntegrityAlgorithm> for IntegrityAlgorithm {
   }
 }
 
+#[napi(object, js_name = "IntegrityMakerOptions", object_to_js = false)]
+pub struct JsIntegrityMakerOptions {
+  pub algorithm: Option<JsIntegrityAlgorithm>,
+}
+
 pub struct JsIntegrityMaker {
   pub(crate) inner: IntegrityMaker,
 }
 
-type NapiIntegrityMaker = Either<JsIntegrityAlgorithm, JsCallback<Buffer, Promise<String>>>;
+type NapiIntegrityMaker = Either<JsIntegrityMakerOptions, JsCallback<Buffer, Promise<String>>>;
 
 impl TypeName for JsIntegrityMaker {
   fn type_name() -> &'static str {
@@ -62,7 +67,7 @@ impl FromNapiValue for JsIntegrityMaker {
     unsafe {
       let value = NapiIntegrityMaker::from_napi_value(env, napi_val)?;
       let value = match value {
-        Either::A(inner) => IntegrityMaker::Default(Some(inner.into())),
+        Either::A(inner) => IntegrityMaker::Default(inner.algorithm.map(Into::into)),
         Either::B(inner) => IntegrityMaker::Custom(Arc::new(move |data| {
           let buffer = Buffer::from(data);
           let callback = Arc::clone(&inner);
@@ -73,6 +78,33 @@ impl FromNapiValue for JsIntegrityMaker {
         })),
       };
       Ok(Self { inner: value })
+    }
+  }
+}
+
+#[napi(string_enum = "camelCase", js_name = "IntegrityPolicy")]
+pub enum JsIntegrityPolicy {
+  Strict,
+  Optional,
+  None,
+}
+
+impl From<IntegrityPolicy> for JsIntegrityPolicy {
+  fn from(value: IntegrityPolicy) -> Self {
+    match value {
+      IntegrityPolicy::Strict => Self::Strict,
+      IntegrityPolicy::Optional => Self::Optional,
+      IntegrityPolicy::None => Self::None,
+    }
+  }
+}
+
+impl From<JsIntegrityPolicy> for IntegrityPolicy {
+  fn from(value: JsIntegrityPolicy) -> Self {
+    match value {
+      JsIntegrityPolicy::Strict => Self::Strict,
+      JsIntegrityPolicy::Optional => Self::Optional,
+      JsIntegrityPolicy::None => Self::None,
     }
   }
 }

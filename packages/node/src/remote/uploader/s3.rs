@@ -1,6 +1,7 @@
 use crate::bundle::JsBundle;
 use crate::integrity::JsIntegrityMaker;
 use crate::remote::JsHttpOptions;
+use crate::signature::JsSignatureSigner;
 use napi_derive::napi;
 use std::sync::Arc;
 use webview_bundle::remote::uploader::{S3Uploader, S3UploaderBuilder, Uploader};
@@ -16,8 +17,10 @@ pub struct JsS3UploaderOptions {
   pub role_arn: Option<String>,
   pub role_session_name: Option<String>,
   pub external_id: Option<String>,
-  #[napi(ts_type = "IntegrityAlgorithm | ((data: Buffer) => Promise<string>)")]
+  #[napi(ts_type = "IntegrityMakerOptions | ((data: Uint8Array) => Promise<string>)")]
   pub integrity_maker: Option<JsIntegrityMaker>,
+  #[napi(ts_type = "SignatureSignerOptions | ((data: Uint8Array) => Promise<string>")]
+  pub signature_signer: Option<JsSignatureSigner>,
 
   // config for opendal
   pub write_concurrent: Option<u32>,
@@ -68,6 +71,9 @@ impl TryFrom<JsS3UploaderOptions> for S3UploaderBuilder {
     }
     if let Some(integrity_maker) = value.integrity_maker {
       builder = builder.integrity_maker(integrity_maker.inner);
+    }
+    if let Some(signature_signer) = value.signature_signer {
+      builder = builder.signature_signer(signature_signer.inner);
     }
     Ok(builder)
   }

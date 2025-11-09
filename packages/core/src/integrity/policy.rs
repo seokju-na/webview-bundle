@@ -1,12 +1,7 @@
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Default)]
 pub enum IntegrityPolicy {
   Strict,
+  #[default]
   Optional,
   None,
-}
-
-impl Default for IntegrityPolicy {
-  fn default() -> Self {
-    Self::Optional
-  }
 }
