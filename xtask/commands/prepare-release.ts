@@ -1,7 +1,7 @@
 import { checkbox, select } from '@inquirer/prompts';
 import { Command, Option } from 'clipanion';
 import { openRepository } from 'es-git';
-import { Changes } from '../changes.ts';
+import { Change, Changes } from '../changes.ts';
 import { loadConfig } from '../config.ts';
 import { ColorModeOption, colors, setColorMode } from '../console.ts';
 import { ROOT_DIR } from '../consts.ts';
@@ -12,8 +12,8 @@ export class PrepareReleaseCommand extends Command {
   static paths = [['prepare-release']];
 
   readonly configFilepath = Option.String('--config', 'xtask.json');
+  readonly stagedFilepath = Option.String('--staged', 'xtask/.gen/staged.json');
   readonly dryRun = Option.Boolean('--dry-run', false);
-  readonly stagedFilepath = Option.String('--staged', 'staged.json');
   readonly colorMode = ColorModeOption;
 
   async execute() {
@@ -29,6 +29,7 @@ export class PrepareReleaseCommand extends Command {
     for (const pkg of packages) {
       const tag = pkg.versionedGitTag.findTag(repo);
       const revwalk = repo.revwalk();
+      revwalk.push(head);
       if (tag != null) {
         revwalk.hide(tag.id());
       }
@@ -40,7 +41,13 @@ export class PrepareReleaseCommand extends Command {
       const commits = await checkbox({
         message: `${colors.info(`[${pkg.name}]`)} Select commits to include in release`,
         choices: allCommits.map(commit => {
-          const checked = staged[pkg.name]?.commits.some(x => x === commit.id());
+          let checked = staged[pkg.name]?.commits.some(x => x === commit.id());
+          if (checked !== true) {
+            try {
+              const change = Change.tryFromCommit(commit);
+              checked = change.isInScopes(pkg.scopes);
+            } catch {}
+          }
           return {
             name: `[${commit.id().slice(0, 7)}] ${commit.summary() ?? '(no message)'}`,
             value: commit.id(),
@@ -51,18 +58,18 @@ export class PrepareReleaseCommand extends Command {
       });
       const initialBumpRule = Changes.fromCommits(repo, commits).getBumpRule();
       if (initialBumpRule == null) {
+        staged[pkg.name] = { commits: [] };
         continue;
       }
       const bumpRule = await select({
         message: `${colors.info(`[${pkg.name}]`)} Select bump rule`,
         choices: (['major', 'minor', 'patch'] as const).map(rule => {
-          const checked = rule === initialBumpRule?.type;
           return {
             name: rule,
             value: rule,
-            checked,
           };
         }),
+        default: initialBumpRule?.type,
         loop: false,
       });
       staged[pkg.name] = {

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { Octokit } from '@octokit/rest';
 import { Command, Option } from 'clipanion';
 import { openRepository, type Repository } from 'es-git';
-import { isNotNil } from 'es-toolkit';
+import { isNotNil, noop } from 'es-toolkit';
 import { type Action, runActions } from '../action.ts';
 import { editCargoTomlVersion, formatCargoToml, parseCargoToml } from '../cargo-toml.ts';
 import { Changelog } from '../changelog.ts';
@@ -12,6 +12,7 @@ import { type Config, loadConfig } from '../config.ts';
 import { ColorModeOption, colors, setColorMode } from '../console.ts';
 import { ROOT_DIR } from '../consts.ts';
 import { Package } from '../package.ts';
+import { loadStaged, removeStaged, type Staged } from '../staged.ts';
 import { parsePrerelease } from '../version.ts';
 
 interface ReleaseTarget {
@@ -24,6 +25,7 @@ export class Release extends Command {
   static paths = [['release']];
 
   readonly configFilepath = Option.String('--config', 'xtask.json');
+  readonly stagedFilepath = Option.String('--staged', 'xtask/.gen/staged.json');
   readonly dryRun = Option.Boolean('--dry-run', false);
   readonly githubToken = Option.String('--github-token', {
     required: false,
@@ -38,32 +40,29 @@ export class Release extends Command {
 
   async execute() {
     setColorMode(this.colorMode);
-    try {
-      const config = await loadConfig(this.configFilepath);
-      const repo = await openRepository(ROOT_DIR);
-      const targets = await this.prepareTargets(repo, config);
-      if (targets.length === 0) {
-        return 0;
-      }
-
-      await this.prepareRegistry();
-      await this.writeReleaseTarget(targets);
-      const rootCargoChanged = await this.writeRootCargoToml(targets);
-      const rootChangelogChanged = await this.writeRootChangelog(config, targets);
-
-      await this.publish(targets);
-
-      if (this.prerelease == null) {
-        this.gitCommitChanges(repo, config, targets, rootCargoChanged, rootChangelogChanged);
-        this.gitCreateTags(repo, targets);
-        await this.gitPush(repo, targets);
-        await this.createGitHubReleases(config, targets);
-      }
-
+    const config = await loadConfig(this.configFilepath);
+    const staged = await loadStaged(this.stagedFilepath);
+    const repo = await openRepository(ROOT_DIR);
+    const targets = await this.prepareTargets(repo, config, staged);
+    if (targets.length === 0) {
       return 0;
-    } catch (e) {
-      console.error(e);
-      return 1;
+    }
+
+    await this.prepareRegistry();
+    await this.writeReleaseTarget(targets);
+    const rootCargoChanged = await this.writeRootCargoToml(targets);
+    const rootChangelogChanged = await this.writeRootChangelog(config, targets);
+
+    await this.publish(targets);
+
+    if (this.prerelease == null) {
+      if (!this.dryRun) {
+        await removeStaged(this.stagedFilepath).catch(noop);
+      }
+      this.gitCommitChanges(repo, config, targets, rootCargoChanged, rootChangelogChanged);
+      this.gitCreateTags(repo, targets);
+      await this.gitPush(repo, targets);
+      await this.createGitHubReleases(config, targets);
     }
   }
 
@@ -95,13 +94,18 @@ export class Release extends Command {
     }
   }
 
-  async prepareTargets(repo: Repository, config: Config) {
+  async prepareTargets(repo: Repository, config: Config, staged: Staged) {
     const targets: ReleaseTarget[] = [];
     const packages = await Package.loadAll(config);
     for (const pkg of packages) {
       const prefix = `[${pkg.name}]`;
-      const changes = Changes.tryFromGitTag(repo, pkg.versionedGitTag, pkg.scopes);
-      let bumpRule = changes.getBumpRule();
+      const pkgStaged = staged[pkg.name];
+      if (pkgStaged == null || pkgStaged.commits.length === 0) {
+        console.log(`${colors.warn(prefix)} no staged changes found. skip release.`);
+        continue;
+      }
+      const changes = Changes.fromCommits(repo, pkgStaged.commits);
+      let bumpRule = pkgStaged.bumpRule ?? Changes.fromCommits(repo, pkgStaged.commits).getBumpRule();
       if (bumpRule == null) {
         console.log(`${colors.warn(prefix)} no changes found. skip release.`);
         continue;
@@ -211,7 +215,7 @@ export class Release extends Command {
       return;
     }
     const pathspecs = targets.flatMap(x =>
-      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path].filter(isNotNil)
+      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path, this.stagedFilepath].filter(isNotNil)
     );
     if (rootCargoChanged) {
       pathspecs.push('Cargo.toml');

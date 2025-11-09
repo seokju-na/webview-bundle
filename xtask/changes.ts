@@ -15,6 +15,13 @@ export class Change {
     this.commit = commit;
   }
 
+  isInScopes(scopes: readonly string[]): boolean {
+    if (this.commit.scopes.length === 0) {
+      return false;
+    }
+    return this.commit.scopes.some(x => scopes.includes(x));
+  }
+
   toString() {
     const { type, scopes, isBreaking, summary } = this.commit;
     const prefix = isBreaking ? '[BREAKING CHANGE] ' : '';
@@ -37,12 +44,7 @@ export class Changes {
     if (tag != null) {
       revwalk.hide(tag.id());
     }
-    const changes = Changes.getChangesFromCommits(repo, [...revwalk]).filter(change => {
-      if (change.commit.scopes.length === 0) {
-        return false;
-      }
-      return change.commit.scopes.some(x => scopes.includes(x));
-    });
+    const changes = Changes.getChangesFromCommits(repo, [...revwalk]).filter(x => x.isInScopes(scopes));
     return new Changes(changes);
   }
 
