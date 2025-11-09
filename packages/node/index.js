@@ -508,7 +508,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Bundle, JsBundle, BundleBuilder, JsNapiBundleBuilder, BundleManifest, JsBundleManifest, BundleProtocol, JsBundleProtocol, BundleSource, JsBundleSource, Header, JsHeader, Index, JsIndex, LocalProtocol, JsLocalProtocol, Remote, JsRemote, S3Uploader, JsS3Uploader, Updater, JsUpdater, Algorithm, JsAlgorithm, BundleSourceVersionType, JsBundleSourceVersionKind, HttpMethod, JsHttpMethod, IntegrityPolicy, JsIntegrityPolicy, IntegrityVerifierMode, JsIntegrityVerifierMode, readBundle, readBundleFromBuffer, Version, JsVersion, writeBundle, writeBundleIntoBuffer } = nativeBinding
+const { Bundle, JsBundle, BundleBuilder, JsNapiBundleBuilder, BundleManifest, JsBundleManifest, BundleProtocol, JsBundleProtocol, BundleSource, JsBundleSource, Header, JsHeader, Index, JsIndex, LocalProtocol, JsLocalProtocol, Remote, JsRemote, S3Uploader, JsS3Uploader, Updater, JsUpdater, BundleSourceVersionType, JsBundleSourceVersionKind, HttpMethod, JsHttpMethod, IntegrityAlgorithm, JsIntegrityAlgorithm, readBundle, readBundleFromBuffer, Version, JsVersion, writeBundle, writeBundleIntoBuffer } = nativeBinding
 export { Bundle }
 export { JsBundle }
 export { BundleBuilder }
@@ -531,16 +531,12 @@ export { S3Uploader }
 export { JsS3Uploader }
 export { Updater }
 export { JsUpdater }
-export { Algorithm }
-export { JsAlgorithm }
 export { BundleSourceVersionType }
 export { JsBundleSourceVersionKind }
 export { HttpMethod }
 export { JsHttpMethod }
-export { IntegrityPolicy }
-export { JsIntegrityPolicy }
-export { IntegrityVerifierMode }
-export { JsIntegrityVerifierMode }
+export { IntegrityAlgorithm }
+export { JsIntegrityAlgorithm }
 export { readBundle }
 export { readBundleFromBuffer }
 export { Version }

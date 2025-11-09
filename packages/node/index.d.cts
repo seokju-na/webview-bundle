@@ -79,17 +79,13 @@ export declare class S3Uploader {
 export type JsS3Uploader = S3Uploader
 
 export declare class Updater {
-  constructor(source: BundleSource, remote: Remote, options?: UpdaterOptions | undefined | null)
+  constructor(source: BundleSource, remote: Remote)
   listRemotes(): Promise<Array<string>>
   getUpdate(bundleName: string): Promise<BundleUpdateInfo>
   downloadUpdate(bundleName: string, version?: string | undefined | null): Promise<RemoteBundleInfo>
   applyUpdate(bundleName: string, version: string): Promise<void>
 }
 export type JsUpdater = Updater
-
-export type Algorithm =  'sha256'|
-'sha384'|
-'sha512';
 
 export interface BuildHeaderOptions {
   checksumSeed?: number
@@ -119,6 +115,7 @@ export interface BundleUpdateInfo {
   localVersion?: string
   isAvailable: boolean
   integrity?: string
+  signature?: string
 }
 
 export type HttpMethod =  'get'|
@@ -157,21 +154,9 @@ export interface IndexEntry {
   headers: Record<string, string>
 }
 
-export interface IntegrityMaker {
-  algorithm: Algorithm
-  sign?: JsCallback<SignArgs, Promise<string>>
-}
-
-export type IntegrityPolicy =  'strict'|
-'optional'|
-'none';
-
-export type IntegrityVerifierMode =  'default';
-
-export interface IntegrityWithSignatureVerifier {
-  algorithm: Algorithm
-  verifier: (args: VerifierArgs) => Promise<boolean>
-}
+export type IntegrityAlgorithm =  'sha256'|
+'sha384'|
+'sha512';
 
 export interface ListBundles {
   builtin: Array<string>
@@ -186,6 +171,7 @@ export interface RemoteBundleInfo {
   name: string
   version: string
   integrity?: string
+  signature?: string
 }
 
 export interface RemoteOnDownloadData {
@@ -207,25 +193,11 @@ export interface S3UploaderOptions {
   roleArn?: string
   roleSessionName?: string
   externalId?: string
-  integrityMaker?: IntegrityMaker
+  integrityMaker?: IntegrityAlgorithm | ((data: Buffer) => Promise<string>)
   writeConcurrent?: number
   writeChunk?: number
   cacheControl?: string
   http?: HttpOptions
-}
-
-export interface SignArgs {
-  integrity: string
-}
-
-export interface UpdaterOptions {
-  integrityChecker?: IntegrityVerifierMode | IntegrityWithSignatureVerifier
-  integrityPolicy?: IntegrityPolicy
-}
-
-export interface VerifyArgs {
-  original: string
-  signature: string
 }
 
 export type Version =  'v1';

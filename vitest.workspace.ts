@@ -1,1 +1,2 @@
-export default ['packages/*', 'xtask'];
+const workspaces: string[] = ['packages/*', 'xtask'];
+export default workspaces;

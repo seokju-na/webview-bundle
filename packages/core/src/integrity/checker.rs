@@ -4,7 +4,7 @@ use std::pin::Pin;
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub type CustomIntegrityChecker = dyn Fn(
+pub type CustomChecker = dyn Fn(
     &str,
     &[u8],
   ) -> Pin<
@@ -17,15 +17,11 @@ pub type CustomIntegrityChecker = dyn Fn(
   + Sync;
 
 #[non_exhaustive]
+#[derive(Default)]
 pub enum IntegrityChecker {
+  #[default]
   Default,
-  Custom(Arc<CustomIntegrityChecker>),
-}
-
-impl Default for IntegrityChecker {
-  fn default() -> Self {
-    Self::Default
-  }
+  Custom(Arc<CustomChecker>),
 }
 
 impl IntegrityChecker {

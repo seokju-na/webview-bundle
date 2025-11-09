@@ -80,6 +80,12 @@ pub enum Error {
   #[cfg(feature = "signature")]
   #[error("invalid verifying key: {0}")]
   InvalidVerifyingKey(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
+  #[cfg(feature = "signature")]
+  #[error("signature not exists")]
+  SignatureNotExists,
+  #[cfg(feature = "signature")]
+  #[error("signature verify failed")]
+  SignatureVerifyFailed,
   #[error("unknown error: {0}")]
   Unknown(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
 }

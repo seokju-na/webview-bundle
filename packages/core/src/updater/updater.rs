@@ -1,6 +1,8 @@
 #[cfg(feature = "integrity")]
 use crate::integrity::{IntegrityChecker, IntegrityPolicy};
 use crate::remote::{Remote, RemoteBundleInfo};
+#[cfg(feature = "signature")]
+use crate::signature::SignatureVerifier;
 use crate::source::{BundleSource, BundleSourceVersion};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -13,6 +15,7 @@ pub struct BundleUpdateInfo {
   pub local_version: Option<String>,
   pub is_available: bool,
   pub integrity: Option<String>,
+  pub signature: Option<String>,
 }
 
 impl From<&BundleUpdateInfo> for RemoteBundleInfo {
@@ -21,6 +24,7 @@ impl From<&BundleUpdateInfo> for RemoteBundleInfo {
       name: value.name.to_string(),
       version: value.version.to_string(),
       integrity: value.integrity.clone(),
+      signature: value.signature.clone(),
     }
   }
 }
@@ -32,6 +36,8 @@ pub struct UpdaterConfig {
   pub(crate) integrity_checker: IntegrityChecker,
   #[cfg(feature = "integrity")]
   pub(crate) integrity_policy: IntegrityPolicy,
+  #[cfg(feature = "signature")]
+  pub(crate) signature_verifier: Option<SignatureVerifier>,
 }
 
 impl UpdaterConfig {
@@ -48,6 +54,12 @@ impl UpdaterConfig {
   #[cfg(feature = "integrity")]
   pub fn integrity_policy(mut self, policy: IntegrityPolicy) -> Self {
     self.integrity_policy = policy;
+    self
+  }
+
+  #[cfg(feature = "signature")]
+  pub fn signature_verifier(mut self, verifier: SignatureVerifier) -> Self {
+    self.signature_verifier = Some(verifier);
     self
   }
 }
@@ -118,6 +130,19 @@ impl Updater {
         _ => Ok(()),
       }?;
     }
+    #[cfg(feature = "signature")]
+    {
+      if let Some(ref verifier) = self.config.signature_verifier {
+        let signature = info
+          .signature
+          .clone()
+          .ok_or(crate::Error::SignatureNotExists)?;
+        let verified = verifier.verify(&bundle, &data, &signature).await?;
+        if !verified {
+          return Err(crate::Error::SignatureVerifyFailed);
+        }
+      }
+    }
     self
       .source
       .write_bundle(&info.name, &info.version, &bundle)
@@ -160,6 +185,7 @@ impl Updater {
       local_version: local_version.map(|x| x.to_string()),
       is_available,
       integrity: info.integrity.clone(),
+      signature: info.signature.clone(),
     })
   }
 }

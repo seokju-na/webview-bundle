@@ -10,12 +10,22 @@ export async function getBundleDataResponse(
   if (obj == null) {
     return null;
   }
+  return new Response(obj.body, {
+    status: 200,
+    headers: makeHeaders(obj, bundleName, version),
+  });
+}
+
+function makeHeaders(obj: R2ObjectBody, bundleName: string, version: string): Headers {
   const headers = new Headers();
-  if (obj.httpMetadata?.contentType != null) {
-    headers.set('content-type', obj.httpMetadata.contentType);
-  } else {
-    headers.set('content-type', 'application/webview-bundle');
+  for (const [name, value] of Object.entries(obj.customMetadata ?? {})) {
+    if (name.startsWith('webview-bundle-')) {
+      const headerName = name.replace('webview-bundle-', '');
+      headers.set(headerName, value);
+    }
   }
+  const contentType = obj.httpMetadata?.contentType ?? 'application/webview-bundle';
+  headers.set('content-type', contentType);
   if (obj.httpMetadata?.contentDisposition != null) {
     headers.set('content-disposition', obj.httpMetadata.contentDisposition);
   }
@@ -24,8 +34,5 @@ export async function getBundleDataResponse(
   }
   headers.set('webview-bundle-name', bundleName);
   headers.set('webview-bundle-version', version);
-  return new Response(obj.body, {
-    status: 200,
-    headers,
-  });
+  return headers;
 }

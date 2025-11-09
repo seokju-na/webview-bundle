@@ -1,17 +1,16 @@
 use crate::signature::{Signer as SignatureSigner, Verifier as SignatureVerifier};
 use crate::Bundle;
 use base64ct::{Base64, Encoding};
-use p256::ecdsa::signature::{Signer, Verifier};
-use p256::ecdsa::{Signature, SigningKey, VerifyingKey};
-use p256::pkcs8::{DecodePrivateKey, DecodePublicKey};
-use p256::SecretKey;
-use rsa::pkcs1::DecodeRsaPrivateKey;
+use p384::ecdsa::signature::{Signer, Verifier};
+use p384::ecdsa::{Signature, SigningKey, VerifyingKey};
+use p384::pkcs8::{DecodePrivateKey, DecodePublicKey};
+use p384::SecretKey;
 
-pub struct EcdsaSecp256r1Signer {
+pub struct EcdsaSecp384r1Signer {
   key: SigningKey,
 }
 
-impl EcdsaSecp256r1Signer {
+impl EcdsaSecp384r1Signer {
   pub fn from_slice(slice: &[u8]) -> crate::Result<Self> {
     let key: SigningKey = SecretKey::from_slice(slice)
       .map(Into::into)
@@ -41,7 +40,7 @@ impl EcdsaSecp256r1Signer {
   }
 }
 
-impl SignatureSigner for EcdsaSecp256r1Signer {
+impl SignatureSigner for EcdsaSecp384r1Signer {
   async fn sign(&self, _bundle: &Bundle, data: &[u8]) -> crate::Result<String> {
     let signature: Signature = self
       .key
@@ -52,11 +51,11 @@ impl SignatureSigner for EcdsaSecp256r1Signer {
   }
 }
 
-pub struct EcdsaSecp256r1Verifier {
+pub struct EcdsaSecp384r1Verifier {
   key: VerifyingKey,
 }
 
-impl EcdsaSecp256r1Verifier {
+impl EcdsaSecp384r1Verifier {
   pub fn from_sec1_bytes(bytes: &[u8]) -> crate::Result<Self> {
     let key = VerifyingKey::from_sec1_bytes(bytes).map_err(crate::Error::invalid_verifying_key)?;
     Ok(Self { key })
@@ -75,7 +74,7 @@ impl EcdsaSecp256r1Verifier {
   }
 }
 
-impl SignatureVerifier for EcdsaSecp256r1Verifier {
+impl SignatureVerifier for EcdsaSecp384r1Verifier {
   async fn verify(&self, _bundle: &Bundle, data: &[u8], signature: &str) -> crate::Result<bool> {
     let signature =
       Signature::from_slice(signature.as_bytes()).map_err(|_| crate::Error::InvalidSignature)?;

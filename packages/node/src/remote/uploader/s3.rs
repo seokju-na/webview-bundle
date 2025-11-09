@@ -1,5 +1,5 @@
 use crate::bundle::JsBundle;
-use crate::remote::uploader::JsIntegrityMaker;
+use crate::integrity::JsIntegrityMaker;
 use crate::remote::JsHttpOptions;
 use napi_derive::napi;
 use std::sync::Arc;
@@ -16,6 +16,7 @@ pub struct JsS3UploaderOptions {
   pub role_arn: Option<String>,
   pub role_session_name: Option<String>,
   pub external_id: Option<String>,
+  #[napi(ts_type = "IntegrityAlgorithm | ((data: Buffer) => Promise<string>)")]
   pub integrity_maker: Option<JsIntegrityMaker>,
 
   // config for opendal
@@ -66,7 +67,7 @@ impl TryFrom<JsS3UploaderOptions> for S3UploaderBuilder {
       builder = builder.http(http.try_into()?);
     }
     if let Some(integrity_maker) = value.integrity_maker {
-      builder = builder.integrity_maker(integrity_maker.into());
+      builder = builder.integrity_maker(integrity_maker.inner);
     }
     Ok(builder)
   }
