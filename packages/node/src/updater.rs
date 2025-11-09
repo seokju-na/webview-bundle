@@ -48,7 +48,11 @@ impl From<JsBundleUpdateInfo> for BundleUpdateInfo {
 #[napi(object, js_name = "UpdaterOptions", object_to_js = false)]
 pub struct JsUpdaterOptions {
   pub integrity_policy: Option<JsIntegrityPolicy>,
+  #[napi(ts_type = "(data: Uint8Array, integrity: string) => Promise<boolean>")]
   pub integrity_checker: Option<JsCallback<(Buffer, String), Promise<bool>>>,
+  #[napi(
+    ts_type = "SignatureVerifierOptions | ((data: Uint8Array, signature: string) => Promise<boolean>)"
+  )]
   pub signature_verifier: Option<JsSignatureVerifier>,
 }
 

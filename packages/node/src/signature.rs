@@ -9,7 +9,7 @@ use webview_bundle::signature::{
   RsaPssVerifier, SignatureSigner, SignatureVerifier,
 };
 
-#[napi(string_enum = "camelCase")]
+#[napi(string_enum = "camelCase", js_name = "SignatureAlgorithm")]
 #[derive(PartialEq, Eq)]
 pub enum JsSignatureAlgorithm {
   EcdsaSecp256r1,
@@ -19,7 +19,7 @@ pub enum JsSignatureAlgorithm {
   RsaPss,
 }
 
-#[napi(string_enum = "camelCase")]
+#[napi(string_enum = "camelCase", js_name = "SigningKeyFormat")]
 #[derive(PartialEq, Eq)]
 pub enum JsSigningKeyFormat {
   Sec1Der,
@@ -31,7 +31,7 @@ pub enum JsSigningKeyFormat {
   Raw,
 }
 
-#[napi(string_enum = "camelCase")]
+#[napi(string_enum = "camelCase", js_name = "VerifyingKeyFormat")]
 #[derive(PartialEq, Eq)]
 pub enum JsVerifyingKeyFormat {
   SpkiDer,
@@ -55,6 +55,7 @@ pub struct JsSignatureSignerOptions {
 #[napi(object, js_name = "SignatureSigningKeyOptions", object_to_js = false)]
 pub struct JsSignatureSigningKeyOptions {
   pub format: JsSigningKeyFormat,
+  #[napi(ts_type = "string | Uint8Array")]
   pub data: Either<String, Buffer>,
 }
 
@@ -259,6 +260,7 @@ pub struct JsSignatureVerifierOptions {
 #[napi(object, js_name = "SignatureVerifyingKeyOptions", object_to_js = false)]
 pub struct JsSignatureVerifyingKeyOptions {
   pub format: JsVerifyingKeyFormat,
+  #[napi(ts_type = "string | Uint8Array")]
   pub data: Either<String, Buffer>,
 }
 

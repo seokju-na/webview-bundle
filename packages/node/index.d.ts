@@ -166,27 +166,6 @@ export type IntegrityPolicy =  'strict'|
 'optional'|
 'none';
 
-export type JsSignatureAlgorithm =  'ecdsaSecp256R1'|
-'ecdsaSecp384R1'|
-'ed25519'|
-'rsaPkcs1V15'|
-'rsaPss';
-
-export type JsSigningKeyFormat =  'sec1Der'|
-'sec1Pem'|
-'pkcs1Der'|
-'pkcs1Pem'|
-'pkcs8Der'|
-'pkcs8Pem'|
-'raw';
-
-export type JsVerifyingKeyFormat =  'spkiDer'|
-'spkiPem'|
-'pkcs1Der'|
-'pkcs1Pem'|
-'sec1'|
-'raw';
-
 export interface ListBundles {
   builtin: Array<string>
   remote: Array<string>
@@ -223,38 +202,59 @@ export interface S3UploaderOptions {
   roleSessionName?: string
   externalId?: string
   integrityMaker?: IntegrityMakerOptions | ((data: Uint8Array) => Promise<string>)
-  signatureSigner?: SignatureSignerOptions | ((data: Uint8Array) => Promise<string>
+  signatureSigner?: SignatureSignerOptions | ((data: Uint8Array) => Promise<string>)
   writeConcurrent?: number
   writeChunk?: number
   cacheControl?: string
   http?: HttpOptions
 }
 
+export type SignatureAlgorithm =  'ecdsaSecp256R1'|
+'ecdsaSecp384R1'|
+'ed25519'|
+'rsaPkcs1V15'|
+'rsaPss';
+
 export interface SignatureSignerOptions {
-  algorithm: JsSignatureAlgorithm
+  algorithm: SignatureAlgorithm
   key: JsSignatureSigningKeyOptions
 }
 
 export interface SignatureSigningKeyOptions {
-  format: JsSigningKeyFormat
-  data: string | Buffer
+  format: SigningKeyFormat
+  data: string | Uint8Array
 }
 
 export interface SignatureVerifierOptions {
-  algorithm: JsSignatureAlgorithm
+  algorithm: SignatureAlgorithm
   key: JsSignatureVerifyingKeyOptions
 }
 
 export interface SignatureVerifyingKeyOptions {
-  format: JsVerifyingKeyFormat
-  data: string | Buffer
+  format: VerifyingKeyFormat
+  data: string | Uint8Array
 }
+
+export type SigningKeyFormat =  'sec1Der'|
+'sec1Pem'|
+'pkcs1Der'|
+'pkcs1Pem'|
+'pkcs8Der'|
+'pkcs8Pem'|
+'raw';
 
 export interface UpdaterOptions {
   integrityPolicy?: IntegrityPolicy
-  integrityChecker?: JsCallback<[Buffer, string], Promise<boolean>>
-  signatureVerifier?: JsSignatureVerifier
+  integrityChecker?: (data: Uint8Array, integrity: string) => Promise<boolean>
+  signatureVerifier?: SignatureVerifierOptions | ((data: Uint8Array, signature: string) => Promise<boolean>)
 }
+
+export type VerifyingKeyFormat =  'spkiDer'|
+'spkiPem'|
+'pkcs1Der'|
+'pkcs1Pem'|
+'sec1'|
+'raw';
 
 export type Version =  'v1';
 

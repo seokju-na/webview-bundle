@@ -19,7 +19,7 @@ pub struct JsS3UploaderOptions {
   pub external_id: Option<String>,
   #[napi(ts_type = "IntegrityMakerOptions | ((data: Uint8Array) => Promise<string>)")]
   pub integrity_maker: Option<JsIntegrityMaker>,
-  #[napi(ts_type = "SignatureSignerOptions | ((data: Uint8Array) => Promise<string>")]
+  #[napi(ts_type = "SignatureSignerOptions | ((data: Uint8Array) => Promise<string>)")]
   pub signature_signer: Option<JsSignatureSigner>,
 
   // config for opendal
