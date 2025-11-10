@@ -1,4 +1,5 @@
-import type { CloudFrontResponseEvent, CloudFrontResponseResult, Handler } from 'aws-lambda';
+import type { CloudFrontResponse, CloudFrontResponseEvent, CloudFrontResponseResult, Handler } from 'aws-lambda';
+import { toAWSHeaderName } from '../utils.js';
 
 export type OriginResponseHandler = Handler<CloudFrontResponseEvent, CloudFrontResponseResult>;
 
@@ -13,14 +14,24 @@ export function originResponse(): OriginResponseHandler {
     if (!isWebviewRequest) {
       return response;
     }
-    const bundleName = response.headers['x-amz-meta-webview-bundle-name']?.[0]?.value;
-    if (bundleName != null) {
-      response.headers['webview-bundle-name'] = [{ key: 'Webview-Bundle-Name', value: bundleName }];
-    }
-    const version = response.headers['x-amz-meta-webview-bundle-version']?.[0]?.value;
-    if (version != null) {
-      response.headers['webview-bundle-version'] = [{ key: 'Webview-Bundle-Version', value: version }];
-    }
+    configureHeaders(response);
     return response;
   };
+}
+
+function configureHeaders(response: CloudFrontResponse): void {
+  for (const [name, value] of Object.entries(response.headers)) {
+    if (name.startsWith(`x-amz-meta-webview-bundle-`)) {
+      const headerName = name.replace('x-amz-meta-', '');
+      const headerValue = value[0]?.value;
+      if (headerValue != null) {
+        response.headers[headerName] = [
+          {
+            key: toAWSHeaderName(headerName),
+            value: headerValue,
+          },
+        ];
+      }
+    }
+  }
 }

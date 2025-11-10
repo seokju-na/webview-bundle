@@ -1,5 +1,9 @@
+mod checker;
 mod integrity;
-mod verify;
+mod maker;
+mod policy;
 
+pub use checker::*;
 pub use integrity::*;
-pub use verify::*;
+pub use maker::*;
+pub use policy::*;

@@ -26,6 +26,7 @@ pub struct JsRemoteBundleInfo {
   pub name: String,
   pub version: String,
   pub integrity: Option<String>,
+  pub signature: Option<String>,
 }
 
 impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
@@ -34,6 +35,7 @@ impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
       name: value.name,
       version: value.version,
       integrity: value.integrity,
+      signature: value.signature,
     }
   }
 }
@@ -44,6 +46,7 @@ impl From<JsRemoteBundleInfo> for RemoteBundleInfo {
       name: value.name,
       version: value.version,
       integrity: value.integrity,
+      signature: value.signature,
     }
   }
 }

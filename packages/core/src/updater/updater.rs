@@ -1,6 +1,8 @@
 #[cfg(feature = "integrity")]
-use crate::integrity::{verify_integrity, verify_integrity_with_signature, Algorithm, Verifier};
+use crate::integrity::{IntegrityChecker, IntegrityPolicy};
 use crate::remote::{Remote, RemoteBundleInfo};
+#[cfg(feature = "signature")]
+use crate::signature::SignatureVerifier;
 use crate::source::{BundleSource, BundleSourceVersion};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -13,6 +15,7 @@ pub struct BundleUpdateInfo {
   pub local_version: Option<String>,
   pub is_available: bool,
   pub integrity: Option<String>,
+  pub signature: Option<String>,
 }
 
 impl From<&BundleUpdateInfo> for RemoteBundleInfo {
@@ -21,55 +24,8 @@ impl From<&BundleUpdateInfo> for RemoteBundleInfo {
       name: value.name.to_string(),
       version: value.version.to_string(),
       integrity: value.integrity.clone(),
+      signature: value.signature.clone(),
     }
-  }
-}
-
-#[cfg(feature = "integrity")]
-#[non_exhaustive]
-pub enum IntegrityVerifier {
-  Default,
-  WithSignature {
-    algorithm: Algorithm,
-    verify: Arc<Verifier>,
-  },
-}
-
-#[cfg(feature = "integrity")]
-impl IntegrityVerifier {
-  pub fn with_signature(algorithm: Algorithm, verify: Arc<Verifier>) -> Self {
-    Self::WithSignature { algorithm, verify }
-  }
-
-  pub(crate) async fn verify(&self, data: &[u8], integrity: &str) -> crate::Result<()> {
-    match self {
-      Self::Default => verify_integrity(data, integrity),
-      Self::WithSignature { algorithm, verify } => {
-        verify_integrity_with_signature(data, integrity, *algorithm, verify.clone()).await
-      }
-    }
-  }
-}
-
-#[cfg(feature = "integrity")]
-impl Default for IntegrityVerifier {
-  fn default() -> Self {
-    Self::Default
-  }
-}
-
-#[cfg(feature = "integrity")]
-#[derive(PartialEq, Eq)]
-pub enum IntegrityPolicy {
-  Strict,
-  Optional,
-  None,
-}
-
-#[cfg(feature = "integrity")]
-impl Default for IntegrityPolicy {
-  fn default() -> Self {
-    Self::Optional
   }
 }
 
@@ -77,9 +33,11 @@ impl Default for IntegrityPolicy {
 #[non_exhaustive]
 pub struct UpdaterConfig {
   #[cfg(feature = "integrity")]
-  pub(crate) integrity_verifier: IntegrityVerifier,
+  pub(crate) integrity_checker: IntegrityChecker,
   #[cfg(feature = "integrity")]
   pub(crate) integrity_policy: IntegrityPolicy,
+  #[cfg(feature = "signature")]
+  pub(crate) signature_verifier: Option<SignatureVerifier>,
 }
 
 impl UpdaterConfig {
@@ -88,14 +46,20 @@ impl UpdaterConfig {
   }
 
   #[cfg(feature = "integrity")]
-  pub fn integrity_checker(mut self, checker: IntegrityVerifier) -> Self {
-    self.integrity_verifier = checker;
+  pub fn integrity_checker(mut self, checker: IntegrityChecker) -> Self {
+    self.integrity_checker = checker;
     self
   }
 
   #[cfg(feature = "integrity")]
   pub fn integrity_policy(mut self, policy: IntegrityPolicy) -> Self {
     self.integrity_policy = policy;
+    self
+  }
+
+  #[cfg(feature = "signature")]
+  pub fn signature_verifier(mut self, verifier: SignatureVerifier) -> Self {
+    self.signature_verifier = Some(verifier);
     self
   }
 }
@@ -153,8 +117,8 @@ impl Updater {
           if let Some(integrity) = &info.integrity {
             self
               .config
-              .integrity_verifier
-              .verify(&data, integrity)
+              .integrity_checker
+              .check(integrity, &data)
               .await?;
             Ok(())
           } else if self.config.integrity_policy == IntegrityPolicy::Strict {
@@ -165,6 +129,19 @@ impl Updater {
         }
         _ => Ok(()),
       }?;
+    }
+    #[cfg(feature = "signature")]
+    {
+      if let Some(ref verifier) = self.config.signature_verifier {
+        let signature = info
+          .signature
+          .clone()
+          .ok_or(crate::Error::SignatureNotExists)?;
+        let verified = verifier.verify(&bundle, &data, &signature).await?;
+        if !verified {
+          return Err(crate::Error::SignatureVerifyFailed);
+        }
+      }
     }
     self
       .source
@@ -208,6 +185,7 @@ impl Updater {
       local_version: local_version.map(|x| x.to_string()),
       is_available,
       integrity: info.integrity.clone(),
+      signature: info.signature.clone(),
     })
   }
 }

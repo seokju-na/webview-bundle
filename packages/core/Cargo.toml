@@ -18,13 +18,17 @@ base64ct         = { workspace = true, optional = true }
 bincode          = { workspace = true }
 bytes            = { workspace = true, optional = true }
 dashmap          = { workspace = true, optional = true }
+ed25519-dalek    = { workspace = true, optional = true }
 futures-util     = { workspace = true, optional = true }
 http             = { workspace = true }
 infer            = { workspace = true, optional = true }
 lz4_flex         = { workspace = true }
 opendal          = { workspace = true, optional = true }
+p256             = { workspace = true, optional = true }
+p384             = { workspace = true, optional = true }
 percent-encoding = { workspace = true, optional = true }
 reqwest          = { workspace = true, default-features = false, optional = true }
+rsa              = { workspace = true, optional = true }
 serde            = { workspace = true, optional = true }
 serde_json       = { workspace = true, optional = true }
 sha3             = { workspace = true, optional = true }
@@ -34,8 +38,6 @@ twox-hash        = { workspace = true, features = ["serialize"] }
 urlencoding      = { workspace = true, optional = true }
 
 [dev-dependencies]
-p256      = { workspace = true, features = ["pem", "ecdsa"] }
-rand_core = { workspace = true, features = ["getrandom"] }
 tiny_http = { workspace = true }
 tokio     = { workspace = true, features = ["full"] }
 
@@ -44,7 +46,22 @@ _opendal = ["dep:opendal"]
 _reqwest = ["dep:reqwest"]
 _serde = ["dep:serde", "dep:serde_json"]
 async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs", "tokio/sync"]
-full = ["async", "integrity", "source", "protocol", "protocol-local", "updater", "remote", "remote-uploader-s3"]
+full = [
+  "async",
+  "integrity",
+  "source",
+  "protocol",
+  "protocol-local",
+  "updater",
+  "remote",
+  "remote-uploader-s3",
+  "signature",
+  "signature-ecdsa_secp256r1",
+  "signature-ecdsa_secp384r1",
+  "signature-edd25519",
+  "signature-rsa_pkcs1_v1_5",
+  "signature-rsa_pss",
+]
 integrity = ["_serde", "sha3", "base64ct", "base64ct/alloc"]
 protocol = ["source", "dep:bytes", "dep:infer", "dep:percent-encoding"]
 protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
@@ -56,11 +73,17 @@ remote = [
   "reqwest/json",
   "reqwest/hickory-dns",
   "reqwest/stream",
-  "urlencoding",
+  "dep:urlencoding",
   "dep:futures-util",
   "dep:opendal",
 ]
 remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
+signature = []
+signature-ecdsa_secp256r1 = ["dep:p256"]
+signature-ecdsa_secp384r1 = ["dep:p384"]
+signature-edd25519 = ["dep:ed25519-dalek", "ed25519-dalek/pem"]
+signature-rsa_pkcs1_v1_5 = ["dep:rsa", "rsa/sha2"]
+signature-rsa_pss = ["dep:rsa", "rsa/sha2", "rsa/getrandom"]
 source = ["dep:dashmap", "async", "_serde"]
 updater = ["remote", "source"]
 

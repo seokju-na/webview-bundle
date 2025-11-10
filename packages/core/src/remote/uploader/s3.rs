@@ -1,7 +1,8 @@
-#[cfg(feature = "integrity")]
-use crate::remote::uploader::integrity::IntegrityMaker;
+use crate::integrity::IntegrityMaker;
 use crate::remote::uploader::Uploader;
 use crate::remote::HttpConfig;
+#[cfg(feature = "signature")]
+use crate::signature::SignatureSigner;
 use crate::{impl_opendal_config_for_builder, BundleWriter, Writer, MIME_TYPE};
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -20,6 +21,8 @@ pub struct S3UploaderConfig {
   pub external_id: Option<String>,
   #[cfg(feature = "integrity")]
   pub integrity_maker: Option<IntegrityMaker>,
+  #[cfg(feature = "signature")]
+  pub signature_signer: Option<SignatureSigner>,
   pub(crate) opendal: crate::remote::opendal::OpendalConfig,
 }
 
@@ -76,8 +79,14 @@ impl S3UploaderBuilder {
   }
 
   #[cfg(feature = "integrity")]
-  pub fn integrity_maker(mut self, integrity_maker: IntegrityMaker) -> Self {
-    self.config.integrity_maker = Some(integrity_maker);
+  pub fn integrity_maker(mut self, maker: IntegrityMaker) -> Self {
+    self.config.integrity_maker = Some(maker);
+    self
+  }
+
+  #[cfg(feature = "signature")]
+  pub fn signature_signer(mut self, signer: SignatureSigner) -> Self {
+    self.config.signature_signer = Some(signer);
     self
   }
 
@@ -165,9 +174,18 @@ impl Uploader for S3Uploader {
     ];
     #[cfg(feature = "integrity")]
     {
-      if let Some(integrity_maker) = &self.config.integrity_maker {
-        let integrity = integrity_maker.make(&data).await?;
-        user_metadata.push(("webview-bundle-integrity".to_string(), integrity));
+      let integrity = if let Some(ref maker) = self.config.integrity_maker {
+        maker.make(&data).await
+      } else {
+        IntegrityMaker::default().make(&data).await
+      }?;
+      user_metadata.push(("webview-bundle-integrity".to_string(), integrity));
+    }
+    #[cfg(feature = "signature")]
+    {
+      if let Some(signer) = &self.config.signature_signer {
+        let signature = signer.sign(bundle, &data).await?;
+        user_metadata.push(("webview-bundle-signature".to_string(), signature));
       }
     }
     let path = self.config.opendal.resolve_path(bundle_name, version);

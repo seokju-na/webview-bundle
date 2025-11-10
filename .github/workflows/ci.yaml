@@ -67,7 +67,7 @@ jobs:
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian
             build: |-
-              rustup toolchain install stable &&
+              rustup toolchain install 1.91.0 &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-gnu &&
               yarn workspaces foreach -Apt run build &&
@@ -76,7 +76,7 @@ jobs:
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
             build: |-
-              rustup toolchain install stable &&
+              rustup toolchain install 1.91.0 &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-musl &&
               yarn workspaces foreach -Apt run build &&
@@ -85,7 +85,7 @@ jobs:
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian-aarch64
             build: |-
-              rustup toolchain install stable &&
+              rustup toolchain install 1.91.0 &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-gnu &&
               yarn workspaces foreach -Apt run build
@@ -94,7 +94,7 @@ jobs:
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
             build: |-
               set -e &&
-              rustup toolchain install stable &&
+              rustup toolchain install 1.91.0 &&
               rustup target add aarch64-unknown-linux-musl &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-musl &&
