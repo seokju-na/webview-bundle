@@ -5,17 +5,19 @@ import { ArtifactsNapiCommand } from './commands/artifacts-napi.ts';
 import { ArtifactsSpreadCommand } from './commands/artifacts-spread.ts';
 import { AttwCommand } from './commands/attw.ts';
 import { NapiBuildCommand } from './commands/napi-build.ts';
+import { PrepareReleaseCommand } from './commands/prepare-release.ts';
 import { Release } from './commands/release.ts';
 
-const [node, app, ...args] = process.argv;
+const [, , ...args] = process.argv;
 
 const cli = new Cli({
   binaryLabel: 'xtask',
-  binaryName: `${node} ${app}`,
+  binaryName: 'xtask',
   binaryVersion: '0.0.0',
 });
 
 cli.register(Release);
+cli.register(PrepareReleaseCommand);
 cli.register(ArtifactsSpreadCommand);
 cli.register(ArtifactsMergeCommand);
 cli.register(ArtifactsNapiCommand);

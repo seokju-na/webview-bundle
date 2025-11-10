@@ -1,9 +1,11 @@
 import { parse, type SemVer } from 'semver';
+import { z } from 'zod';
 
-export interface PrereleaseData {
-  id: string;
-  num: number;
-}
+export const PrereleaseDataSchema = z.object({
+  id: z.string(),
+  num: z.number(),
+});
+export type PrereleaseData = z.infer<typeof PrereleaseDataSchema>;
 
 export function parsePrerelease(x: unknown): PrereleaseData {
   if (typeof x !== 'string') {
@@ -19,11 +21,13 @@ export function parsePrerelease(x: unknown): PrereleaseData {
   return { id, num: Number(num) };
 }
 
-export type BumpRule =
-  | { type: 'major' }
-  | { type: 'minor' }
-  | { type: 'patch' }
-  | { type: 'prerelease'; data: PrereleaseData };
+export const BumpRuleSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('major') }),
+  z.object({ type: z.literal('minor') }),
+  z.object({ type: z.literal('patch') }),
+  z.object({ type: z.literal('prerelease'), data: PrereleaseDataSchema }),
+]);
+export type BumpRule = z.infer<typeof BumpRuleSchema>;
 
 export class Version {
   private ver: SemVer;

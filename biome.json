@@ -19,7 +19,8 @@
       "!**/*.cjs",
       "!**/*.d.ts",
       "!**/*.d.cts",
-      "!packages/tauri/permissions/**/*"
+      "!packages/tauri/permissions/**/*",
+      "!xtask/.gen/staged.json"
     ]
   },
   "formatter": {
