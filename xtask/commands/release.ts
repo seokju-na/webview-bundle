@@ -32,10 +32,6 @@ export class Release extends Command {
     required: false,
     env: 'GITHUB_TOKEN',
   });
-  readonly npmToken = Option.String('--npm-token', {
-    required: false,
-    env: 'NPM_TOKEN',
-  });
   readonly prerelease = Option.String('--prerelease');
   readonly colorMode = ColorModeOption;
 
@@ -49,7 +45,6 @@ export class Release extends Command {
       return 0;
     }
 
-    await this.prepareRegistry();
     await this.writeReleaseTarget(targets);
     const rootCargoChanged = await this.writeRootCargoToml(targets);
     const rootChangelogChanged = await this.writeRootChangelog(config, targets);
@@ -64,34 +59,6 @@ export class Release extends Command {
       this.gitCreateTags(repo, targets);
       await this.gitPush(repo, targets);
       await this.createGitHubReleases(config, targets);
-    }
-  }
-
-  async prepareRegistry() {
-    if (this.npmToken != null && !this.dryRun) {
-      await runActions(
-        [
-          {
-            type: 'command',
-            cmd: 'yarn',
-            args: ['config', 'set', '-H', 'npmRegistries["https://registry.npmjs.org"].npmAuthToken', this.npmToken],
-            path: '',
-          },
-          {
-            type: 'command',
-            cmd: 'yarn',
-            args: ['config', 'set', '-H', 'npmRegistries["https://registry.npmjs.org"].npmAlwaysAuth', 'true'],
-            path: '',
-          },
-          {
-            type: 'command',
-            cmd: 'yarn',
-            args: ['config', 'set', '-H', 'npmPublishRegistry', 'https://registry.npmjs.org'],
-            path: '',
-          },
-        ],
-        { dryRun: false }
-      );
     }
   }
 
