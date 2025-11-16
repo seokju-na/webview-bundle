@@ -29,6 +29,8 @@ pub mod integrity;
 pub mod protocol;
 #[cfg(feature = "remote")]
 pub mod remote;
+#[cfg(feature = "signature")]
+pub mod signature;
 #[cfg(feature = "source")]
 pub mod source;
 #[cfg(feature = "updater")]

@@ -14,6 +14,6 @@ runs:
       id: install-rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
+        toolchain: 1.91.0
         components: ${{ inputs.components }}
         targets: ${{ inputs.targets }}

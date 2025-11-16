@@ -1,9 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { checkbox } from '@inquirer/prompts';
+import { retry } from '@octokit/plugin-retry';
 import { Octokit } from '@octokit/rest';
+import { isCI } from 'ci-info';
 import { Command, Option } from 'clipanion';
 import { openRepository, type Repository } from 'es-git';
-import { isNotNil } from 'es-toolkit';
+import { isNotNil, omit } from 'es-toolkit';
 import { type Action, runActions } from '../action.ts';
 import { editCargoTomlVersion, formatCargoToml, parseCargoToml } from '../cargo-toml.ts';
 import { Changelog } from '../changelog.ts';
@@ -12,6 +15,7 @@ import { type Config, loadConfig } from '../config.ts';
 import { ColorModeOption, colors, setColorMode } from '../console.ts';
 import { ROOT_DIR } from '../consts.ts';
 import { Package } from '../package.ts';
+import { loadStaged, removeStaged, type Staged, saveStaged } from '../staged.ts';
 import { parsePrerelease } from '../version.ts';
 
 interface ReleaseTarget {
@@ -24,84 +28,58 @@ export class Release extends Command {
   static paths = [['release']];
 
   readonly configFilepath = Option.String('--config', 'xtask.json');
+  readonly stagedFilepath = Option.String('--staged', 'xtask/.gen/staged.json');
   readonly dryRun = Option.Boolean('--dry-run', false);
   readonly githubToken = Option.String('--github-token', {
     required: false,
     env: 'GITHUB_TOKEN',
   });
-  readonly npmToken = Option.String('--npm-token', {
-    required: false,
-    env: 'NPM_TOKEN',
-  });
   readonly prerelease = Option.String('--prerelease');
+  readonly interactive = Option.Boolean('--interactive', !isCI);
   readonly colorMode = ColorModeOption;
 
   async execute() {
     setColorMode(this.colorMode);
-    try {
-      const config = await loadConfig(this.configFilepath);
-      const repo = await openRepository(ROOT_DIR);
-      const targets = await this.prepareTargets(repo, config);
-      if (targets.length === 0) {
-        return 0;
-      }
-
-      await this.prepareRegistry();
-      await this.writeReleaseTarget(targets);
-      const rootCargoChanged = await this.writeRootCargoToml(targets);
-      const rootChangelogChanged = await this.writeRootChangelog(config, targets);
-
-      await this.publish(targets);
-
-      if (this.prerelease == null) {
-        this.gitCommitChanges(repo, config, targets, rootCargoChanged, rootChangelogChanged);
-        this.gitCreateTags(repo, targets);
-        await this.gitPush(repo, targets);
-        await this.createGitHubReleases(config, targets);
-      }
-
+    const config = await loadConfig(this.configFilepath);
+    const staged = await loadStaged(this.stagedFilepath);
+    const repo = await openRepository(ROOT_DIR);
+    let targets = await this.prepareTargets(repo, config, staged);
+    if (targets.length === 0) {
       return 0;
-    } catch (e) {
-      console.error(e);
-      return 1;
+    }
+    if (this.interactive) {
+      targets = await this.selectTargets(targets);
+    }
+
+    await this.writeReleaseTarget(targets);
+    const rootCargoChanged = await this.writeRootCargoToml(targets);
+    const rootChangelogChanged = await this.writeRootChangelog(config, targets);
+
+    await this.publish(targets);
+
+    if (this.prerelease == null) {
+      if (!this.dryRun) {
+        await this.updateStaged(targets, staged);
+      }
+      this.gitCommitChanges(repo, config, targets, rootCargoChanged, rootChangelogChanged);
+      this.gitCreateTags(repo, targets);
+      await this.gitPush(repo, targets);
+      await this.createGitHubReleases(config, targets);
     }
   }
 
-  async prepareRegistry() {
-    if (this.npmToken != null && !this.dryRun) {
-      await runActions(
-        [
-          {
-            type: 'command',
-            cmd: 'yarn',
-            args: ['config', 'set', '-H', 'npmRegistries["https://registry.npmjs.org"].npmAuthToken', this.npmToken],
-            path: '',
-          },
-          {
-            type: 'command',
-            cmd: 'yarn',
-            args: ['config', 'set', '-H', 'npmRegistries["https://registry.npmjs.org"].npmAlwaysAuth', 'true'],
-            path: '',
-          },
-          {
-            type: 'command',
-            cmd: 'yarn',
-            args: ['config', 'set', '-H', 'npmPublishRegistry', 'https://registry.npmjs.org'],
-            path: '',
-          },
-        ],
-        { dryRun: false }
-      );
-    }
-  }
-
-  async prepareTargets(repo: Repository, config: Config) {
+  private async prepareTargets(repo: Repository, config: Config, staged: Staged) {
     const targets: ReleaseTarget[] = [];
     const packages = await Package.loadAll(config);
     for (const pkg of packages) {
       const prefix = `[${pkg.name}]`;
-      const changes = Changes.tryFromGitTag(repo, pkg.versionedGitTag, pkg.scopes);
-      let bumpRule = changes.getBumpRule();
+      const pkgStaged = staged[pkg.name];
+      if (pkgStaged == null || pkgStaged.commits.length === 0) {
+        console.log(`${colors.warn(prefix)} no staged changes found. skip release.`);
+        continue;
+      }
+      const changes = Changes.fromCommits(repo, pkgStaged.commits);
+      let bumpRule = pkgStaged.bumpRule ?? Changes.fromCommits(repo, pkgStaged.commits).getBumpRule();
       if (bumpRule == null) {
         console.log(`${colors.warn(prefix)} no changes found. skip release.`);
         continue;
@@ -123,7 +101,26 @@ export class Release extends Command {
     return targets;
   }
 
-  async writeReleaseTarget(targets: ReleaseTarget[]) {
+  private async selectTargets(targets: ReleaseTarget[]) {
+    const selected = await checkbox({
+      message: 'Select release targets',
+      choices: targets.map(target => {
+        const prevVersion = target.package.version.toString();
+        const nextVersion = target.package.nextVersion.toString();
+        return {
+          name: `${target.package.name} ${prevVersion} -> ${colors.success(nextVersion)}`,
+          value: target.package.name,
+          checked: true,
+        };
+      }),
+      loop: false,
+      required: true,
+    });
+    const selectedTargets = targets.filter(x => selected.includes(x.package.name));
+    return selectedTargets;
+  }
+
+  private async writeReleaseTarget(targets: ReleaseTarget[]) {
     for (const target of targets) {
       const actions = target.package.write();
       await runActions(actions, { name: target.package.name, dryRun: this.dryRun });
@@ -136,7 +133,7 @@ export class Release extends Command {
     }
   }
 
-  async writeRootCargoToml(targets: ReleaseTarget[]) {
+  private async writeRootCargoToml(targets: ReleaseTarget[]) {
     const hasCargoChanged = targets
       .filter(x => x.package.hasChanged)
       .flatMap(x => x.package.versionedFiles)
@@ -168,7 +165,7 @@ export class Release extends Command {
     return true;
   }
 
-  async writeRootChangelog(config: Config, targets: ReleaseTarget[]) {
+  private async writeRootChangelog(config: Config, targets: ReleaseTarget[]) {
     if (config.rootChangelog == null) {
       return false;
     }
@@ -180,7 +177,7 @@ export class Release extends Command {
     return true;
   }
 
-  async publish(targets: ReleaseTarget[]) {
+  private async publish(targets: ReleaseTarget[]) {
     for (const target of targets) {
       if (target.package.beforePublishScripts.length > 0) {
         const actions = target.package.beforePublishScripts.map(
@@ -198,7 +195,7 @@ export class Release extends Command {
     }
   }
 
-  gitCommitChanges(
+  private gitCommitChanges(
     repo: Repository,
     config: Config,
     targets: ReleaseTarget[],
@@ -211,7 +208,7 @@ export class Release extends Command {
       return;
     }
     const pathspecs = targets.flatMap(x =>
-      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path].filter(isNotNil)
+      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path, this.stagedFilepath].filter(isNotNil)
     );
     if (rootCargoChanged) {
       pathspecs.push('Cargo.toml');
@@ -300,7 +297,8 @@ export class Release extends Command {
 
   private async createGitHubReleases(config: Config, targets: ReleaseTarget[]) {
     const { github } = config;
-    const client = new Octokit({
+    const GitHubClient = Octokit.plugin(retry);
+    const client = new GitHubClient({
       auth: this.githubToken,
       userAgent: 'webview-bundle',
     });
@@ -330,6 +328,16 @@ export class Release extends Command {
       console.log(`${colors.success('[root]')} create github release: ${release.data.tag_name}`);
       console.log(`  ${colors.dim(`id: ${release.data.id}`)}`);
       console.log(`  ${colors.dim(`html_url: ${release.data.html_url}`)}`);
+    }
+  }
+
+  private async updateStaged(targets: ReleaseTarget[], staged: Staged) {
+    const releasedPackages = targets.map(x => x.package.name);
+    const updatedStaged = omit(staged, releasedPackages);
+    if (Object.keys(updatedStaged).length === 0) {
+      await removeStaged(this.stagedFilepath);
+    } else {
+      await saveStaged(this.stagedFilepath, updatedStaged);
     }
   }
 }

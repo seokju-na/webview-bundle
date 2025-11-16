@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { uniq } from 'es-toolkit';
 import type { Action } from './action.ts';
 import type { Config, PackageConfig, ScriptConfig } from './config.ts';
 import type { BumpRule, Version } from './version.ts';
@@ -39,10 +40,8 @@ export class Package {
   }
 
   get scopes(): readonly string[] {
-    if (this.config.scopes != null && this.config.scopes.length > 0) {
-      return this.config.scopes;
-    }
-    return [this.name, 'all'];
+    const scopes = this.config.scopes ?? [];
+    return uniq([...scopes, this.name, 'all']);
   }
 
   get beforePublishScripts(): ScriptConfig[] {
