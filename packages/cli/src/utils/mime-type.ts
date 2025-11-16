@@ -20,7 +20,7 @@ export type MimeType =
 
 export function parseMimeTypeFromUri(uri: string): MimeType | undefined {
   const suffix = uri.split('.').pop();
-  if (suffix == null) {
+  if (suffix === uri) {
     return 'application/octet-stream';
   }
   switch (suffix) {

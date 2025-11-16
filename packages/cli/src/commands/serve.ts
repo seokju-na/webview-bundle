@@ -1,10 +1,8 @@
 import path from 'node:path';
-import { serve } from '@hono/node-server';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
-import { Hono } from 'hono';
-import { logger } from 'hono/logger';
 import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
+import { ColorModeOption, isColorEnabled, setColorMode } from 'xtask/console.js';
 import { c } from '../console.js';
 import { parseMimeType } from '../utils/mime-type.js';
 import { BaseCommand } from './base.js';
@@ -27,16 +25,29 @@ export class ServeCommand extends BaseCommand {
   readonly port = Option.String('--port,-P', '4312', {
     validator: cascade(isNumber(), [isInteger(), isInExclusiveRange(1, 65535)]),
   });
+  readonly silent = Option.Boolean('--silent', false, {
+    description: 'Disable log output.',
+  });
+  readonly colorMode = ColorModeOption;
 
   async run() {
+    setColorMode(this.colorMode);
+
+    const { Hono } = await import('hono');
+    const { serve } = await import('@hono/node-server');
+
     const filepath = path.isAbsolute(this.file) ? this.file : path.join(process.cwd(), this.file);
     const bundle = await readBundle(filepath);
     const app = new Hono();
-    app.use(
-      logger(str => {
-        this.logger.info(str);
-      })
-    );
+    if (!this.silent) {
+      app.use(async (c, next) => {
+        const { method, url } = c.req;
+        const path = url.slice(url.indexOf('/', 8));
+        this.logger.info(`<-- ${method} ${path}`);
+        const start = performance.now();
+        await next();
+      });
+    }
     app.get('*', async c => {
       const p = this.resolvePath(c.req.path);
       if (!bundle.manifest().index().containsPath(p)) {
@@ -79,5 +90,23 @@ export class ServeCommand extends BaseCommand {
       return `${path}/index.html`;
     }
     return path;
+  }
+
+  private getColorStatus(status: number): string {
+    if (!isColorEnabled()) {
+      return `${status}`;
+    }
+    switch ((status / 100) | 0) {
+      case 5:
+        return `\x1B[31m${status}\x1B[0m`;
+      case 4:
+        return `\x1B[33m${status}\x1B[0m`;
+      case 3:
+        return `\x1B[36m${status}\x1B[0m`;
+      case 2:
+        return `\x1B[32m${status}\x1B[0m`;
+      default:
+        return `${status}`;
+    }
   }
 }
