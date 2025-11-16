@@ -5706,7 +5706,7 @@ __metadata:
     ci-info: "npm:^4.2.0"
     clipanion: "npm:^4.0.0-rc.4"
     file-type: "npm:^21.0.0"
-    hono: "npm:^4.10.2"
+    hono: "npm:^4.10.3"
     kleur: "npm:^4.1.5"
     picomatch: "npm:^4.0.3"
     supports-color: "npm:^10.0.0"
@@ -5812,7 +5812,7 @@ __metadata:
     "@napi-rs/cli": "npm:3.1.5"
     "@types/node": "npm:22.18.3"
     get-port: "npm:^7.1.0"
-    hono: "npm:^4.10.2"
+    hono: "npm:^4.10.3"
     typescript: "npm:5.9.2"
     vitest: "npm:3.2.4"
   languageName: unknown
@@ -5846,7 +5846,7 @@ __metadata:
     "@types/node": "npm:22.18.3"
     aws-lambda: "npm:^1.0.7"
     esbuild: "npm:0.25.3"
-    hono: "npm:^4.10.2"
+    hono: "npm:^4.10.3"
     tsdown: "npm:0.15.1"
     typescript: "npm:5.9.2"
     vitest: "npm:3.2.4"
@@ -8008,10 +8008,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hono@npm:^4.10.2":
-  version: 4.10.2
-  resolution: "hono@npm:4.10.2"
-  checksum: 10c0/783ec7f879c8a0a389b65a92e43e15a3d60e9e67da749b88a84e763d4625c22493461d4c2c6c40068c554e27abfcf94db06a861ce94f871dd7ada2c751ad7a3b
+"hono@npm:^4.10.3":
+  version: 4.10.3
+  resolution: "hono@npm:4.10.3"
+  checksum: 10c0/bdcc4c7066c74ba7cfa63ed6550768a0f43a420286c8f8f74b7012ea4901b8b06778fa8e98264b46f1a86920f056b7ede1f07814da4934912f9945def4977c29
   languageName: node
   linkType: hard
 
