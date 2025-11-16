@@ -1,6 +1,9 @@
+import { createRequire } from 'node:module';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { rolldown } from 'rolldown';
-import { fileExists, isEsmFile } from './utils/fs.js';
+import { fileExists, isEsmFile } from './fs.js';
+import { isNodeBuiltin } from './module.js';
 
 export type ConfigInputFnObj = () => Config;
 export type ConfigInputFnPromise = () => Promise<Config>;
@@ -28,26 +31,24 @@ export interface Config {
 }
 
 const DEFAULT_CONFIG_FILES: string[] = [
-  'webview-bundle.config.js',
-  'webview-bundle.config.cjs',
-  'webview-bundle.config.mjs',
-  'webview-bundle.config.ts',
-  'webview-bundle.config.cts',
-  'webview-bundle.config.mts',
   'wvb.config.js',
   'wvb.config.cjs',
   'wvb.config.mjs',
   'wvb.config.ts',
   'wvb.config.cts',
   'wvb.config.mts',
+  'webview-bundle.config.js',
+  'webview-bundle.config.cjs',
+  'webview-bundle.config.mjs',
+  'webview-bundle.config.ts',
+  'webview-bundle.config.cts',
+  'webview-bundle.config.mts',
 ];
 
 export async function loadConfigFile(
   filepath?: string,
   cwd: string = process.cwd()
 ): Promise<{ config: Config } | null> {
-  const start = performance.now();
-
   let resolvedPath: string | undefined;
   if (filepath != null) {
     resolvedPath = path.isAbsolute(filepath) ? filepath : path.resolve(cwd, filepath);
@@ -67,44 +68,63 @@ export async function loadConfigFile(
   }
 
   const isEsm = await isEsmFile(resolvedPath);
+  const files = await bundleConfigFile(resolvedPath, isEsm, cwd);
+  console.log(files);
 
   throw new Error('TODO');
 }
 
-interface BundledFile {
-  fileName: string;
-  content: string | Uint8Array;
-  isMain: boolean;
-}
-
-async function bundleConfigFile(filepath: string, isEsm: boolean): Promise<BundledFile[]> {
+async function bundleConfigFile(
+  absoluteFilepath: string,
+  isEsm: boolean,
+  cwd?: string
+): Promise<{
+  code: string;
+  dependencies: string[];
+}> {
+  const dirname = path.dirname(absoluteFilepath);
+  const filename = absoluteFilepath;
   const bundle = await rolldown({
-    input: filepath,
+    input: absoluteFilepath,
     platform: 'node',
-    external: () => false,
+    external: (id, importer) => {
+      console.log(id, importer);
+      if (!id || id.startsWith('\0') || id.startsWith('.') || id.startsWith('#') || path.isAbsolute(id)) {
+        return false;
+      }
+      if (isNodeBuiltin(id) || id.startsWith('npm:')) {
+        return true;
+      }
+      return true;
+    },
     transform: {
       target: `node${process.versions.node}`,
+      define: {
+        __dirname: JSON.stringify(dirname),
+        __filename: JSON.stringify(filename),
+        'import.meta.url': JSON.stringify(pathToFileURL(filename).href),
+        'import.meta.filename': JSON.stringify(filename),
+        'import.meta.dirname': JSON.stringify(dirname),
+        'import.meta.env': 'process.env',
+      },
     },
+    cwd,
   });
-  const ext = isEsm ? 'mjs' : 'cjs';
-  const { output } = await bundle.generate({
+
+  const bundleOutput = await bundle.generate({
     format: isEsm ? 'esm' : 'cjs',
     sourcemap: 'inline',
-    minify: false,
-    hashCharacters: 'hex',
-    entryFileNames: `[name].${ext}`,
-    chunkFileNames: `[name]-[hash].${ext}`,
+    keepNames: true,
+    inlineDynamicImports: true,
   });
-  const codes: BundledFile[] = [];
-  for (const out of output) {
-    const code: BundledFile = {
-      fileName: out.fileName,
-      content: out.type === 'chunk' ? out.code : out.source,
-      isMain: out.type === 'chunk' && out.isEntry,
-    };
-    codes.push(code);
+  if (bundleOutput.output[0] == null || bundleOutput.output[0].type !== 'chunk') {
+    throw new Error('no output chunk found');
   }
-  return codes;
+  const dependencies = await bundle.watchFiles;
+  return {
+    code: bundleOutput.output[0].code,
+    dependencies,
+  };
 }
 
 export interface ResolvedConfig

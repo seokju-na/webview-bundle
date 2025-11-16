@@ -3,7 +3,7 @@ import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { c } from '../console.js';
-import { formatByteLength } from '../utils/format.js';
+import { formatByteLength } from '../format.js';
 import { BaseCommand } from './base.js';
 
 export class ExtractCommand extends BaseCommand {

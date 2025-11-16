@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { PackageJson } from 'type-fest';
 
 export async function isEsmFile(filepath: string): Promise<boolean> {
   if (/\.m[jt]s$/.test(filepath)) {
@@ -11,13 +10,23 @@ export async function isEsmFile(filepath: string): Promise<boolean> {
   }
   try {
     const pkg = await findNearestPackageJson(path.dirname(filepath));
-    return pkg?.type === 'module';
+    return pkg?.json.type === 'module';
   } catch {
     return false;
   }
 }
 
-export async function findNearestPackageJson(basedir: string): Promise<PackageJson | null> {
+export interface PackageJson {
+  name?: string;
+  type?: 'module' | 'commonjs';
+  version?: string;
+  description?: string;
+  peerDependencies?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+}
+
+export async function findNearestPackageJson(basedir: string): Promise<{ filepath: string; json: PackageJson } | null> {
   let dir = basedir;
   while (dir) {
     const pkgJsonPath = path.join(dir, 'package.json');
@@ -26,7 +35,7 @@ export async function findNearestPackageJson(basedir: string): Promise<PackageJs
       try {
         const pkgJsonRaw = await fs.readFile(pkgJsonPath, 'utf8');
         const pkgJson = JSON.parse(pkgJsonRaw) as PackageJson;
-        return pkgJson;
+        return { filepath: pkgJsonPath, json: pkgJson };
       } catch {}
     }
     const nextBasedir = path.dirname(dir);

@@ -4,7 +4,7 @@ import { Command, Option } from 'clipanion';
 import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
 import { ColorModeOption, isColorEnabled, setColorMode } from 'xtask/console.js';
 import { c } from '../console.js';
-import { parseMimeType } from '../utils/mime-type.js';
+import { parseMimeType } from '../mime-type.js';
 import { BaseCommand } from './base.js';
 
 export class ServeCommand extends BaseCommand {

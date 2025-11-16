@@ -5880,8 +5880,8 @@ __metadata:
     typescript: "npm:5.9.2"
     vitest: "npm:3.2.4"
   bin:
-    webview-bundle: ./dist/main.js
-    wvb: ./dist/main.js
+    webview-bundle: ./dist/cli.js
+    wvb: ./dist/cli.js
   languageName: unknown
   linkType: soft
 
