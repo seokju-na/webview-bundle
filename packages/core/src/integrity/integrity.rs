@@ -2,14 +2,15 @@ use base64ct::{Base64, Encoding};
 use sha3::{Digest, Sha3_256, Sha3_384, Sha3_512};
 use std::str::FromStr;
 
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
-pub enum Algorithm {
+#[derive(Default, Debug, Eq, PartialEq, Clone, Copy)]
+pub enum IntegrityAlgorithm {
+  #[default]
   Sha256,
   Sha384,
   Sha512,
 }
 
-impl Algorithm {
+impl IntegrityAlgorithm {
   pub fn digest(&self, data: &[u8]) -> Vec<u8> {
     match self {
       Self::Sha256 => Sha3_256::digest(data).to_vec(),
@@ -19,7 +20,7 @@ impl Algorithm {
   }
 }
 
-impl std::fmt::Display for Algorithm {
+impl std::fmt::Display for IntegrityAlgorithm {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     let str = match self {
       Self::Sha256 => "sha256",
@@ -30,7 +31,7 @@ impl std::fmt::Display for Algorithm {
   }
 }
 
-impl FromStr for Algorithm {
+impl FromStr for IntegrityAlgorithm {
   type Err = crate::Error;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -45,12 +46,12 @@ impl FromStr for Algorithm {
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Integrity {
-  alg: Algorithm,
+  alg: IntegrityAlgorithm,
   value: Vec<u8>,
 }
 
 impl Integrity {
-  pub fn compute(alg: Algorithm, data: &[u8]) -> Self {
+  pub fn compute(alg: IntegrityAlgorithm, data: &[u8]) -> Self {
     let value = alg.digest(data);
     Self { alg, value }
   }
@@ -74,7 +75,7 @@ impl FromStr for Integrity {
     let alg_str = parts
       .next()
       .ok_or(crate::Error::invalid_integrity("algorithm is missing"))?;
-    let alg = Algorithm::from_str(alg_str)?;
+    let alg = IntegrityAlgorithm::from_str(alg_str)?;
     let value_str = parts
       .next()
       .ok_or(crate::Error::invalid_integrity("value is missing"))?;
@@ -90,7 +91,7 @@ mod tests {
 
   #[test]
   fn integrity_serialize() {
-    let str = Integrity::compute(Algorithm::Sha256, b"test").serialize();
+    let str = Integrity::compute(IntegrityAlgorithm::Sha256, b"test").serialize();
     assert_eq!(str, "sha256:NvAoWAuwLMgnKpoCD0IA40bidq5mTkXugHRVdOL1q4A=");
   }
 
@@ -98,13 +99,13 @@ mod tests {
   fn integrity_from_str() {
     let str = "sha256:NvAoWAuwLMgnKpoCD0IA40bidq5mTkXugHRVdOL1q4A=";
     let integrity = Integrity::from_str(str).unwrap();
-    assert_eq!(integrity.alg, Algorithm::Sha256);
-    assert_eq!(integrity.value, Algorithm::Sha256.digest(b"test"));
+    assert_eq!(integrity.alg, IntegrityAlgorithm::Sha256);
+    assert_eq!(integrity.value, IntegrityAlgorithm::Sha256.digest(b"test"));
   }
 
   #[test]
   fn integrity_validate() {
-    let integrity = Integrity::compute(Algorithm::Sha256, b"test");
+    let integrity = Integrity::compute(IntegrityAlgorithm::Sha256, b"test");
     assert!(integrity.validate(b"test"));
     assert!(!integrity.validate(b"test2"));
   }

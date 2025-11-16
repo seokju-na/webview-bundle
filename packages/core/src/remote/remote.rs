@@ -11,6 +11,7 @@ pub struct RemoteBundleInfo {
   pub name: String,
   pub version: String,
   pub integrity: Option<String>,
+  pub signature: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -153,10 +154,14 @@ impl Remote {
     let integrity = headers
       .get("webview-bundle-integrity")
       .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
+    let signature = headers
+      .get("webview-bundle-signature")
+      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
     Ok(RemoteBundleInfo {
       name,
       version,
       integrity,
+      signature,
     })
   }
 

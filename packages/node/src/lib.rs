@@ -5,6 +5,7 @@ pub mod integrity;
 pub mod js;
 pub mod protocol;
 pub mod remote;
+pub mod signature;
 pub mod source;
 pub mod updater;
 pub mod version;
