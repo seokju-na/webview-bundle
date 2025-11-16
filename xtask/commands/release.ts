@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { retry } from '@octokit/plugin-retry';
 import { Octokit } from '@octokit/rest';
 import { Command, Option } from 'clipanion';
 import { openRepository, type Repository } from 'es-git';
@@ -304,7 +305,8 @@ export class Release extends Command {
 
   private async createGitHubReleases(config: Config, targets: ReleaseTarget[]) {
     const { github } = config;
-    const client = new Octokit({
+    const GitHubClient = Octokit.plugin(retry);
+    const client = new GitHubClient({
       auth: this.githubToken,
       userAgent: 'webview-bundle',
     });
