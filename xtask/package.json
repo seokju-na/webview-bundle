@@ -11,6 +11,7 @@
     "@inquirer/prompts": "^7.10.0",
     "@ltd/j-toml": "^1.38.0",
     "@napi-rs/cli": "3.1.5",
+    "@octokit/core": "^7.0.6",
     "@octokit/plugin-retry": "^8.0.3",
     "@octokit/rest": "^21.1.1",
     "@taplo/lib": "^0.5.0",

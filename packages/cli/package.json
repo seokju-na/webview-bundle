@@ -47,14 +47,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@logtape/logtape": "1.0.4",
-    "@webview-bundle/node": "workspace:^",
-    "rolldown": "1.0.0-beta.49"
-  },
-  "devDependencies": {
     "@hono/node-server": "^1.19.2",
-    "@types/node": "22.18.3",
-    "@types/picomatch": "^4",
+    "@logtape/logtape": "1.0.4",
+    "@webview-bundle/config": "workspace:^",
+    "@webview-bundle/node": "workspace:^",
     "ci-info": "^4.2.0",
     "clipanion": "4.0.0-rc.4",
     "file-type": "^21.0.0",
@@ -63,9 +59,12 @@
     "picomatch": "^4.0.3",
     "supports-color": "^10.0.0",
     "tinyglobby": "^0.2.14",
+    "typanion": "^3.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.3",
+    "@types/picomatch": "^4",
     "tsdown": "0.15.1",
-    "typanion": "^3.14.0",
-    "type-fest": "^4.40.1",
     "typescript": "5.9.2",
     "vitest": "3.2.4"
   }

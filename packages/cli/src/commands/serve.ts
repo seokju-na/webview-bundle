@@ -2,7 +2,7 @@ import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
-import { ColorModeOption, isColorEnabled, setColorMode } from 'xtask/console.js';
+import { ColorModeOption, setColorMode } from 'xtask/console.js';
 import { c } from '../console.js';
 import { parseMimeType } from '../mime-type.js';
 import { BaseCommand } from './base.js';
@@ -40,13 +40,13 @@ export class ServeCommand extends BaseCommand {
     const bundle = await readBundle(filepath);
     const app = new Hono();
     if (!this.silent) {
-      app.use(async (c, next) => {
-        const { method, url } = c.req;
-        const path = url.slice(url.indexOf('/', 8));
-        this.logger.info(`<-- ${method} ${path}`);
-        const start = performance.now();
-        await next();
-      });
+      // TODO: Need to rewrite it custom
+      const { logger } = await import('hono/logger');
+      app.use(
+        logger(str => {
+          this.logger.info(str);
+        })
+      );
     }
     app.get('*', async c => {
       const p = this.resolvePath(c.req.path);
@@ -90,23 +90,5 @@ export class ServeCommand extends BaseCommand {
       return `${path}/index.html`;
     }
     return path;
-  }
-
-  private getColorStatus(status: number): string {
-    if (!isColorEnabled()) {
-      return `${status}`;
-    }
-    switch ((status / 100) | 0) {
-      case 5:
-        return `\x1B[31m${status}\x1B[0m`;
-      case 4:
-        return `\x1B[33m${status}\x1B[0m`;
-      case 3:
-        return `\x1B[36m${status}\x1B[0m`;
-      case 2:
-        return `\x1B[32m${status}\x1B[0m`;
-      default:
-        return `${status}`;
-    }
   }
 }

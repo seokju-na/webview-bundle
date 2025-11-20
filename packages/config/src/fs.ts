@@ -10,7 +10,7 @@ export async function isEsmFile(filepath: string): Promise<boolean> {
   }
   try {
     const pkg = await findNearestPackageJson(path.dirname(filepath));
-    return pkg?.json.type === 'module';
+    return pkg?.type === 'module';
   } catch {
     return false;
   }
@@ -26,25 +26,31 @@ export interface PackageJson {
   devDependencies?: Record<string, string>;
 }
 
-export async function findNearestPackageJson(basedir: string): Promise<{ filepath: string; json: PackageJson } | null> {
+export async function findNearestPackageJsonFilePath(basedir: string): Promise<string | null> {
   let dir = basedir;
   while (dir) {
     const pkgJsonPath = path.join(dir, 'package.json');
     const stat = await fs.stat(pkgJsonPath).catch(() => null);
     if (stat?.isFile() === true) {
-      try {
-        const pkgJsonRaw = await fs.readFile(pkgJsonPath, 'utf8');
-        const pkgJson = JSON.parse(pkgJsonRaw) as PackageJson;
-        return { filepath: pkgJsonPath, json: pkgJson };
-      } catch {}
+      return pkgJsonPath;
     }
-    const nextBasedir = path.dirname(dir);
-    if (nextBasedir === dir) {
+    const nextDir = path.dirname(dir);
+    if (nextDir === dir) {
       break;
     }
-    dir = nextBasedir;
+    dir = nextDir;
   }
   return null;
+}
+
+export async function findNearestPackageJson(basedir: string): Promise<PackageJson | null> {
+  const pkgJsonPath = await findNearestPackageJsonFilePath(basedir);
+  if (pkgJsonPath == null) {
+    return null;
+  }
+  const raw = await fs.readFile(pkgJsonPath, 'utf8');
+  const json = JSON.parse(raw);
+  return json as PackageJson;
 }
 
 export async function fileExists(filepath: string): Promise<boolean> {

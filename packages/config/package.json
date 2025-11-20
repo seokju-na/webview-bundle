@@ -1,6 +1,6 @@
 {
-  "name": "@webview-bundle/electron",
-  "description": "Webview Bundle API for Electron",
+  "name": "@webview-bundle/config",
+  "description": "Configuration for webview bundle",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,13 +10,13 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./preload": {
-      "import": "./dist/preload/index.js",
-      "require": "./dist/preload/index.cjs"
+    "./remote": {
+      "import": "./dist/remote/index.js",
+      "require": "./dist/remote/index.cjs"
     },
-    "./renderer": {
-      "import": "./dist/renderer/index.js",
-      "require": "./dist/renderer/index.cjs"
+    "./signature": {
+      "import": "./dist/signature/index.js",
+      "require": "./dist/signature/index.cjs"
     },
     "./package.json": "./package.json"
   },
@@ -29,7 +29,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/electron"
+    "directory": "packages/config"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -45,15 +45,14 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "electron": ">= 15"
-  },
   "dependencies": {
-    "@webview-bundle/node": "workspace:^"
+    "@aws-sdk/client-kms": "^3.932.0",
+    "@webview-bundle/node": "workspace:^",
+    "rolldown": "1.0.0-beta.49"
   },
   "devDependencies": {
     "@types/node": "22.18.3",
-    "electron": "^35.7.5",
+    "execa": "^9",
     "tsdown": "0.15.1",
     "typescript": "5.9.2",
     "vitest": "3.2.4"

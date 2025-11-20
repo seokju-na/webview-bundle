@@ -4,6 +4,7 @@
   "type": "module",
   "workspaces": [
     "packages/**/*",
+    "!packages/config/tests/fixture/*",
     "examples/*",
     "bench/**/*",
     "xtask"

@@ -4,7 +4,6 @@ import { CreateCommand } from './commands/create.js';
 import { ExtractCommand } from './commands/extract.js';
 import { RemoteS3UploadCommand } from './commands/remote-s3-uplaod.js';
 import { ServeCommand } from './commands/serve.js';
-import { TestCommand } from './commands/test.js';
 
 const [, app, ...args] = process.argv;
 
@@ -18,5 +17,4 @@ cli.register(CreateCommand);
 cli.register(ExtractCommand);
 cli.register(ServeCommand);
 cli.register(RemoteS3UploadCommand);
-cli.register(TestCommand);
 cli.runExit(args);
