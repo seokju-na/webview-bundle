@@ -47,12 +47,10 @@
   },
   "dependencies": {
     "@aws-sdk/client-kms": "^3.932.0",
-    "@webview-bundle/node": "workspace:^",
-    "rolldown": "1.0.0-beta.49"
+    "@webview-bundle/node": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "22.18.3",
-    "execa": "^9",
     "tsdown": "0.15.1",
     "typescript": "5.9.2",
     "vitest": "3.2.4"

@@ -1,9 +1,0 @@
-{
-  "name": "yarn-pnp-ts-cjs",
-  "type": "commonjs",
-  "packageManager": "yarn@4.10.3",
-  "devDependencies": {
-    "@webview-bundle/config": "file:../../../package.tgz",
-    "typescript": "5.9.2"
-  }
-}

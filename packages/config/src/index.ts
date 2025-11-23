@@ -5,6 +5,5 @@ export type {
   ConfigInputFn,
   ConfigInputFnObj,
   ConfigInputFnPromise,
-  ResolvedConfig,
 } from './config.js';
-export { defineConfig, loadConfigFile, resolveConfig } from './config.js';
+export { defineConfig } from './config.js';

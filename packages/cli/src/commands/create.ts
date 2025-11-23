@@ -22,7 +22,7 @@ export class CreateCommand extends BaseCommand {
   });
 
   readonly dir = Option.String({
-    name: 'DIRECTORY',
+    name: 'DIR',
     required: true,
   });
   readonly outfile = Option.String('--outfile,-O', {
