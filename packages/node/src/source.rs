@@ -1,6 +1,6 @@
 use crate::bundle::JsBundle;
-use crate::bundle::JsBundleManifest;
-use crate::bundle::JsBundleManifestInner;
+use crate::bundle::JsBundleDescriptor;
+use crate::bundle::JsBundleDescriptorInner;
 use napi_derive::napi;
 use std::path::Path;
 use std::sync::Arc;
@@ -126,10 +126,10 @@ impl JsBundleSource {
   }
 
   #[napi]
-  pub async fn fetch_manifest(&self, bundle_name: String) -> crate::Result<JsBundleManifest> {
+  pub async fn fetch_manifest(&self, bundle_name: String) -> crate::Result<JsBundleDescriptor> {
     let inner = self.inner.fetch_manifest(&bundle_name).await?;
-    Ok(JsBundleManifest {
-      inner: JsBundleManifestInner::Owned(inner),
+    Ok(JsBundleDescriptor {
+      inner: JsBundleDescriptorInner::Owned(inner),
     })
   }
 }

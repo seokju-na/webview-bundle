@@ -1,6 +1,7 @@
 use crate::source::versions::{BundleVersions, ReadOnly, ReadWrite};
 use crate::{
-  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleManifest, EXTENSION,
+  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleDescriptor,
+  EXTENSION,
 };
 use dashmap::DashMap;
 use std::ops::Deref;
@@ -35,7 +36,7 @@ pub struct BundleSource {
   builtin_versions: OnceCell<Arc<BundleVersions<ReadOnly>>>,
   remote_dir: PathBuf,
   remote_versions: OnceCell<Arc<BundleVersions<ReadWrite>>>,
-  manifests: DashMap<String, Arc<OnceCell<Arc<BundleManifest>>>>,
+  manifests: DashMap<String, Arc<OnceCell<Arc<BundleDescriptor>>>>,
 }
 
 impl BundleSource {
@@ -114,14 +115,14 @@ impl BundleSource {
     Ok(bundle)
   }
 
-  pub async fn fetch_manifest(&self, bundle_name: &str) -> crate::Result<BundleManifest> {
+  pub async fn fetch_manifest(&self, bundle_name: &str) -> crate::Result<BundleDescriptor> {
     let mut file = self.reader(bundle_name).await?;
     let manifest =
-      AsyncReader::<BundleManifest>::read(&mut AsyncBundleReader::new(&mut file)).await?;
+      AsyncReader::<BundleDescriptor>::read(&mut AsyncBundleReader::new(&mut file)).await?;
     Ok(manifest)
   }
 
-  pub async fn load_manifest(&self, bundle_name: &str) -> crate::Result<Arc<BundleManifest>> {
+  pub async fn load_manifest(&self, bundle_name: &str) -> crate::Result<Arc<BundleDescriptor>> {
     if let Some(entry) = self.manifests.get(bundle_name) {
       if let Some(m) = entry.get() {
         return Ok(m.clone());
@@ -134,7 +135,7 @@ impl BundleSource {
     let m = cell_arc
       .get_or_try_init(|| async {
         let m = self.fetch_manifest(bundle_name).await?;
-        Ok::<Arc<BundleManifest>, crate::Error>(Arc::new(m))
+        Ok::<Arc<BundleDescriptor>, crate::Error>(Arc::new(m))
       })
       .await?
       .clone();

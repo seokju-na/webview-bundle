@@ -6890,12 +6890,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@webview-bundle/remote-base@workspace:packages/remote/base":
-  version: 0.0.0-use.local
-  resolution: "@webview-bundle/remote-base@workspace:packages/remote/base"
-  languageName: unknown
-  linkType: soft
-
 "@webview-bundle/remote-cloudflare-pulumi@workspace:^, @webview-bundle/remote-cloudflare-pulumi@workspace:packages/remote/cloudflare-pulumi":
   version: 0.0.0-use.local
   resolution: "@webview-bundle/remote-cloudflare-pulumi@workspace:packages/remote/cloudflare-pulumi"

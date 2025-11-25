@@ -15,6 +15,7 @@ pub struct JsBundleUpdateInfo {
   pub version: String,
   pub local_version: Option<String>,
   pub is_available: bool,
+  pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
 }
@@ -26,6 +27,7 @@ impl From<BundleUpdateInfo> for JsBundleUpdateInfo {
       version: value.version,
       local_version: value.local_version,
       is_available: value.is_available,
+      etag: value.etag,
       integrity: value.integrity,
       signature: value.signature,
     }
@@ -39,6 +41,7 @@ impl From<JsBundleUpdateInfo> for BundleUpdateInfo {
       version: value.version,
       local_version: value.local_version,
       is_available: value.is_available,
+      etag: value.etag,
       integrity: value.integrity,
       signature: value.signature,
     }

@@ -9,13 +9,13 @@ use tokio::fs;
 use webview_bundle::http::HeaderMap;
 use webview_bundle::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleBuilder,
-  BundleBuilderOptions, BundleManifest, BundleReader, BundleWriter, Header, HeaderWriterOptions,
+  BundleBuilderOptions, BundleDescriptor, BundleReader, BundleWriter, Header, HeaderWriterOptions,
   Index, IndexEntry, IndexWriterOptions, Reader, Writer,
 };
 
 #[napi(js_name = "Header")]
 pub struct JsHeader {
-  pub(crate) inner: SharedReference<JsBundleManifest, &'static Header>,
+  pub(crate) inner: SharedReference<JsBundleDescriptor, &'static Header>,
 }
 
 #[napi]
@@ -57,7 +57,7 @@ impl From<&IndexEntry> for JsIndexEntry {
 
 #[napi(js_name = "Index")]
 pub struct JsIndex {
-  pub(crate) inner: SharedReference<JsBundleManifest, &'static Index>,
+  pub(crate) inner: SharedReference<JsBundleDescriptor, &'static Index>,
 }
 
 #[napi]
@@ -82,16 +82,16 @@ impl JsIndex {
   }
 }
 
-pub(crate) enum JsBundleManifestInner {
-  Owned(BundleManifest),
-  Bundle(SharedReference<JsBundle, &'static BundleManifest>),
+pub(crate) enum JsBundleDescriptorInner {
+  Owned(BundleDescriptor),
+  Bundle(SharedReference<JsBundle, &'static BundleDescriptor>),
 }
 
-unsafe impl Send for JsBundleManifestInner {}
-unsafe impl Sync for JsBundleManifestInner {}
+unsafe impl Send for JsBundleDescriptorInner {}
+unsafe impl Sync for JsBundleDescriptorInner {}
 
-impl Deref for JsBundleManifestInner {
-  type Target = BundleManifest;
+impl Deref for JsBundleDescriptorInner {
+  type Target = BundleDescriptor;
   fn deref(&self) -> &Self::Target {
     match self {
       Self::Owned(x) => x,
@@ -100,21 +100,21 @@ impl Deref for JsBundleManifestInner {
   }
 }
 
-#[napi(js_name = "BundleManifest")]
-pub struct JsBundleManifest {
-  pub(crate) inner: JsBundleManifestInner,
+#[napi(js_name = "BundleDescriptor")]
+pub struct JsBundleDescriptor {
+  pub(crate) inner: JsBundleDescriptorInner,
 }
 
 #[napi]
-impl JsBundleManifest {
+impl JsBundleDescriptor {
   #[napi]
-  pub fn header(&self, this: Reference<JsBundleManifest>, env: Env) -> crate::Result<JsHeader> {
+  pub fn header(&self, this: Reference<JsBundleDescriptor>, env: Env) -> crate::Result<JsHeader> {
     let inner = this.share_with(env, |manifest| Ok(manifest.inner.header()))?;
     Ok(JsHeader { inner })
   }
 
   #[napi]
-  pub fn index(&self, this: Reference<JsBundleManifest>, env: Env) -> crate::Result<JsIndex> {
+  pub fn index(&self, this: Reference<JsBundleDescriptor>, env: Env) -> crate::Result<JsIndex> {
     let inner = this.share_with(env, |manifest| Ok(manifest.inner.index()))?;
     Ok(JsIndex { inner })
   }
@@ -128,10 +128,14 @@ pub struct JsBundle {
 #[napi]
 impl JsBundle {
   #[napi]
-  pub fn manifest(&self, this: Reference<JsBundle>, env: Env) -> crate::Result<JsBundleManifest> {
-    let inner = this.share_with(env, |bundle| Ok(bundle.inner.manifest()))?;
-    Ok(JsBundleManifest {
-      inner: JsBundleManifestInner::Bundle(inner),
+  pub fn descriptor(
+    &self,
+    this: Reference<JsBundle>,
+    env: Env,
+  ) -> crate::Result<JsBundleDescriptor> {
+    let inner = this.share_with(env, |bundle| Ok(bundle.inner.descriptor()))?;
+    Ok(JsBundleDescriptor {
+      inner: JsBundleDescriptorInner::Bundle(inner),
     })
   }
 

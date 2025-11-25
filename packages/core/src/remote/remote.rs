@@ -1,7 +1,7 @@
 use crate::remote::HttpConfig;
 use crate::{Bundle, BundleReader, Reader};
 use futures_util::StreamExt;
-use http::StatusCode;
+use http::{header, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use std::sync::Arc;
@@ -10,6 +10,7 @@ use std::sync::Arc;
 pub struct RemoteBundleInfo {
   pub name: String,
   pub version: String,
+  pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
 }
@@ -151,6 +152,9 @@ impl Remote {
         .as_bytes(),
     )
     .to_string();
+    let etag = headers
+      .get(header::ETAG)
+      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
     let integrity = headers
       .get("webview-bundle-integrity")
       .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
@@ -160,6 +164,7 @@ impl Remote {
     Ok(RemoteBundleInfo {
       name,
       version,
+      etag,
       integrity,
       signature,
     })

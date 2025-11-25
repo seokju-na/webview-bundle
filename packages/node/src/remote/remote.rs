@@ -25,6 +25,7 @@ pub struct JsRemoteOnDownloadData {
 pub struct JsRemoteBundleInfo {
   pub name: String,
   pub version: String,
+  pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
 }
@@ -34,6 +35,7 @@ impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
     Self {
       name: value.name,
       version: value.version,
+      etag: value.etag,
       integrity: value.integrity,
       signature: value.signature,
     }
@@ -45,6 +47,7 @@ impl From<JsRemoteBundleInfo> for RemoteBundleInfo {
     Self {
       name: value.name,
       version: value.version,
+      etag: value.etag,
       integrity: value.integrity,
       signature: value.signature,
     }

@@ -2,7 +2,7 @@ use crate::checksum::{make_checksum, CHECKSUM_LEN};
 use crate::header::HeaderWriterOptions;
 use crate::index::{Index, IndexEntry, IndexWriterOptions};
 use crate::version::Version;
-use crate::{Bundle, BundleManifest, Header, IndexWriter, Writer};
+use crate::{Bundle, BundleDescriptor, Header, IndexWriter, Writer};
 use http::HeaderMap;
 use lz4_flex::compress_prepend_size;
 use std::collections::HashMap;
@@ -176,7 +176,7 @@ impl BundleBuilder {
   pub fn build(&self) -> crate::Result<Bundle> {
     let index = self.build_index();
     let header = self.build_header(&index)?;
-    let manifest = BundleManifest { header, index };
+    let manifest = BundleDescriptor { header, index };
     let data = self.build_data();
     Ok(Bundle { manifest, data })
   }

@@ -14,6 +14,7 @@ pub struct BundleUpdateInfo {
   pub version: String,
   pub local_version: Option<String>,
   pub is_available: bool,
+  pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
 }
@@ -23,6 +24,7 @@ impl From<&BundleUpdateInfo> for RemoteBundleInfo {
     Self {
       name: value.name.to_string(),
       version: value.version.to_string(),
+      etag: value.etag.clone(),
       integrity: value.integrity.clone(),
       signature: value.signature.clone(),
     }
@@ -184,6 +186,7 @@ impl Updater {
       version: info.version,
       local_version: local_version.map(|x| x.to_string()),
       is_available,
+      etag: info.etag.clone(),
       integrity: info.integrity.clone(),
       signature: info.signature.clone(),
     })

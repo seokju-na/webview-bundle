@@ -16,12 +16,12 @@ use crate::{
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct BundleManifest {
+pub struct BundleDescriptor {
   pub(crate) header: Header,
   pub(crate) index: Index,
 }
 
-impl BundleManifest {
+impl BundleDescriptor {
   pub fn header(&self) -> &Header {
     &self.header
   }
@@ -87,7 +87,7 @@ impl BundleManifest {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bundle {
-  pub(crate) manifest: BundleManifest,
+  pub(crate) manifest: BundleDescriptor,
   pub(crate) data: Vec<u8>,
 }
 
@@ -100,7 +100,7 @@ impl Bundle {
     BundleBuilder::new_with_capacity(capacity)
   }
 
-  pub fn manifest(&self) -> &BundleManifest {
+  pub fn descriptor(&self) -> &BundleDescriptor {
     &self.manifest
   }
 
@@ -225,11 +225,11 @@ impl<R: Read + Seek> BundleReader<R> {
   }
 }
 
-impl<R: Read + Seek> Reader<BundleManifest> for BundleReader<R> {
-  fn read(&mut self) -> crate::Result<BundleManifest> {
+impl<R: Read + Seek> Reader<BundleDescriptor> for BundleReader<R> {
+  fn read(&mut self) -> crate::Result<BundleDescriptor> {
     let header = self.read_header()?;
     let index = self.read_index(header)?;
-    Ok(BundleManifest { header, index })
+    Ok(BundleDescriptor { header, index })
   }
 }
 
@@ -239,7 +239,7 @@ impl<R: Read + Seek> Reader<Bundle> for BundleReader<R> {
     let index = self.read_index(header)?;
     let data = self.read_data(header)?;
     Ok(Bundle {
-      manifest: BundleManifest { header, index },
+      manifest: BundleDescriptor { header, index },
       data,
     })
   }
@@ -280,11 +280,11 @@ impl<R: AsyncRead + AsyncSeek + Unpin> AsyncBundleReader<R> {
 }
 
 #[cfg(feature = "async")]
-impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<BundleManifest> for AsyncBundleReader<R> {
-  async fn read(&mut self) -> crate::Result<BundleManifest> {
+impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<BundleDescriptor> for AsyncBundleReader<R> {
+  async fn read(&mut self) -> crate::Result<BundleDescriptor> {
     let header = self.read_header().await?;
     let index = self.read_index(header).await?;
-    Ok(BundleManifest { header, index })
+    Ok(BundleDescriptor { header, index })
   }
 }
 
@@ -295,7 +295,7 @@ impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<Bundle> for AsyncBundleReader
     let index = self.read_index(header).await?;
     let data = self.read_data(header).await?;
     Ok(Bundle {
-      manifest: BundleManifest { header, index },
+      manifest: BundleDescriptor { header, index },
       data,
     })
   }
@@ -381,7 +381,7 @@ mod tests {
     let size = writer.write(&bundle).unwrap();
     assert_eq!(size, 162);
     let mut reader = BundleReader::new(Cursor::new(&data));
-    let manifest: BundleManifest = reader.read().unwrap();
+    let manifest: BundleDescriptor = reader.read().unwrap();
     assert_eq!(manifest.header.version(), Version::V1);
     assert_eq!(manifest.header.index_size(), 39);
 
@@ -432,7 +432,7 @@ mod tests {
     let mut writer = BundleWriter::new(Cursor::new(&mut data));
     writer.write(&bundle).unwrap();
     let mut reader = BundleReader::new(Cursor::new(&data));
-    let manifest: BundleManifest = reader.read().unwrap();
+    let manifest: BundleDescriptor = reader.read().unwrap();
     let html = manifest
       .async_get_data(Cursor::new(&data), "/index.html")
       .await
