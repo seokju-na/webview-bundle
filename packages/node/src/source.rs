@@ -127,7 +127,7 @@ impl JsBundleSource {
 
   #[napi]
   pub async fn fetch_manifest(&self, bundle_name: String) -> crate::Result<JsBundleDescriptor> {
-    let inner = self.inner.fetch_manifest(&bundle_name).await?;
+    let inner = self.inner.fetch_descriptor(&bundle_name).await?;
     Ok(JsBundleDescriptor {
       inner: JsBundleDescriptorInner::Owned(inner),
     })

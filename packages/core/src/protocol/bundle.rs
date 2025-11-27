@@ -36,17 +36,17 @@ impl super::Protocol for BundleProtocol {
       return Ok(method_not_allowed);
     }
 
-    let manifest = self.source.load_manifest(&name).await?;
-    if !manifest.index().contains_path(&path) {
+    let descriptor = self.source.load_descriptor(&name).await?;
+    if !descriptor.index().contains_path(&path) {
       let not_found = resp.status(404).body(Vec::new().into())?;
       return Ok(not_found);
     }
 
     let reader = self.source.reader(&name).await?;
-    let data = manifest.async_get_data(reader, &path).await?.unwrap();
+    let data = descriptor.async_get_data(reader, &path).await?.unwrap();
 
     if let Some(headers_mut) = resp.headers_mut() {
-      if let Some(headers) = manifest.index().get_entry(&path).map(|x| x.headers()) {
+      if let Some(headers) = descriptor.index().get_entry(&path).map(|x| x.headers()) {
         headers_mut.clone_from(headers);
       }
       // append if content-type header does not exists

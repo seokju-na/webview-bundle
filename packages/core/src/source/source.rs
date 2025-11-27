@@ -1,12 +1,14 @@
 use crate::source::versions::{BundleVersions, ReadOnly, ReadWrite};
+use crate::source::BundleManifest;
 use crate::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleDescriptor,
   EXTENSION,
 };
 use dashmap::DashMap;
+use std::collections::HashMap;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tokio::fs::File;
 use tokio::sync::OnceCell;
 
@@ -33,20 +35,21 @@ pub struct ListBundles {
 
 pub struct BundleSource {
   builtin_dir: PathBuf,
-  builtin_versions: OnceCell<Arc<BundleVersions<ReadOnly>>>,
+  builtin_manifests: RwLock<HashMap<String, OnceCell<Arc<BundleVersions<ReadOnly>>>>>,
   remote_dir: PathBuf,
-  remote_versions: OnceCell<Arc<BundleVersions<ReadWrite>>>,
-  manifests: DashMap<String, Arc<OnceCell<Arc<BundleDescriptor>>>>,
+  // remote_versions: OnceCell<Arc<BundleVersions<ReadWrite>>>,
+  remote_manifests: RwLock<HashMap<String, OnceCell<Arc<BundleVersions<ReadWrite>>>>>,
+  descriptors: DashMap<String, Arc<OnceCell<Arc<BundleDescriptor>>>>,
 }
 
 impl BundleSource {
   pub fn new(builtin_dir: &Path, remote_dir: &Path) -> Self {
     Self {
       builtin_dir: builtin_dir.to_path_buf(),
-      builtin_versions: OnceCell::new(),
+      builtin_manifests: RwLock::default(),
       remote_dir: remote_dir.to_path_buf(),
-      remote_versions: OnceCell::new(),
-      manifests: DashMap::default(),
+      remote_manifests: RwLock::default(),
+      descriptors: DashMap::default(),
     }
   }
 
@@ -66,7 +69,7 @@ impl BundleSource {
 
   pub async fn get_version(&self, bundle_name: &str) -> crate::Result<Option<BundleSourceVersion>> {
     match self
-      .remote_versions()
+      .remote_manifest()
       .await?
       .get_version(bundle_name)
       .map(BundleSourceVersion::Remote)
@@ -84,14 +87,14 @@ impl BundleSource {
 
   pub async fn set_version(&self, bundle_name: &str, version: &str) -> crate::Result<()> {
     self
-      .remote_versions()
+      .remote_manifest()
       .await?
       .set_version(bundle_name, version);
     Ok(())
   }
 
   pub async fn save_versions(&self) -> crate::Result<()> {
-    self.remote_versions().await?.save().await?;
+    self.remote_manifest().await?.save().await?;
     Ok(())
   }
 
@@ -115,35 +118,35 @@ impl BundleSource {
     Ok(bundle)
   }
 
-  pub async fn fetch_manifest(&self, bundle_name: &str) -> crate::Result<BundleDescriptor> {
+  pub async fn fetch_descriptor(&self, bundle_name: &str) -> crate::Result<BundleDescriptor> {
     let mut file = self.reader(bundle_name).await?;
     let manifest =
       AsyncReader::<BundleDescriptor>::read(&mut AsyncBundleReader::new(&mut file)).await?;
     Ok(manifest)
   }
 
-  pub async fn load_manifest(&self, bundle_name: &str) -> crate::Result<Arc<BundleDescriptor>> {
-    if let Some(entry) = self.manifests.get(bundle_name) {
+  pub async fn load_descriptor(&self, bundle_name: &str) -> crate::Result<Arc<BundleDescriptor>> {
+    if let Some(entry) = self.descriptors.get(bundle_name) {
       if let Some(m) = entry.get() {
         return Ok(m.clone());
       }
     }
-    let cell_arc = {
-      let entry = self.manifests.entry(bundle_name.to_string()).or_default();
+    let descriptor_cell = {
+      let entry = self.descriptors.entry(bundle_name.to_string()).or_default();
       entry.clone()
     };
-    let m = cell_arc
+    let descriptor = descriptor_cell
       .get_or_try_init(|| async {
-        let m = self.fetch_manifest(bundle_name).await?;
-        Ok::<Arc<BundleDescriptor>, crate::Error>(Arc::new(m))
+        let d = self.fetch_descriptor(bundle_name).await?;
+        Ok::<Arc<BundleDescriptor>, crate::Error>(Arc::new(d))
       })
       .await?
       .clone();
-    Ok(m)
+    Ok(descriptor)
   }
 
-  pub fn unload_manifest(&self, bundle_name: &str) -> bool {
-    self.manifests.remove(bundle_name).is_some()
+  pub fn unload_descriptor(&self, bundle_name: &str) -> bool {
+    self.descriptors.remove(bundle_name).is_some()
   }
 
   pub async fn is_exists(
@@ -191,7 +194,14 @@ impl BundleSource {
       .await
   }
 
-  async fn remote_versions(&self) -> crate::Result<&Arc<BundleVersions<ReadWrite>>> {
+  fn remote_manifest_dir(&self, bundle_name: &str) -> PathBuf {
+    self.remote_dir.join(bundle_name)
+  }
+
+  async fn remote_manifest(
+    &self,
+    bundle_name: &str,
+  ) -> crate::Result<&Arc<BundleManifest<ReadWrite>>> {
     let filepath = self.remote_dir.join("versions.json");
     self
       .remote_versions
@@ -258,10 +268,10 @@ mod tests {
       .join("fixtures")
       .join("bundles");
     let source = BundleSource::new(&base_dir.join("builtin"), &base_dir.join("remote"));
-    let manifest = source.fetch_manifest("nextjs").await.unwrap();
-    assert!(manifest.index().contains_path("/index.html"));
+    let descriptor = source.fetch_descriptor("nextjs").await.unwrap();
+    assert!(descriptor.index().contains_path("/index.html"));
     let reader = source.reader("nextjs").await.unwrap();
-    manifest
+    descriptor
       .async_get_data(reader, "/index.html")
       .await
       .unwrap()
@@ -317,7 +327,7 @@ mod tests {
     for _i in 0..10 {
       let s = source.clone();
       let handle = tokio::spawn(async move {
-        let _ = s.load_manifest("nextjs.wvb").await;
+        let _ = s.load_descriptor("nextjs.wvb").await;
       });
       handles.push(handle);
     }
@@ -337,23 +347,23 @@ mod tests {
       &base_dir.join("remote"),
     ));
 
-    let m1 = source.load_manifest("nextjs").await.unwrap();
+    let m1 = source.load_descriptor("nextjs").await.unwrap();
     assert!(
-      source.unload_manifest("nextjs"),
+      source.unload_descriptor("nextjs"),
       "unload should remove existing entry"
     );
-    let m2 = source.load_manifest("nextjs").await.unwrap();
+    let m2 = source.load_descriptor("nextjs").await.unwrap();
     assert!(
       !Arc::ptr_eq(&m1, &m2),
       "after unload, reloading should produce a new Arc"
     );
 
-    assert!(source.unload_manifest("nextjs"));
-    let m3 = source.load_manifest("nextjs").await.unwrap();
+    assert!(source.unload_descriptor("nextjs"));
+    let m3 = source.load_descriptor("nextjs").await.unwrap();
     assert!(!Arc::ptr_eq(&m2, &m3));
 
-    assert!(source.unload_manifest("nextjs"));
-    let m4 = source.load_manifest("nextjs").await.unwrap();
+    assert!(source.unload_descriptor("nextjs"));
+    let m4 = source.load_descriptor("nextjs").await.unwrap();
     assert!(!Arc::ptr_eq(&m3, &m4));
   }
 
@@ -377,7 +387,7 @@ mod tests {
     let mut set = JoinSet::new();
     for _i in 0..n {
       let s = source.clone();
-      set.spawn(async move { s.load_manifest("nextjs").await });
+      set.spawn(async move { s.load_descriptor("nextjs").await });
     }
     let mut initials = Vec::with_capacity(n);
     while let Some(res) = set.join_next().await {
@@ -398,7 +408,7 @@ mod tests {
       let before = barrier_before_unload.clone();
       before_set.spawn(async move {
         before.wait().await;
-        s.load_manifest("nextjs").await
+        s.load_descriptor("nextjs").await
       });
     }
     let mut after_set = JoinSet::new();
@@ -407,12 +417,12 @@ mod tests {
       let after = barrier_after_unload.clone();
       after_set.spawn(async move {
         after.wait().await;
-        s.load_manifest("nextjs").await
+        s.load_descriptor("nextjs").await
       });
     }
 
     barrier_before_unload.wait().await;
-    assert!(source.unload_manifest("nextjs"));
+    assert!(source.unload_descriptor("nextjs"));
     barrier_after_unload.wait().await;
 
     let mut before_jobs = Vec::with_capacity(n);

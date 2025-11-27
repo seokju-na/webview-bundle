@@ -24,6 +24,7 @@ reqwest              = { version = "0.12", default-features = false }
 rsa                  = "0.9.8"
 serde                = "1.0"
 serde_json           = "1.0"
+serde_repr           = "0.1"
 sha3                 = "0.10.8"
 tauri                = "2.8.5"
 tauri-build          = "2.4.1"

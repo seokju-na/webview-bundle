@@ -170,7 +170,7 @@ impl Updater {
       return Err(crate::Error::BundleNotFound);
     }
     self.source.set_version(&bundle_name, &version).await?;
-    self.source.unload_manifest(&bundle_name);
+    self.source.unload_descriptor(&bundle_name);
     Ok(())
   }
 
