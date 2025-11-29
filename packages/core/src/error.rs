@@ -32,6 +32,19 @@ pub enum Error {
   ChecksumMismatch,
   #[error("bundle not found")]
   BundleNotFound,
+  #[cfg(feature = "source")]
+  #[error("bundle entry not exists (bundle_name: {bundle_name}, version: {version})")]
+  BundleEntryNotExists {
+    bundle_name: String,
+    version: String,
+  },
+  #[cfg(feature = "source")]
+  #[error("bundle cannot be removed (bundle_name: {bundle_name}, version: {version}): {reason}")]
+  BundleCannotBeRemoved {
+    bundle_name: String,
+    version: String,
+    reason: String,
+  },
   #[cfg(feature = "_serde")]
   #[error("serde json error: {0}")]
   SerdeJson(#[from] serde_json::Error),
@@ -91,6 +104,30 @@ pub enum Error {
 }
 
 impl Error {
+  #[cfg(feature = "source")]
+  pub(crate) fn bundle_entry_not_exists(
+    bundle_name: impl Into<String>,
+    version: impl Into<String>,
+  ) -> Self {
+    Self::BundleEntryNotExists {
+      bundle_name: bundle_name.into(),
+      version: version.into(),
+    }
+  }
+
+  #[cfg(feature = "source")]
+  pub(crate) fn bundle_cannot_be_removed(
+    bundle_name: impl Into<String>,
+    version: impl Into<String>,
+    reason: impl Into<String>,
+  ) -> Self {
+    Self::BundleCannotBeRemoved {
+      bundle_name: bundle_name.into(),
+      version: version.into(),
+      reason: reason.into(),
+    }
+  }
+
   #[cfg(feature = "remote")]
   pub(crate) fn invalid_remote_config(message: impl Into<String>) -> Self {
     Self::InvalidRemoteConfig(message.into())

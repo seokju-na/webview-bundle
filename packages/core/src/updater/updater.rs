@@ -175,20 +175,21 @@ impl Updater {
   }
 
   async fn to_update_info(&self, info: RemoteBundleInfo) -> crate::Result<BundleUpdateInfo> {
-    let local_version = self.source.get_version(&info.name).await?;
-    let is_available = if let Some(ref local_ver) = local_version {
-      local_ver.to_string() != info.version
-    } else {
-      true
-    };
-    Ok(BundleUpdateInfo {
-      name: info.name,
-      version: info.version,
-      local_version: local_version.map(|x| x.to_string()),
-      is_available,
-      etag: info.etag.clone(),
-      integrity: info.integrity.clone(),
-      signature: info.signature.clone(),
-    })
+    todo!()
+    // let local_version = self.source.get_version(&info.name).await?;
+    // let is_available = if let Some(ref local_ver) = local_version {
+    //   local_ver.to_string() != info.version
+    // } else {
+    //   true
+    // };
+    // Ok(BundleUpdateInfo {
+    //   name: info.name,
+    //   version: info.version,
+    //   local_version: local_version.map(|x| x.to_string()),
+    //   is_available,
+    //   etag: info.etag.clone(),
+    //   integrity: info.integrity.clone(),
+    //   signature: info.signature.clone(),
+    // })
   }
 }
