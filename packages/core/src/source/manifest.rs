@@ -1,11 +1,8 @@
-#[cfg(feature = "remote")]
-use crate::remote::RemoteBundleInfo;
 use crate::source::BundleMetadata;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::RwLock;
-use tokio::sync::OnceCell;
+use std::sync::Arc;
+use tokio::sync::{OnceCell, RwLock};
 
 pub trait BundleManifestMode: Send + Sync + 'static {}
 pub struct ReadOnly;
@@ -30,8 +27,9 @@ fn default_metadata_filepath(base_dir: &Path, bundle_name: &str, version: &str) 
 pub struct BundleManifest<Mode: BundleManifestMode> {
   _mode: std::marker::PhantomData<Mode>,
   base_dir: PathBuf,
-  versions: RwLock<OnceCell<HashMap<String, String>>>,
-  metadata: RwLock<HashMap<String, OnceCell<BundleMetadata>>>,
+  list_bundles_cache: OnceCell<Vec<String>>,
+  versions: OnceCell<RwLock<HashMap<String, String>>>,
+  metadata: RwLock<HashMap<(String, String), OnceCell<Arc<BundleMetadata>>>>,
   versions_filepath_fn: Box<VersionsFilepathFn>,
   metadata_filepath_fn: Box<MetadataFilepathFn>,
 }
@@ -44,6 +42,7 @@ where
     Self {
       _mode: std::marker::PhantomData,
       base_dir: base_dir.to_path_buf(),
+      list_bundles_cache: Default::default(),
       versions: Default::default(),
       metadata: Default::default(),
       versions_filepath_fn: Box::new(default_versions_filepath),
@@ -51,61 +50,115 @@ where
     }
   }
 
-  pub fn get_versions_filepath(&self) -> PathBuf {
+  pub fn new_with(
+    base_dir: &Path,
+    versions_filepath_fn: Option<Box<VersionsFilepathFn>>,
+    metadata_filepath_fn: Option<Box<MetadataFilepathFn>>,
+    _mode: Mode,
+  ) -> Self {
+    Self {
+      _mode: std::marker::PhantomData,
+      base_dir: base_dir.to_path_buf(),
+      list_bundles_cache: Default::default(),
+      versions: Default::default(),
+      metadata: Default::default(),
+      versions_filepath_fn: versions_filepath_fn
+        .unwrap_or_else(|| Box::new(default_versions_filepath)),
+      metadata_filepath_fn: metadata_filepath_fn
+        .unwrap_or_else(|| Box::new(default_metadata_filepath)),
+    }
+  }
+
+  pub fn base_dir(&self) -> &Path {
+    self.base_dir.as_path()
+  }
+
+  pub fn versions_filepath(&self) -> PathBuf {
     (self.versions_filepath_fn)(&self.base_dir)
   }
 
-  pub fn get_metadata_filepath(&self, bundle_name: &str, version: &str) -> PathBuf {
+  pub fn metadata_filepath(&self, bundle_name: &str, version: &str) -> PathBuf {
     (self.metadata_filepath_fn)(&self.base_dir, bundle_name, version)
   }
 
   pub async fn load_version(&self, bundle_name: &str) -> crate::Result<Option<String>> {
-    let v = {
-      let mut version = None;
-      let versions = self.versions.read().unwrap();
-      if let Some(vmap) = versions.get() {
-        if let Some(v) = vmap.get(bundle_name) {
-          version = Some(v.to_string());
-        }
-      }
-      version
-    };
-    if v.is_some() {
-      return Ok(v);
+    let versions = self.load_versions().await?;
+    let read = versions.read().await;
+    Ok(read.get(bundle_name).cloned())
+  }
+
+  pub async fn load_metadata(
+    &self,
+    bundle_name: &str,
+    version: &str,
+  ) -> crate::Result<Arc<BundleMetadata>> {
+    let key = (bundle_name.to_string(), version.to_string());
+    if let Some(m) = {
+      let metadata = self.metadata.read().await;
+      metadata.get(&key).and_then(|x| x.get()).cloned()
+    } {
+      return Ok(m);
     }
-    let versions_filepath = self.get_versions_filepath();
-    let versions = self.versions.write().unwrap();
-    let vmap = versions
+    let metadata_filepath = self.metadata_filepath(bundle_name, version);
+    let metadata = {
+      let mut metadata = self.metadata.write().await;
+      metadata
+        .entry(key)
+        .or_insert_with(OnceCell::new)
+        .get_or_try_init(|| async {
+          let metadata = BundleMetadata::load(&metadata_filepath).await?;
+          Ok::<Arc<BundleMetadata>, crate::Error>(Arc::new(metadata))
+        })
+        .await?
+        .clone()
+    };
+    Ok(metadata)
+  }
+
+  async fn load_versions(&self) -> crate::Result<&RwLock<HashMap<String, String>>> {
+    let versions_filepath = self.versions_filepath();
+    let versions = self
+      .versions
       .get_or_try_init(|| async {
         let raw = tokio::fs::read(&versions_filepath).await?;
         let versions: HashMap<String, String> = serde_json::from_slice(&raw)?;
-        Ok::<HashMap<String, String>, crate::Error>(versions)
+        Ok::<RwLock<HashMap<String, String>>, crate::Error>(RwLock::new(versions))
       })
       .await?;
-    todo!()
+    Ok(versions)
   }
 
-  async fn save_inner(&self) -> crate::Result<()> {
-    let raw = {
-      let json = self.data.read().unwrap();
-      serde_json::to_vec(&*json)
-    }?;
-    tokio::fs::write(&self.filepath, raw).await?;
+  async fn update_version_inner(&self, bundle_name: &str, version: &str) -> crate::Result<()> {
+    let versions = self.load_versions().await?;
+    let mut write = versions.write().await;
+    write.insert(bundle_name.to_string(), version.to_string());
     Ok(())
   }
 
-  fn update_inner(&self, update_data: BundleManifestData) {
-    let mut data = self.data.write().unwrap();
-    *data = update_data;
+  async fn save_versions_inner(&self) -> crate::Result<()> {
+    let data = {
+      let versions = self.load_versions().await?.read().await;
+      let raw = serde_json::to_vec(&*versions)?;
+      raw
+    };
+    let versions_filepath = self.versions_filepath();
+    tokio::fs::write(&versions_filepath, &data).await?;
+    Ok(())
   }
 }
 
 impl BundleManifest<ReadWrite> {
-  pub async fn save(&self) -> crate::Result<()> {
-    self.save_inner().await
+  pub async fn update_version(&self, bundle_name: &str, version: &str) -> crate::Result<()> {
+    self.update_version_inner(bundle_name, version).await
   }
 
-  pub fn update(&self, update_data: BundleManifestData) {
-    self.update_inner(update_data);
+  pub async fn save_versions(&self) -> crate::Result<()> {
+    self.save_versions_inner().await
   }
 }
+
+#[cfg(test)]
+mod tests {}
+
+// list bundles => source에다가 두기
+// 캐시 해둔거

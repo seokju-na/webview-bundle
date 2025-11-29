@@ -1,5 +1,4 @@
-use crate::source::versions::{BundleVersions, ReadOnly, ReadWrite};
-use crate::source::BundleManifest;
+use crate::source::{BundleManifest, ReadOnly, ReadWrite};
 use crate::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleDescriptor,
   EXTENSION,
@@ -8,7 +7,7 @@ use dashmap::DashMap;
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::OnceCell;
 
@@ -34,23 +33,25 @@ pub struct ListBundles {
 }
 
 pub struct BundleSource {
-  builtin_dir: PathBuf,
-  builtin_manifests: RwLock<HashMap<String, OnceCell<Arc<BundleVersions<ReadOnly>>>>>,
-  remote_dir: PathBuf,
-  // remote_versions: OnceCell<Arc<BundleVersions<ReadWrite>>>,
-  remote_manifests: RwLock<HashMap<String, OnceCell<Arc<BundleVersions<ReadWrite>>>>>,
-  descriptors: DashMap<String, Arc<OnceCell<Arc<BundleDescriptor>>>>,
+  builtin_manifest: BundleManifest<ReadOnly>,
+  remote_manifest: BundleManifest<ReadWrite>,
+  descriptors: DashMap<String, OnceCell<Arc<BundleDescriptor>>>,
 }
 
 impl BundleSource {
-  pub fn new(builtin_dir: &Path, remote_dir: &Path) -> Self {
+  pub fn new(
+    builtin_manifest: BundleManifest<ReadOnly>,
+    remote_manifest: BundleManifest<ReadWrite>,
+  ) -> Self {
     Self {
-      builtin_dir: builtin_dir.to_path_buf(),
-      builtin_manifests: RwLock::default(),
-      remote_dir: remote_dir.to_path_buf(),
-      remote_manifests: RwLock::default(),
+      builtin_manifest,
+      remote_manifest,
       descriptors: DashMap::default(),
     }
+  }
+
+  pub async fn list_builtin_bundles(&self) -> crate::Result<Vec<String>> {
+    todo!()
   }
 
   pub async fn list_bundles(&self) -> crate::Result<ListBundles> {
