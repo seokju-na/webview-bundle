@@ -22,6 +22,7 @@ p384                 = "0.13.1"
 percent-encoding     = "2.3.2"
 reqwest              = { version = "0.12", default-features = false }
 rsa                  = "0.9.8"
+semver               = "1.0"
 serde                = "1.0"
 serde_json           = "1.0"
 serde_repr           = "0.1"

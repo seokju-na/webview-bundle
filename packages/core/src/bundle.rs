@@ -87,7 +87,7 @@ impl BundleDescriptor {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bundle {
-  pub(crate) manifest: BundleDescriptor,
+  pub(crate) descriptor: BundleDescriptor,
   pub(crate) data: Vec<u8>,
 }
 
@@ -101,24 +101,24 @@ impl Bundle {
   }
 
   pub fn descriptor(&self) -> &BundleDescriptor {
-    &self.manifest
+    &self.descriptor
   }
 
   pub fn get_data(&self, path: &str) -> crate::Result<Option<Vec<u8>>> {
-    if !self.manifest.index.contains_path(path) {
+    if !self.descriptor.index.contains_path(path) {
       return Ok(None);
     }
-    let entry = self.manifest.index.get_entry(path).unwrap();
+    let entry = self.descriptor.index.get_entry(path).unwrap();
     let mut reader = BundleDataReader::new(Cursor::new(&self.data), 0);
     let data = reader.read_entry_data(entry)?;
     Ok(Some(data))
   }
 
   pub fn get_data_checksum(&self, path: &str) -> crate::Result<Option<u32>> {
-    if !self.manifest.index.contains_path(path) {
+    if !self.descriptor.index.contains_path(path) {
       return Ok(None);
     }
-    let entry = self.manifest.index.get_entry(path).unwrap();
+    let entry = self.descriptor.index.get_entry(path).unwrap();
     let mut reader = BundleDataReader::new(Cursor::new(&self.data), 0);
     let checksum = reader.read_entry_checksum(entry)?;
     Ok(Some(checksum))
@@ -239,7 +239,7 @@ impl<R: Read + Seek> Reader<Bundle> for BundleReader<R> {
     let index = self.read_index(header)?;
     let data = self.read_data(header)?;
     Ok(Bundle {
-      manifest: BundleDescriptor { header, index },
+      descriptor: BundleDescriptor { header, index },
       data,
     })
   }
@@ -295,7 +295,7 @@ impl<R: AsyncRead + AsyncSeek + Unpin> AsyncReader<Bundle> for AsyncBundleReader
     let index = self.read_index(header).await?;
     let data = self.read_data(header).await?;
     Ok(Bundle {
-      manifest: BundleDescriptor { header, index },
+      descriptor: BundleDescriptor { header, index },
       data,
     })
   }
@@ -313,8 +313,8 @@ impl<W: Write> BundleWriter<W> {
 
 impl<W: Write> Writer<Bundle> for BundleWriter<W> {
   fn write(&mut self, data: &Bundle) -> crate::Result<usize> {
-    let header_len = HeaderWriter::new(&mut self.w).write(&data.manifest.header)?;
-    let index_len = IndexWriter::new(&mut self.w).write(&data.manifest.index)?;
+    let header_len = HeaderWriter::new(&mut self.w).write(&data.descriptor.header)?;
+    let index_len = IndexWriter::new(&mut self.w).write(&data.descriptor.index)?;
     let data_len = data.data.len();
     self.w.write_all(&data.data)?;
     self.w.flush()?;
@@ -338,10 +338,10 @@ impl<W: AsyncWrite + Unpin> AsyncBundleWriter<W> {
 impl<W: AsyncWrite + Unpin> AsyncWriter<Bundle> for AsyncBundleWriter<W> {
   async fn write(&mut self, data: &Bundle) -> crate::Result<usize> {
     let header_len = AsyncHeaderWriter::new(&mut self.w)
-      .write(&data.manifest.header)
+      .write(&data.descriptor.header)
       .await?;
     let index_len = AsyncIndexWriter::new(&mut self.w)
-      .write(&data.manifest.index)
+      .write(&data.descriptor.index)
       .await?;
     let data_len = data.data.len();
     self.w.write_all(&data.data).await?;
@@ -370,7 +370,7 @@ mod tests {
   const INDEX_JS: &str = r#"console.log('Hello World');"#;
 
   #[test]
-  fn manifest() {
+  fn descriptor() {
     let mut builder = Bundle::builder();
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
@@ -381,11 +381,11 @@ mod tests {
     let size = writer.write(&bundle).unwrap();
     assert_eq!(size, 162);
     let mut reader = BundleReader::new(Cursor::new(&data));
-    let manifest: BundleDescriptor = reader.read().unwrap();
-    assert_eq!(manifest.header.version(), Version::V1);
-    assert_eq!(manifest.header.index_size(), 39);
+    let descriptor: BundleDescriptor = reader.read().unwrap();
+    assert_eq!(descriptor.header.version(), Version::V1);
+    assert_eq!(descriptor.header.index_size(), 39);
 
-    let html = manifest.index.get_entry("/index.html").unwrap();
+    let html = descriptor.index.get_entry("/index.html").unwrap();
     assert_eq!(
       html.headers().get(header::CONTENT_TYPE).unwrap(),
       "text/html"
@@ -432,8 +432,8 @@ mod tests {
     let mut writer = BundleWriter::new(Cursor::new(&mut data));
     writer.write(&bundle).unwrap();
     let mut reader = BundleReader::new(Cursor::new(&data));
-    let manifest: BundleDescriptor = reader.read().unwrap();
-    let html = manifest
+    let descriptor: BundleDescriptor = reader.read().unwrap();
+    let html = descriptor
       .async_get_data(Cursor::new(&data), "/index.html")
       .await
       .unwrap();

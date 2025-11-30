@@ -1,4 +1,4 @@
-use crate::source::{BundleManifest, ReadOnly, ReadWrite};
+use crate::source::{BundleManifest, BundleManifestMetadata, ReadOnly, ReadWrite};
 use crate::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleDescriptor,
   EXTENSION,
@@ -19,16 +19,71 @@ pub enum BundleSourceKind {
   Remote,
 }
 
+pub type CustomVersionSelector = dyn Fn(
+    &str,
+    (String, BundleManifestMetadata),
+    (String, BundleManifestMetadata),
+  ) -> Result<String, Box<dyn std::error::Error + Send + Sync + 'static>>
+  + Send
+  + Sync;
+
+#[derive(Default)]
+#[non_exhaustive]
+pub enum BundleSourceVersionSelector {
+  #[default]
+  LastModified,
+  SemVer,
+  Custom(Arc<CustomVersionSelector>),
+}
+
+impl BundleSourceVersionSelector {
+  pub fn select(
+    &self,
+    bundle_name: &str,
+    builtin: (String, BundleManifestMetadata),
+    remote: (String, BundleManifestMetadata),
+  ) -> crate::Result<String> {
+    match self {
+      Self::LastModified => {
+        let builtin_last_modified = builtin.1.last_modified;
+        let remote_last_modified = remote.1.last_modified;
+        if builtin_last_modified < remote_last_modified {
+          return Ok(remote.0);
+        }
+        Ok(builtin.0)
+      }
+      Self::SemVer => {
+        let builtin_version =
+          semver::Version::parse(&builtin.0).map_err(|e| crate::Error::generic(e))?;
+        let remote_version =
+          semver::Version::parse(&remote.0).map_err(|e| crate::Error::generic(e))?;
+        if builtin_version < remote_version {
+          return Ok(remote.0);
+        }
+        Ok(builtin.0)
+      }
+      Self::Custom(f) => f(bundle_name, builtin, remote).map_err(|e| crate::Error::generic(e)),
+    }
+  }
+}
+
 pub struct BundleSource {
   builtin_dir: PathBuf,
   builtin_manifest: BundleManifest<ReadOnly>,
   remote_dir: PathBuf,
   remote_manifest: BundleManifest<ReadWrite>,
+  version_selector: BundleSourceVersionSelector,
+  use_remote_first: bool,
   descriptors: DashMap<String, OnceCell<Arc<BundleDescriptor>>>,
 }
 
 impl BundleSource {
-  pub fn new(builtin_dir: impl Into<PathBuf>, remote_dir: impl Into<PathBuf>) -> Self {
+  pub fn new(
+    builtin_dir: impl Into<PathBuf>,
+    remote_dir: impl Into<PathBuf>,
+    version_selector: Option<BundleSourceVersionSelector>,
+    force_use_remote: Option<bool>,
+  ) -> Self {
     let builtin_dir = builtin_dir.into();
     let builtin_manifest = BundleManifest::new(&builtin_dir.join("manifest.json"), ReadOnly);
     let remote_dir = remote_dir.into();
@@ -38,35 +93,47 @@ impl BundleSource {
       builtin_manifest,
       remote_dir,
       remote_manifest,
+      version_selector: version_selector.unwrap_or_default(),
+      use_remote_first: force_use_remote.unwrap_or_default(),
       descriptors: DashMap::default(),
     }
   }
 
-  pub fn builtin_manifest(&self) -> &BundleManifest<ReadOnly> {
-    &self.builtin_manifest
-  }
-
-  pub fn remote_manifest(&self) -> &BundleManifest<ReadWrite> {
-    &self.remote_manifest
-  }
-
-  pub async fn load_version(
-    &self,
-    bundle_name: &str,
-  ) -> crate::Result<Option<(BundleSourceKind, String)>> {
-    match self
-      .remote_manifest
-      .load_current_version(bundle_name)
-      .await?
-    {
-      Some(x) => Ok(Some((BundleSourceKind::Remote, x))),
-      None => Ok(
-        self
+  pub async fn load_version(&self, bundle_name: &str) -> crate::Result<Option<String>> {
+    if self.use_remote_first {
+      let version = match self
+        .remote_manifest
+        .load_current_version(bundle_name)
+        .await?
+      {
+        Some(ver) => Some(ver),
+        None => match self
           .builtin_manifest
           .load_current_version(bundle_name)
           .await?
-          .map(|version| (BundleSourceKind::Builtin, version)),
-      ),
+        {
+          Some(ver) => Some(ver),
+          None => None,
+        },
+      };
+      return Ok(version);
+    }
+
+    match tokio::try_join!(
+      self
+        .builtin_manifest
+        .load_current_version_with_metadata(bundle_name),
+      self
+        .remote_manifest
+        .load_current_version_with_metadata(bundle_name),
+    )? {
+      (Some(builtin), Some(remote)) => {
+        let ver = self.version_selector.select(bundle_name, builtin, remote)?;
+        Ok(Some(ver))
+      }
+      (Some((builtin_ver, _)), None) => Ok(Some(builtin_ver)),
+      (None, Some((remote_ver, _))) => Ok(Some(remote_ver)),
+      (None, None) => Ok(None),
     }
   }
 

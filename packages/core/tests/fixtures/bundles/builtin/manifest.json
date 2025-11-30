@@ -3,12 +3,7 @@
   "entries": {
     "nextjs": {
       "versions": {
-        "1.0.0": {
-          "type": "builtin"
-        },
-        "1.1.0": {
-          "type": "remote"
-        }
+        "1.0.0": {}
       },
       "currentVersion": "1.0.0"
     }

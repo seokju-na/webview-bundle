@@ -35,7 +35,7 @@ impl IntegrityMaker {
         Ok(integrity.serialize())
       }
       Self::Custom(maker) => {
-        let integrity = maker(data).await.map_err(crate::Error::unknown)?;
+        let integrity = maker(data).await.map_err(crate::Error::generic)?;
         Ok(integrity)
       }
     }

@@ -37,7 +37,7 @@ impl IntegrityChecker {
       Self::Custom(checker) => {
         if !checker(data, integrity)
           .await
-          .map_err(crate::Error::unknown)?
+          .map_err(crate::Error::generic)?
         {
           return Err(crate::Error::IntegrityVerifyFailed);
         }

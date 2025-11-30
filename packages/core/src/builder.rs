@@ -178,7 +178,10 @@ impl BundleBuilder {
     let header = self.build_header(&index)?;
     let manifest = BundleDescriptor { header, index };
     let data = self.build_data();
-    Ok(Bundle { manifest, data })
+    Ok(Bundle {
+      descriptor: manifest,
+      data,
+    })
   }
 
   pub(crate) fn build_header(&self, index: &Index) -> crate::Result<Header> {

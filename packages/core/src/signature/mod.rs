@@ -55,7 +55,7 @@ pub enum SignatureSigner {
 impl SignatureSigner {
   pub async fn sign(&self, bundle: &Bundle, data: &[u8]) -> crate::Result<String> {
     match self {
-      Self::Custom(sign) => sign(bundle, data).await.map_err(crate::Error::unknown),
+      Self::Custom(sign) => sign(bundle, data).await.map_err(crate::Error::generic),
       #[cfg(feature = "signature-ecdsa_secp256r1")]
       Self::EcdsaSecp256r1(signer) => signer.sign(bundle, data).await,
       #[cfg(feature = "signature-ecdsa_secp384r1")]
@@ -112,7 +112,7 @@ impl SignatureVerifier {
     match self {
       Self::Custom(verify) => verify(bundle, data, signature)
         .await
-        .map_err(crate::Error::unknown),
+        .map_err(crate::Error::generic),
       #[cfg(feature = "signature-ecdsa_secp256r1")]
       Self::EcdsaSecp256r1(verifier) => verifier.verify(bundle, data, signature).await,
       #[cfg(feature = "signature-ecdsa_secp384r1")]

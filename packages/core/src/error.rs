@@ -99,8 +99,8 @@ pub enum Error {
   #[cfg(feature = "signature")]
   #[error("signature verify failed")]
   SignatureVerifyFailed,
-  #[error("unknown error: {0}")]
-  Unknown(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
+  #[error("generic error: {0}")]
+  Generic(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 impl Error {
@@ -172,9 +172,9 @@ impl Error {
     Self::InvalidVerifyingKey(error.into())
   }
 
-  pub(crate) fn unknown(
+  pub(crate) fn generic(
     error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
   ) -> Self {
-    Self::Unknown(error.into())
+    Self::Generic(error.into())
   }
 }

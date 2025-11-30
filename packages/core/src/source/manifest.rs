@@ -14,7 +14,7 @@ pub enum BundleManifestVersion {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub struct BundleManifestEntryMetadata {
+pub struct BundleManifestMetadata {
   pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
@@ -26,7 +26,7 @@ pub struct BundleManifestEntryMetadata {
 #[non_exhaustive]
 pub struct BundleManifestEntry {
   pub current_version: String,
-  pub versions: HashMap<String, BundleManifestEntryMetadata>,
+  pub versions: HashMap<String, BundleManifestMetadata>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -40,12 +40,12 @@ pub struct BundleManifestData {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
-pub struct ListBundleManifestEntryItem {
+pub struct ListBundleManifestItem {
   pub name: String,
   pub version: String,
   pub current: bool,
   #[serde(flatten)]
-  pub metadata: BundleManifestEntryMetadata,
+  pub metadata: BundleManifestMetadata,
 }
 
 pub trait BundleManifestMode: Send + Sync + 'static {}
@@ -76,12 +76,12 @@ where
     self.filepath.as_path()
   }
 
-  pub async fn list_entries(&self) -> crate::Result<Vec<ListBundleManifestEntryItem>> {
+  pub async fn list_entries(&self) -> crate::Result<Vec<ListBundleManifestItem>> {
     let data = self.load().await?.read().await;
     let mut items = vec![];
     for (bundle_name, entry) in data.entries.iter() {
       for (version, metadata) in entry.versions.iter() {
-        let item = ListBundleManifestEntryItem {
+        let item = ListBundleManifestItem {
           name: bundle_name.to_string(),
           version: version.to_string(),
           current: &entry.current_version == version,
@@ -102,11 +102,34 @@ where
     Ok(version)
   }
 
+  pub async fn load_current_version_with_metadata(
+    &self,
+    bundle_name: &str,
+  ) -> crate::Result<Option<(String, BundleManifestMetadata)>> {
+    let data = self.load().await?.read().await;
+    let current_version = data
+      .entries
+      .get(bundle_name)
+      .map(|entry| entry.current_version.to_string());
+    // We can now safely get the metadata, since manifest data ensure the current version has
+    // metadata in versions field.
+    if let Some(ver) = current_version {
+      let metadata = data
+        .entries
+        .get(bundle_name)
+        .map(|entry| entry.versions.get(&ver).cloned())
+        .flatten()
+        .unwrap();
+      return Ok(Some((ver, metadata)));
+    }
+    Ok(None)
+  }
+
   pub async fn load_metadata(
     &self,
     bundle_name: &str,
     version: &str,
-  ) -> crate::Result<Option<BundleManifestEntryMetadata>> {
+  ) -> crate::Result<Option<BundleManifestMetadata>> {
     let data = self.load().await?.read().await;
     let metadata = data
       .entries
@@ -121,6 +144,7 @@ where
       .manifest
       .get_or_try_init(|| async {
         let raw = tokio::fs::read(&self.filepath).await?;
+        // TODO: ensure current version is pointed to a valid version.
         let data: BundleManifestData = serde_json::from_slice(&raw)?;
         Ok::<RwLock<BundleManifestData>, crate::Error>(RwLock::new(data))
       })
@@ -134,7 +158,7 @@ impl BundleManifest<ReadWrite> {
     &self,
     bundle_name: &str,
     version: &str,
-    metadata: BundleManifestEntryMetadata,
+    metadata: BundleManifestMetadata,
   ) -> crate::Result<bool> {
     let mut inserted = true;
     let mut data = self.load().await?.write().await;
@@ -359,7 +383,7 @@ mod tests {
       &fixtures.get_path("bundles").join("manifest.json"),
       ReadWrite,
     );
-    let metadata = BundleManifestEntryMetadata {
+    let metadata = BundleManifestMetadata {
       etag: None,
       integrity: None,
       signature: None,
@@ -387,7 +411,7 @@ mod tests {
       &fixtures.get_path("bundles").join("manifest.json"),
       ReadWrite,
     );
-    let metadata = BundleManifestEntryMetadata {
+    let metadata = BundleManifestMetadata {
       etag: None,
       integrity: None,
       signature: None,
