@@ -1,4 +1,4 @@
-use crate::source::{BundleManifest, BundleManifestMetadata, ReadOnly, ReadWrite};
+use crate::source::{BundleCurrent, BundleManifest, BundleManifestMetadata, ReadOnly, ReadWrite};
 use crate::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleDescriptor,
   EXTENSION,
@@ -31,9 +31,10 @@ pub type CustomVersionSelector = dyn Fn(
 #[non_exhaustive]
 pub enum BundleSourceVersionSelector {
   #[default]
+  RemoteFirst,
   LastModified,
   SemVer,
-  Custom(Arc<CustomVersionSelector>),
+  Custom(Box<CustomVersionSelector>),
 }
 
 impl BundleSourceVersionSelector {
@@ -44,6 +45,7 @@ impl BundleSourceVersionSelector {
     remote: (String, BundleManifestMetadata),
   ) -> crate::Result<String> {
     match self {
+      Self::RemoteFirst => Ok(remote.0),
       Self::LastModified => {
         let builtin_last_modified = builtin.1.last_modified;
         let remote_last_modified = remote.1.last_modified;
@@ -72,8 +74,9 @@ pub struct BundleSource {
   builtin_manifest: BundleManifest<ReadOnly>,
   remote_dir: PathBuf,
   remote_manifest: BundleManifest<ReadWrite>,
-  version_selector: BundleSourceVersionSelector,
-  use_remote_first: bool,
+  current: BundleCurrent,
+  current_sync: OnceCell<u64>,
+  version_selector: Arc<BundleSourceVersionSelector>,
   descriptors: DashMap<String, OnceCell<Arc<BundleDescriptor>>>,
 }
 
@@ -82,19 +85,20 @@ impl BundleSource {
     builtin_dir: impl Into<PathBuf>,
     remote_dir: impl Into<PathBuf>,
     version_selector: Option<BundleSourceVersionSelector>,
-    force_use_remote: Option<bool>,
   ) -> Self {
     let builtin_dir = builtin_dir.into();
     let builtin_manifest = BundleManifest::new(&builtin_dir.join("manifest.json"), ReadOnly);
     let remote_dir = remote_dir.into();
     let remote_manifest = BundleManifest::new(&remote_dir.join("manifest.json"), ReadWrite);
+    let current = BundleCurrent::new(&remote_dir.join("versions.json"));
     Self {
       builtin_dir,
       builtin_manifest,
       remote_dir,
       remote_manifest,
-      version_selector: version_selector.unwrap_or_default(),
-      use_remote_first: force_use_remote.unwrap_or_default(),
+      current,
+      current_sync: OnceCell::new(),
+      version_selector: Arc::new(version_selector.unwrap_or_default()),
       descriptors: DashMap::default(),
     }
   }
@@ -135,6 +139,35 @@ impl BundleSource {
       (None, Some((remote_ver, _))) => Ok(Some(remote_ver)),
       (None, None) => Ok(None),
     }
+  }
+
+  async fn sync_versions(&self) -> crate::Result<u64> {
+    let version_selector = self.version_selector.clone();
+    let timestamp = self
+      .current_sync
+      .get_or_try_init(|| async move {
+        let (builtin, remote, current_versions) = tokio::try_join!(
+          self.builtin_manifest.list_entries(),
+          self.remote_manifest.list_entries(),
+          self.current.list_versions(),
+        )?;
+        let mut bundles = Vec::with_capacity(builtin.len() + remote.len());
+        for x in builtin.iter() {
+          bundles.push(x.name.to_string());
+        }
+        for x in remote.iter() {
+          bundles.push(x.name.to_string());
+        }
+        for bundle in bundles.iter() {
+          let b = builtin.iter().find(|x| &x.name == bundle);
+          let r = remote.iter().find(|x| &x.name == bundle);
+        }
+        // self.current.update_version(bundle_)
+        // self.current.update_version()
+        todo!()
+      })
+      .await?;
+    Ok(*timestamp)
   }
 
   pub async fn update_version(&self, bundle_name: &str, version: &str) -> crate::Result<()> {

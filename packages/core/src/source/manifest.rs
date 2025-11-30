@@ -12,29 +12,21 @@ pub enum BundleManifestVersion {
   V1 = 1,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct BundleManifestMetadata {
   pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
-  pub last_modified: u64,
+  pub last_modified: Option<u64>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-#[non_exhaustive]
-pub struct BundleManifestEntry {
-  pub current_version: String,
-  pub versions: HashMap<String, BundleManifestMetadata>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct BundleManifestData {
   pub manifest_version: BundleManifestVersion,
-  pub entries: HashMap<String, BundleManifestEntry>,
+  pub entries: HashMap<String, HashMap<String, BundleManifestMetadata>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -43,7 +35,6 @@ pub struct BundleManifestData {
 pub struct ListBundleManifestItem {
   pub name: String,
   pub version: String,
-  pub current: bool,
   #[serde(flatten)]
   pub metadata: BundleManifestMetadata,
 }
@@ -57,7 +48,7 @@ impl BundleManifestMode for ReadWrite {}
 pub struct BundleManifest<Mode: BundleManifestMode> {
   _mode: std::marker::PhantomData<Mode>,
   filepath: PathBuf,
-  manifest: OnceCell<RwLock<BundleManifestData>>,
+  data: OnceCell<RwLock<BundleManifestData>>,
 }
 
 impl<Mode> BundleManifest<Mode>
@@ -68,23 +59,18 @@ where
     Self {
       _mode: std::marker::PhantomData,
       filepath: filepath.to_path_buf(),
-      manifest: Default::default(),
+      data: Default::default(),
     }
-  }
-
-  pub fn filepath(&self) -> &Path {
-    self.filepath.as_path()
   }
 
   pub async fn list_entries(&self) -> crate::Result<Vec<ListBundleManifestItem>> {
     let data = self.load().await?.read().await;
     let mut items = vec![];
     for (bundle_name, entry) in data.entries.iter() {
-      for (version, metadata) in entry.versions.iter() {
+      for (version, metadata) in entry.iter() {
         let item = ListBundleManifestItem {
           name: bundle_name.to_string(),
           version: version.to_string(),
-          current: &entry.current_version == version,
           metadata: metadata.clone(),
         };
         items.push(item);
@@ -93,37 +79,28 @@ where
     Ok(items)
   }
 
-  pub async fn load_current_version(&self, bundle_name: &str) -> crate::Result<Option<String>> {
-    let data = self.load().await?.read().await;
-    let version = data
-      .entries
-      .get(bundle_name)
-      .map(|entry| entry.current_version.to_string());
-    Ok(version)
-  }
-
-  pub async fn load_current_version_with_metadata(
-    &self,
-    bundle_name: &str,
-  ) -> crate::Result<Option<(String, BundleManifestMetadata)>> {
-    let data = self.load().await?.read().await;
-    let current_version = data
-      .entries
-      .get(bundle_name)
-      .map(|entry| entry.current_version.to_string());
-    // We can now safely get the metadata, since manifest data ensure the current version has
-    // metadata in versions field.
-    if let Some(ver) = current_version {
-      let metadata = data
-        .entries
-        .get(bundle_name)
-        .map(|entry| entry.versions.get(&ver).cloned())
-        .flatten()
-        .unwrap();
-      return Ok(Some((ver, metadata)));
-    }
-    Ok(None)
-  }
+  // pub async fn load_current_version_with_metadata(
+  //   &self,
+  //   bundle_name: &str,
+  // ) -> crate::Result<Option<(String, BundleManifestMetadata)>> {
+  //   let data = self.load().await?.read().await;
+  //   let current_version = data
+  //     .entries
+  //     .get(bundle_name)
+  //     .map(|entry| entry.current_version.to_string());
+  //   // We can now safely get the metadata, since manifest data ensure the current version has
+  //   // metadata in versions field.
+  //   if let Some(ver) = current_version {
+  //     let metadata = data
+  //       .entries
+  //       .get(bundle_name)
+  //       .map(|entry| entry.versions.get(&ver).cloned())
+  //       .flatten()
+  //       .unwrap();
+  //     return Ok(Some((ver, metadata)));
+  //   }
+  //   Ok(None)
+  // }
 
   pub async fn load_metadata(
     &self,
@@ -134,17 +111,19 @@ where
     let metadata = data
       .entries
       .get(bundle_name)
-      .and_then(|entry| entry.versions.get(version))
+      .and_then(|entry| entry.get(version))
       .cloned();
     Ok(metadata)
   }
 
   async fn load(&self) -> crate::Result<&RwLock<BundleManifestData>> {
     let data = self
-      .manifest
+      .data
       .get_or_try_init(|| async {
+        if !tokio::fs::try_exists(&self.filepath).await? {
+          return Ok::<RwLock<BundleManifestData>, crate::Error>(Default::default());
+        }
         let raw = tokio::fs::read(&self.filepath).await?;
-        // TODO: ensure current version is pointed to a valid version.
         let data: BundleManifestData = serde_json::from_slice(&raw)?;
         Ok::<RwLock<BundleManifestData>, crate::Error>(RwLock::new(data))
       })
@@ -166,74 +145,54 @@ impl BundleManifest<ReadWrite> {
       .entries
       .entry(bundle_name.to_string())
       .and_modify(|entry| {
-        if entry.versions.contains_key(version) {
+        if entry.contains_key(version) {
           inserted = false;
         } else {
-          entry.versions.insert(version.to_string(), metadata.clone());
+          entry.insert(version.to_string(), metadata.clone());
         }
       })
-      .or_insert_with(|| BundleManifestEntry {
-        current_version: version.to_string(),
-        versions: HashMap::from([(version.to_string(), metadata)]),
-      });
+      .or_insert_with(|| HashMap::from([(version.to_string(), metadata)]));
     Ok(inserted)
   }
 
   pub async fn remove_entry(&self, bundle_name: &str, version: &str) -> crate::Result<bool> {
     let mut data = self.load().await?.write().await;
     if let Some(entry) = data.entries.get_mut(bundle_name) {
-      if !entry.versions.contains_key(version) {
-        return Ok(false);
-      }
-      // If only have this version, remove the entry.
-      if entry.versions.len() == 1 {
-        data.entries.remove(bundle_name);
-        return Ok(true);
-      }
-      // Cannot remove entry with the current version.
-      if entry.current_version == version {
-        return Err(crate::Error::bundle_cannot_be_removed(
-          bundle_name,
-          version,
-          "current version of bundle cannot be removed",
-        ));
-      }
-      entry.versions.remove(version);
-      return Ok(true);
+      return Ok(entry.remove(version).is_some());
     }
     Ok(false)
   }
 
-  pub async fn update_current_version(
-    &self,
-    bundle_name: &str,
-    version: &str,
-  ) -> crate::Result<()> {
-    let mut data = self.load().await?.write().await;
-    match data.entries.get_mut(bundle_name) {
-      Some(entry) => {
-        if !entry.versions.contains_key(version) {
-          return Err(crate::Error::bundle_entry_not_exists(bundle_name, version));
-        }
-        entry.current_version = version.to_string();
-      }
-      None => {
-        return Err(crate::Error::bundle_entry_not_exists(bundle_name, version));
-      }
-    }
-    Ok(())
-  }
+  // pub async fn update_current_version(
+  //   &self,
+  //   bundle_name: &str,
+  //   version: &str,
+  // ) -> crate::Result<()> {
+  //   let mut data = self.load().await?.write().await;
+  //   match data.entries.get_mut(bundle_name) {
+  //     Some(entry) => {
+  //       if !entry.versions.contains_key(version) {
+  //         return Err(crate::Error::bundle_entry_not_exists(bundle_name, version));
+  //       }
+  //       entry.current_version = version.to_string();
+  //     }
+  //     None => {
+  //       return Err(crate::Error::bundle_entry_not_exists(bundle_name, version));
+  //     }
+  //   }
+  //   Ok(())
+  // }
 
-  pub async fn save(&self) -> crate::Result<bool> {
-    if !self.manifest.initialized() {
-      return Ok(false);
-    }
+  pub async fn save(&self) -> crate::Result<()> {
     let raw = {
       let data = self.load().await?.read().await;
       serde_json::to_vec(&*data)
     }?;
-    tokio::fs::write(&self.filepath, &raw).await?;
-    Ok(true)
+    if let Some(dir) = self.filepath.parent() {
+      tokio::fs::create_dir_all(dir).await?;
+    }
+    tokio::fs::write(&self.filepath, raw).await?;
+    Ok(())
   }
 }
 
