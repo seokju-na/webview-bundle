@@ -79,6 +79,9 @@ pub enum Error {
   #[error("invalid integrity: {0}")]
   InvalidIntegrity(String),
   #[cfg(feature = "integrity")]
+  #[error("integrity required")]
+  IntegrityRequired,
+  #[cfg(feature = "integrity")]
   #[error("integrity verify failed")]
   IntegrityVerifyFailed,
   #[cfg(feature = "signature")]

@@ -28,6 +28,7 @@ pub struct JsRemoteBundleInfo {
   pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
+  pub last_modified: Option<String>,
 }
 
 impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
@@ -38,6 +39,7 @@ impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
       etag: value.etag,
       integrity: value.integrity,
       signature: value.signature,
+      last_modified: value.last_modified,
     }
   }
 }
@@ -50,6 +52,7 @@ impl From<JsRemoteBundleInfo> for RemoteBundleInfo {
       etag: value.etag,
       integrity: value.integrity,
       signature: value.signature,
+      last_modified: value.last_modified,
     }
   }
 }

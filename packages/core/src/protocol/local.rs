@@ -167,11 +167,11 @@ mod tests {
   async fn smoke() {
     let (addr, _) = server();
     let mapping =
-      iter::once(("nextjs.wvb".to_string(), format!("http://{addr}"))).collect::<HashMap<_, _>>();
+      iter::once(("app.wvb".to_string(), format!("http://{addr}"))).collect::<HashMap<_, _>>();
     let protocol = LocalProtocol::new(mapping);
 
     let first_req = http::Request::builder()
-      .uri("https://nextjs.wvb/index.html")
+      .uri("https://app.wvb/index.html")
       .method("GET")
       .body(Vec::new())
       .unwrap();
@@ -184,7 +184,7 @@ mod tests {
     assert_eq!(first_resp.body().as_ref(), b"Hello World");
 
     let second_req = http::Request::builder()
-      .uri("https://nextjs.wvb/index.html")
+      .uri("https://app.wvb/index.html")
       .method("GET")
       .body(Vec::new())
       .unwrap();

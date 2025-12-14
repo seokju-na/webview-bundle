@@ -80,7 +80,7 @@ remote = [
   "dep:opendal",
 ]
 remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
-signature = []
+signature = ["integrity"]
 signature-ecdsa_secp256r1 = ["dep:p256"]
 signature-ecdsa_secp384r1 = ["dep:p384"]
 signature-edd25519 = ["dep:ed25519-dalek", "ed25519-dalek/pem"]

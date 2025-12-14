@@ -18,7 +18,14 @@ pub struct BundleManifestMetadata {
   pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
-  pub last_modified: Option<u64>,
+  pub last_modified: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleManifestEntry {
+  pub versions: HashMap<String, BundleManifestMetadata>,
+  pub current_version: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq, Eq)]
@@ -26,16 +33,15 @@ pub struct BundleManifestMetadata {
 #[non_exhaustive]
 pub struct BundleManifestData {
   pub manifest_version: BundleManifestVersion,
-  pub entries: HashMap<String, HashMap<String, BundleManifestMetadata>>,
+  pub entries: HashMap<String, BundleManifestEntry>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct ListBundleManifestItem {
   pub name: String,
   pub version: String,
-  #[serde(flatten)]
+  pub current: bool,
   pub metadata: BundleManifestMetadata,
 }
 
@@ -67,10 +73,12 @@ where
     let data = self.load().await?.read().await;
     let mut items = vec![];
     for (bundle_name, entry) in data.entries.iter() {
-      for (version, metadata) in entry.iter() {
+      let current_version = entry.current_version.to_string();
+      for (version, metadata) in entry.versions.iter() {
         let item = ListBundleManifestItem {
           name: bundle_name.to_string(),
           version: version.to_string(),
+          current: version == &current_version,
           metadata: metadata.clone(),
         };
         items.push(item);
@@ -79,28 +87,34 @@ where
     Ok(items)
   }
 
-  // pub async fn load_current_version_with_metadata(
-  //   &self,
-  //   bundle_name: &str,
-  // ) -> crate::Result<Option<(String, BundleManifestMetadata)>> {
-  //   let data = self.load().await?.read().await;
-  //   let current_version = data
-  //     .entries
-  //     .get(bundle_name)
-  //     .map(|entry| entry.current_version.to_string());
-  //   // We can now safely get the metadata, since manifest data ensure the current version has
-  //   // metadata in versions field.
-  //   if let Some(ver) = current_version {
-  //     let metadata = data
-  //       .entries
-  //       .get(bundle_name)
-  //       .map(|entry| entry.versions.get(&ver).cloned())
-  //       .flatten()
-  //       .unwrap();
-  //     return Ok(Some((ver, metadata)));
-  //   }
-  //   Ok(None)
-  // }
+  pub async fn contains_entry(&self, bundle_name: &str, version: &str) -> crate::Result<bool> {
+    let data = self.load().await?.read().await;
+    if let Some(entry) = data.entries.get(bundle_name) {
+      return Ok(entry.versions.contains_key(version));
+    }
+    Ok(false)
+  }
+
+  pub async fn load_current_version(&self, bundle_name: &str) -> crate::Result<Option<String>> {
+    let data = self.load().await?.read().await;
+    let version = data
+      .entries
+      .get(bundle_name)
+      .map(|x| x.current_version.to_string());
+    Ok(version)
+  }
+
+  pub async fn load_current_metadata(
+    &self,
+    bundle_name: &str,
+  ) -> crate::Result<Option<BundleManifestMetadata>> {
+    let version = self.load_current_version(bundle_name).await?;
+    if let Some(ver) = version {
+      let metadata = self.load_metadata(bundle_name, &ver).await?;
+      return Ok(metadata);
+    }
+    Ok(None)
+  }
 
   pub async fn load_metadata(
     &self,
@@ -111,7 +125,7 @@ where
     let metadata = data
       .entries
       .get(bundle_name)
-      .and_then(|entry| entry.get(version))
+      .and_then(|entry| entry.versions.get(version))
       .cloned();
     Ok(metadata)
   }
@@ -133,6 +147,24 @@ where
 }
 
 impl BundleManifest<ReadWrite> {
+  pub async fn update_current_version(
+    &self,
+    bundle_name: &str,
+    version: &str,
+  ) -> crate::Result<()> {
+    if !self.contains_entry(bundle_name, version).await? {
+      return Err(crate::Error::bundle_entry_not_exists(bundle_name, version));
+    }
+    let mut data = self.load().await?.write().await;
+    data
+      .entries
+      .entry(bundle_name.to_string())
+      .and_modify(|entry| {
+        entry.current_version = version.to_string();
+      });
+    Ok(())
+  }
+
   pub async fn insert_entry(
     &self,
     bundle_name: &str,
@@ -145,43 +177,33 @@ impl BundleManifest<ReadWrite> {
       .entries
       .entry(bundle_name.to_string())
       .and_modify(|entry| {
-        if entry.contains_key(version) {
+        if entry.versions.contains_key(version) {
           inserted = false;
         } else {
-          entry.insert(version.to_string(), metadata.clone());
+          entry.versions.insert(version.to_string(), metadata.clone());
         }
       })
-      .or_insert_with(|| HashMap::from([(version.to_string(), metadata)]));
+      .or_insert_with(|| BundleManifestEntry {
+        versions: HashMap::from([(version.to_string(), metadata.clone())]),
+        current_version: version.to_string(),
+      });
     Ok(inserted)
   }
 
   pub async fn remove_entry(&self, bundle_name: &str, version: &str) -> crate::Result<bool> {
     let mut data = self.load().await?.write().await;
     if let Some(entry) = data.entries.get_mut(bundle_name) {
-      return Ok(entry.remove(version).is_some());
+      if entry.current_version == version {
+        return Err(crate::Error::bundle_cannot_be_removed(
+          bundle_name,
+          version,
+          "current version of bundle cannot be removed",
+        ));
+      }
+      return Ok(entry.versions.remove(version).is_some());
     }
     Ok(false)
   }
-
-  // pub async fn update_current_version(
-  //   &self,
-  //   bundle_name: &str,
-  //   version: &str,
-  // ) -> crate::Result<()> {
-  //   let mut data = self.load().await?.write().await;
-  //   match data.entries.get_mut(bundle_name) {
-  //     Some(entry) => {
-  //       if !entry.versions.contains_key(version) {
-  //         return Err(crate::Error::bundle_entry_not_exists(bundle_name, version));
-  //       }
-  //       entry.current_version = version.to_string();
-  //     }
-  //     None => {
-  //       return Err(crate::Error::bundle_entry_not_exists(bundle_name, version));
-  //     }
-  //   }
-  //   Ok(())
-  // }
 
   pub async fn save(&self) -> crate::Result<()> {
     let raw = {
@@ -204,34 +226,25 @@ mod tests {
 
   #[tokio::test]
   async fn list_entries() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadOnly,
-    );
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("remote/manifest.json"), ReadOnly);
     let items = manifest.list_entries().await.unwrap();
     assert_eq!(items.len(), 2);
-    let current = items
-      .iter()
-      .find(|x| x.name == "nextjs" && x.current)
-      .unwrap();
+    let current = items.iter().find(|x| x.name == "app" && x.current).unwrap();
     assert_eq!(current.version, "1.0.0");
   }
 
   #[tokio::test]
   async fn load_metadata() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadOnly,
-    );
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("builtin/manifest.json"), ReadOnly);
     let metadata = manifest
-      .load_metadata("nextjs", "1.0.0")
+      .load_metadata("app", "1.0.0")
       .await
       .unwrap()
       .unwrap();
     assert!(manifest
-      .load_metadata("nextjs", "not_exists")
+      .load_metadata("app", "not_exists")
       .await
       .unwrap()
       .is_none());
@@ -239,15 +252,15 @@ mod tests {
 
   #[tokio::test]
   async fn load_metadata_many_times() {
-    let fixtures = Fixtures::new();
+    let fixture = Fixtures::bundles();
     let manifest = Arc::new(BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
+      &fixture.get_path("builtin/manifest.json"),
       ReadOnly,
     ));
     let mut handlers = vec![];
     for _ in 1..10 {
       let m = manifest.clone();
-      let handle = tokio::spawn(async move { m.load_metadata("nextjs", "1.0.0").await });
+      let handle = tokio::spawn(async move { m.load_metadata("app", "1.0.0").await });
       handlers.push(handle);
     }
     for h in handlers {
@@ -257,30 +270,23 @@ mod tests {
 
   #[tokio::test]
   async fn load_current_version() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadOnly,
-    );
-    let version = manifest
-      .load_current_version("nextjs")
-      .await
-      .unwrap()
-      .unwrap();
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("remote/manifest.json"), ReadOnly);
+    let version = manifest.load_current_version("app").await.unwrap().unwrap();
     assert_eq!(version, "1.0.0");
   }
 
   #[tokio::test]
   async fn load_current_version_many_times() {
-    let fixtures = Fixtures::new();
+    let fixture = Fixtures::bundles();
     let manifest = Arc::new(BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
+      &fixture.get_path("remote/manifest.json"),
       ReadOnly,
     ));
     let mut handlers = vec![];
     for _ in 1..10 {
       let m = manifest.clone();
-      let handle = tokio::spawn(async move { m.load_current_version("nextjs").await });
+      let handle = tokio::spawn(async move { m.load_current_version("app").await });
       handlers.push(handle);
     }
     for h in handlers {
@@ -291,39 +297,29 @@ mod tests {
 
   #[tokio::test]
   async fn update_current_version() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadWrite,
-    );
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("remote/manifest.json"), ReadWrite);
     manifest
-      .update_current_version("nextjs", "1.1.0")
+      .update_current_version("app", "1.1.0")
       .await
       .unwrap();
     assert_eq!(
-      manifest
-        .load_current_version("nextjs")
-        .await
-        .unwrap()
-        .unwrap(),
+      manifest.load_current_version("app").await.unwrap().unwrap(),
       "1.1.0"
     );
   }
 
   #[tokio::test]
   async fn update_current_version_entry_not_exists() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadWrite,
-    );
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("remote/manifest.json"), ReadWrite);
     let err = manifest
-      .update_current_version("nextjs", "not_exists")
+      .update_current_version("app", "not_exists")
       .await
       .unwrap_err();
     assert_eq!(
       err.to_string(),
-      "bundle entry not exists (bundle_name: nextjs, version: not_exists)"
+      "bundle entry not exists (bundle_name: app, version: not_exists)"
     );
     let err = manifest
       .update_current_version("not_exists", "1.0.0")
@@ -337,25 +333,22 @@ mod tests {
 
   #[tokio::test]
   async fn insert_entry() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadWrite,
-    );
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("remote/manifest.json"), ReadWrite);
     let metadata = BundleManifestMetadata {
       etag: None,
       integrity: None,
       signature: None,
-      last_modified: 0,
+      last_modified: None,
     };
     let inserted = manifest
-      .insert_entry("nextjs", "1.2.0", metadata.clone())
+      .insert_entry("app", "1.2.0", metadata.clone())
       .await
       .unwrap();
     assert!(inserted);
     assert_eq!(
       manifest
-        .load_metadata("nextjs", "1.2.0")
+        .load_metadata("app", "1.2.0")
         .await
         .unwrap()
         .unwrap(),
@@ -365,16 +358,16 @@ mod tests {
 
   #[tokio::test]
   async fn insert_entry_from_empty() {
-    let fixtures = Fixtures::new();
+    let fixture = Fixtures::bundles();
     let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
+      &fixture.get_path("bundles").join("manifest.json"),
       ReadWrite,
     );
     let metadata = BundleManifestMetadata {
       etag: None,
       integrity: None,
       signature: None,
-      last_modified: 0,
+      last_modified: None,
     };
     let inserted = manifest
       .insert_entry("vite", "1.0.0", metadata.clone())
@@ -401,49 +394,29 @@ mod tests {
 
   #[tokio::test]
   async fn remove_entry() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadWrite,
-    );
-    let removed = manifest.remove_entry("nextjs", "1.1.0").await.unwrap();
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("remote/manifest.json"), ReadWrite);
+    let removed = manifest.remove_entry("app", "1.1.0").await.unwrap();
     assert!(removed);
     assert!(manifest
-      .load_metadata("nextjs", "1.1.0")
+      .load_metadata("app", "1.1.0")
       .await
       .unwrap()
       .is_none());
   }
 
   #[tokio::test]
-  async fn remove_entry_builtin_cannot_be_removed() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadWrite,
-    );
-    let err = manifest.remove_entry("nextjs", "1.0.0").await.unwrap_err();
-    assert_eq!(
-      err.to_string(),
-      "bundle cannot be removed (bundle_name: nextjs, version: 1.0.0): builtin bundle cannot be removed"
-    );
-  }
-
-  #[tokio::test]
   async fn remove_entry_current_version_cannot_be_removed() {
-    let fixtures = Fixtures::new();
-    let manifest = BundleManifest::new(
-      &fixtures.get_path("bundles").join("manifest.json"),
-      ReadWrite,
-    );
+    let fixture = Fixtures::bundles();
+    let manifest = BundleManifest::new(&fixture.get_path("remote/manifest.json"), ReadWrite);
     manifest
-      .update_current_version("nextjs", "1.1.0")
+      .update_current_version("app", "1.1.0")
       .await
       .unwrap();
-    let err = manifest.remove_entry("nextjs", "1.1.0").await.unwrap_err();
+    let err = manifest.remove_entry("app", "1.1.0").await.unwrap_err();
     assert_eq!(
       err.to_string(),
-      "bundle cannot be removed (bundle_name: nextjs, version: 1.1.0): current version of bundle cannot be removed"
+      "bundle cannot be removed (bundle_name: app, version: 1.1.0): current version of bundle cannot be removed"
     );
   }
 }

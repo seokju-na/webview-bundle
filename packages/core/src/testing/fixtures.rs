@@ -1,15 +1,19 @@
 use std::path::PathBuf;
 
+fn fixtures_dir() -> PathBuf {
+  PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    .join("tests")
+    .join("fixtures")
+}
+
 pub struct Fixtures {
   base_dir: PathBuf,
 }
 
 impl Fixtures {
-  pub fn new() -> Self {
+  pub fn bundles() -> Self {
     Self {
-      base_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("fixtures"),
+      base_dir: fixtures_dir().join("bundles"),
     }
   }
 

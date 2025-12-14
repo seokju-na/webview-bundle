@@ -66,245 +66,239 @@ impl super::Protocol for BundleProtocol {
   }
 }
 
-// #[cfg(test)]
-// mod tests {
-//   use super::*;
-//   use crate::protocol::Protocol;
-//   use std::path::PathBuf;
-//
-//   #[tokio::test]
-//   async fn smoke() {
-//     let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-//       .join("tests")
-//       .join("fixtures")
-//       .join("bundles");
-//     let source = Arc::new(BundleSource::new(
-//       &base_dir.join("builtin"),
-//       &base_dir.join("remote"),
-//     ));
-//     let protocol = Arc::new(BundleProtocol::new(source.clone()));
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/index.html")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(resp.status(), 200);
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/not_found.html")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(resp.status(), 404);
-//     let mut handlers = vec![];
-//     for _ in 1..100 {
-//       let p = protocol.clone();
-//       let handle = tokio::spawn(async move {
-//         p.handle(
-//           Request::builder()
-//             .uri("https://nextjs.wvb/index.html")
-//             .method("GET")
-//             .body(vec![])
-//             .unwrap(),
-//         )
-//         .await
-//       });
-//       handlers.push(handle);
-//     }
-//     for h in handlers {
-//       let resp = h.await.unwrap().unwrap();
-//       assert_eq!(resp.status(), 200);
-//     }
-//   }
-//
-//   #[tokio::test]
-//   async fn resolve_index_html() {
-//     let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-//       .join("tests")
-//       .join("fixtures")
-//       .join("bundles");
-//     let source = Arc::new(BundleSource::new(
-//       &base_dir.join("builtin"),
-//       &base_dir.join("remote"),
-//     ));
-//     let protocol = Arc::new(BundleProtocol::new(source.clone()));
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(resp.status(), 200);
-//   }
-//
-//   #[tokio::test]
-//   async fn content_type() {
-//     let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-//       .join("tests")
-//       .join("fixtures")
-//       .join("bundles");
-//     let source = Arc::new(BundleSource::new(
-//       &base_dir.join("builtin"),
-//       &base_dir.join("remote"),
-//     ));
-//     let protocol = Arc::new(BundleProtocol::new(source.clone()));
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(
-//       resp.headers().get(header::CONTENT_TYPE).unwrap(),
-//       HeaderValue::from_static("text/javascript")
-//     );
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/_next/static/css/419406682a95b9a9.css")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(
-//       resp.headers().get(header::CONTENT_TYPE).unwrap(),
-//       HeaderValue::from_static("text/css")
-//     );
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/_next/static/media/build.583ad785.png")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(
-//       resp.headers().get(header::CONTENT_TYPE).unwrap(),
-//       HeaderValue::from_static("image/png")
-//     );
-//   }
-//
-//   #[tokio::test]
-//   async fn content_length() {
-//     let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-//       .join("tests")
-//       .join("fixtures")
-//       .join("bundles");
-//     let source = Arc::new(BundleSource::new(
-//       &base_dir.join("builtin"),
-//       &base_dir.join("remote"),
-//     ));
-//     let protocol = Arc::new(BundleProtocol::new(source.clone()));
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(
-//       resp.headers().get(header::CONTENT_LENGTH).unwrap(),
-//       HeaderValue::from_static("139833")
-//     );
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/_next/static/css/419406682a95b9a9.css")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(
-//       resp.headers().get(header::CONTENT_LENGTH).unwrap(),
-//       HeaderValue::from_static("13856")
-//     );
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/_next/static/media/build.583ad785.png")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(
-//       resp.headers().get(header::CONTENT_LENGTH).unwrap(),
-//       HeaderValue::from_static("475918")
-//     );
-//   }
-//
-//   #[tokio::test]
-//   async fn not_found() {
-//     let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-//       .join("tests")
-//       .join("fixtures")
-//       .join("bundles");
-//     let source = Arc::new(BundleSource::new(
-//       &base_dir.join("builtin"),
-//       &base_dir.join("remote"),
-//     ));
-//     let protocol = Arc::new(BundleProtocol::new(source.clone()));
-//     let resp = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://nextjs.wvb/path/not/exists")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap();
-//     assert_eq!(resp.status(), 404);
-//   }
-//
-//   #[tokio::test]
-//   async fn bundle_not_found() {
-//     let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-//       .join("tests")
-//       .join("fixtures")
-//       .join("bundles");
-//     let source = Arc::new(BundleSource::new(
-//       &base_dir.join("builtin"),
-//       &base_dir.join("remote"),
-//     ));
-//     let protocol = Arc::new(BundleProtocol::new(source.clone()));
-//     let err = protocol
-//       .handle(
-//         Request::builder()
-//           .uri("https://not_exsits_bundle.wvb")
-//           .method("GET")
-//           .body(vec![])
-//           .unwrap(),
-//       )
-//       .await
-//       .unwrap_err();
-//     assert!(matches!(err, crate::Error::BundleNotFound));
-//   }
-// }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::protocol::Protocol;
+  use crate::testing::Fixtures;
+
+  #[tokio::test]
+  async fn smoke() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/index.html")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 200);
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/not_found.html")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 404);
+    let mut handlers = vec![];
+    for _ in 1..100 {
+      let p = protocol.clone();
+      let handle = tokio::spawn(async move {
+        p.handle(
+          Request::builder()
+            .uri("https://app.wvb/index.html")
+            .method("GET")
+            .body(vec![])
+            .unwrap(),
+        )
+        .await
+      });
+      handlers.push(handle);
+    }
+    for h in handlers {
+      let resp = h.await.unwrap().unwrap();
+      assert_eq!(resp.status(), 200);
+    }
+  }
+
+  #[tokio::test]
+  async fn resolve_index_html() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 200);
+  }
+
+  #[tokio::test]
+  async fn content_type() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("text/javascript")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/_next/static/css/419406682a95b9a9.css")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("text/css")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/_next/static/media/build.583ad785.png")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("image/png")
+    );
+  }
+
+  #[tokio::test]
+  async fn content_length() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
+      HeaderValue::from_static("139833")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/_next/static/css/419406682a95b9a9.css")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
+      HeaderValue::from_static("13856")
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/_next/static/media/build.583ad785.png")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(
+      resp.headers().get(header::CONTENT_LENGTH).unwrap(),
+      HeaderValue::from_static("475918")
+    );
+  }
+
+  #[tokio::test]
+  async fn not_found() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/path/does/not/exists")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 404);
+  }
+
+  #[tokio::test]
+  async fn bundle_not_found() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let err = protocol
+      .handle(
+        Request::builder()
+          .uri("https://not_exsits_bundle.wvb")
+          .method("GET")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap_err();
+    assert!(matches!(err, crate::Error::BundleNotFound));
+  }
+}

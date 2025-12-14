@@ -13,6 +13,7 @@ pub struct RemoteBundleInfo {
   pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
+  pub last_modified: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -134,39 +135,23 @@ impl Remote {
 
   fn parse_info(&self, resp: &reqwest::Response) -> crate::Result<RemoteBundleInfo> {
     let headers = resp.headers();
-    let name = String::from_utf8_lossy(
-      headers
-        .get("webview-bundle-name")
-        .ok_or(crate::Error::invalid_remote_bundle(
-          "\"webview-bundle-name\" header is missing",
-        ))?
-        .as_bytes(),
-    )
-    .to_string();
-    let version = String::from_utf8_lossy(
-      headers
-        .get("webview-bundle-version")
-        .ok_or(crate::Error::invalid_remote_bundle(
-          "\"webview-bundle-version\" header is missing",
-        ))?
-        .as_bytes(),
-    )
-    .to_string();
-    let etag = headers
-      .get(header::ETAG)
-      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
-    let integrity = headers
-      .get("webview-bundle-integrity")
-      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
-    let signature = headers
-      .get("webview-bundle-signature")
-      .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string());
+    let name = get_header_value(&headers, "webview-bundle-name").ok_or(
+      crate::Error::invalid_remote_bundle("\"webview-bundle-name\" header is missing"),
+    )?;
+    let version = get_header_value(&headers, "webview-bundle-version").ok_or(
+      crate::Error::invalid_remote_bundle("\"webview-bundle-version\" header is missing"),
+    )?;
+    let etag = get_header_value(&headers, header::ETAG);
+    let last_modified = get_header_value(&headers, header::LAST_MODIFIED);
+    let integrity = get_header_value(&headers, "webview-bundle-integrity");
+    let signature = get_header_value(&headers, "webview-bundle-signature");
     Ok(RemoteBundleInfo {
       name,
       version,
       etag,
       integrity,
       signature,
+      last_modified,
     })
   }
 
@@ -210,4 +195,13 @@ impl Remote {
     let bundle = Reader::<Bundle>::read(&mut BundleReader::new(&mut reader))?;
     Ok((info, bundle, data))
   }
+}
+
+fn get_header_value<K>(headers: &header::HeaderMap, key: K) -> Option<String>
+where
+  K: header::AsHeaderName,
+{
+  headers
+    .get(key)
+    .map(|x| String::from_utf8_lossy(x.as_bytes()).to_string())
 }

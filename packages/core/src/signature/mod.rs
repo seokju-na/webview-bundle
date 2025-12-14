@@ -53,19 +53,19 @@ pub enum SignatureSigner {
 }
 
 impl SignatureSigner {
-  pub async fn sign(&self, bundle: &Bundle, data: &[u8]) -> crate::Result<String> {
+  pub async fn sign(&self, bundle: &Bundle, message: &[u8]) -> crate::Result<String> {
     match self {
-      Self::Custom(sign) => sign(bundle, data).await.map_err(crate::Error::generic),
+      Self::Custom(sign) => sign(bundle, message).await.map_err(crate::Error::generic),
       #[cfg(feature = "signature-ecdsa_secp256r1")]
-      Self::EcdsaSecp256r1(signer) => signer.sign(bundle, data).await,
+      Self::EcdsaSecp256r1(signer) => signer.sign(bundle, message).await,
       #[cfg(feature = "signature-ecdsa_secp384r1")]
-      Self::EcdsaSecp384r1(signer) => signer.sign(bundle, data).await,
+      Self::EcdsaSecp384r1(signer) => signer.sign(bundle, message).await,
       #[cfg(feature = "signature-edd25519")]
-      Self::Ed25519(signer) => signer.sign(bundle, data).await,
+      Self::Ed25519(signer) => signer.sign(bundle, message).await,
       #[cfg(feature = "signature-rsa_pkcs1_v1_5")]
-      Self::RsaPkcs1V15(signer) => signer.sign(bundle, data).await,
+      Self::RsaPkcs1V15(signer) => signer.sign(bundle, message).await,
       #[cfg(feature = "signature-rsa_pss")]
-      Self::RsaPss(signer) => signer.sign(bundle, data).await,
+      Self::RsaPss(signer) => signer.sign(bundle, message).await,
     }
   }
 }
@@ -74,7 +74,7 @@ pub trait Signer: Send + Sync + 'static {
   fn sign(
     &self,
     bundle: &Bundle,
-    data: &[u8],
+    message: &[u8],
   ) -> impl std::future::Future<Output = crate::Result<String>>;
 }
 
@@ -108,21 +108,26 @@ pub enum SignatureVerifier {
 }
 
 impl SignatureVerifier {
-  pub async fn verify(&self, bundle: &Bundle, data: &[u8], signature: &str) -> crate::Result<bool> {
+  pub async fn verify(
+    &self,
+    bundle: &Bundle,
+    message: &[u8],
+    signature: &str,
+  ) -> crate::Result<bool> {
     match self {
-      Self::Custom(verify) => verify(bundle, data, signature)
+      Self::Custom(verify) => verify(bundle, message, signature)
         .await
         .map_err(crate::Error::generic),
       #[cfg(feature = "signature-ecdsa_secp256r1")]
-      Self::EcdsaSecp256r1(verifier) => verifier.verify(bundle, data, signature).await,
+      Self::EcdsaSecp256r1(verifier) => verifier.verify(bundle, message, signature).await,
       #[cfg(feature = "signature-ecdsa_secp384r1")]
-      Self::EcdsaSecp384r1(verifier) => verifier.verify(bundle, data, signature).await,
+      Self::EcdsaSecp384r1(verifier) => verifier.verify(bundle, message, signature).await,
       #[cfg(feature = "signature-edd25519")]
-      Self::Ed25519(verifier) => verifier.verify(bundle, data, signature).await,
+      Self::Ed25519(verifier) => verifier.verify(bundle, message, signature).await,
       #[cfg(feature = "signature-rsa_pkcs1_v1_5")]
-      Self::RsaPkcs1V15(verifier) => verifier.verify(bundle, data, signature).await,
+      Self::RsaPkcs1V15(verifier) => verifier.verify(bundle, message, signature).await,
       #[cfg(feature = "signature-rsa_pss")]
-      Self::RsaPss(verifier) => verifier.verify(bundle, data, signature).await,
+      Self::RsaPss(verifier) => verifier.verify(bundle, message, signature).await,
     }
   }
 }
@@ -131,7 +136,7 @@ pub trait Verifier: Send + Sync + 'static {
   fn verify(
     &self,
     bundle: &Bundle,
-    data: &[u8],
+    message: &[u8],
     signature: &str,
   ) -> impl std::future::Future<Output = crate::Result<bool>>;
 }

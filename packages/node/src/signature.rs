@@ -233,11 +233,11 @@ impl FromNapiValue for JsSignatureSigner {
             SignatureSigner::RsaPss(Arc::new(signer))
           }
         },
-        Either::B(inner) => SignatureSigner::Custom(Arc::new(move |_bundle, data| {
-          let buffer = Buffer::from(data);
+        Either::B(inner) => SignatureSigner::Custom(Arc::new(move |_bundle, message| {
+          let message_buf = Buffer::from(message);
           let callback = Arc::clone(&inner);
           Box::pin(async move {
-            let ret = callback.invoke_async(buffer).await?.await?;
+            let ret = callback.invoke_async(message_buf).await?.await?;
             Ok(ret)
           })
         })),
@@ -418,15 +418,20 @@ impl FromNapiValue for JsSignatureVerifier {
             SignatureVerifier::RsaPss(Arc::new(verifier))
           }
         },
-        Either::B(inner) => SignatureVerifier::Custom(Arc::new(move |_bundle, data, signature| {
-          let buffer = Buffer::from(data);
-          let signature = signature.to_string();
-          let callback = Arc::clone(&inner);
-          Box::pin(async move {
-            let ret = callback.invoke_async((buffer, signature)).await?.await?;
-            Ok(ret)
-          })
-        })),
+        Either::B(inner) => {
+          SignatureVerifier::Custom(Arc::new(move |_bundle, message, signature| {
+            let message_buf = Buffer::from(message);
+            let signature = signature.to_string();
+            let callback = Arc::clone(&inner);
+            Box::pin(async move {
+              let ret = callback
+                .invoke_async((message_buf, signature))
+                .await?
+                .await?;
+              Ok(ret)
+            })
+          }))
+        }
       };
       Ok(Self { inner: value })
     }

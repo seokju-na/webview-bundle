@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "entries": {
-    "nextjs": {
+    "app": {
       "versions": {
         "1.0.0": {}
       },
