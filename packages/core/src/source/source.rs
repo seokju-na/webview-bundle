@@ -41,7 +41,7 @@ impl BundleSourceVersion {
 
 #[derive(Debug, Default, Clone)]
 #[non_exhaustive]
-pub(crate) struct BundleSourceBuilder {
+pub struct BundleSourceBuilder {
   builtin_dir: PathBuf,
   builtin_manifest_filepath: Option<PathBuf>,
   remote_dir: PathBuf,

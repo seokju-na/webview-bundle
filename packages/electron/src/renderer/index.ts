@@ -3,5 +3,5 @@ export type {
   RemoteBundleInfo,
   WebviewBundleApi,
   WebviewBundleRemoteApi,
-} from '../api-interface.js';
+} from '../api.js';
 export { remote, updater } from './api.js';

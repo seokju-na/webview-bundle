@@ -14,10 +14,10 @@
     "@webview-bundle/electron": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "22.18.3",
+    "@types/node": "catalog:",
     "@webview-bundle/cli": "workspace:^",
     "electron": "^35.7.5",
     "esbuild": "0.25.3",
-    "typescript": "5.9.2"
+    "typescript": "catalog:"
   }
 }

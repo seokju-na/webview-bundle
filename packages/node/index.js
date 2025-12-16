@@ -508,46 +508,27 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { Bundle, JsBundle, BundleBuilder, JsNapiBundleBuilder, BundleManifest, JsBundleManifest, BundleProtocol, JsBundleProtocol, BundleSource, JsBundleSource, Header, JsHeader, Index, JsIndex, LocalProtocol, JsLocalProtocol, Remote, JsRemote, S3Uploader, JsS3Uploader, Updater, JsUpdater, BundleSourceVersionType, JsBundleSourceVersionKind, HttpMethod, JsHttpMethod, IntegrityAlgorithm, JsIntegrityAlgorithm, IntegrityPolicy, JsIntegrityPolicy, readBundle, readBundleFromBuffer, SignatureAlgorithm, JsSignatureAlgorithm, SigningKeyFormat, JsSigningKeyFormat, VerifyingKeyFormat, JsVerifyingKeyFormat, Version, JsVersion, writeBundle, writeBundleIntoBuffer } = nativeBinding
+const { Bundle, BundleBuilder, BundleDescriptor, BundleProtocol, BundleSource, Header, Index, LocalProtocol, Remote, S3Uploader, Updater, BundleSourceKind, HttpMethod, IntegrityAlgorithm, IntegrityPolicy, readBundle, readBundleFromBuffer, SignatureAlgorithm, SigningKeyFormat, VerifyingKeyFormat, Version, writeBundle, writeBundleIntoBuffer } = nativeBinding
 export { Bundle }
-export { JsBundle }
 export { BundleBuilder }
-export { JsNapiBundleBuilder }
-export { BundleManifest }
-export { JsBundleManifest }
+export { BundleDescriptor }
 export { BundleProtocol }
-export { JsBundleProtocol }
 export { BundleSource }
-export { JsBundleSource }
 export { Header }
-export { JsHeader }
 export { Index }
-export { JsIndex }
 export { LocalProtocol }
-export { JsLocalProtocol }
 export { Remote }
-export { JsRemote }
 export { S3Uploader }
-export { JsS3Uploader }
 export { Updater }
-export { JsUpdater }
-export { BundleSourceVersionType }
-export { JsBundleSourceVersionKind }
+export { BundleSourceKind }
 export { HttpMethod }
-export { JsHttpMethod }
 export { IntegrityAlgorithm }
-export { JsIntegrityAlgorithm }
 export { IntegrityPolicy }
-export { JsIntegrityPolicy }
 export { readBundle }
 export { readBundleFromBuffer }
 export { SignatureAlgorithm }
-export { JsSignatureAlgorithm }
 export { SigningKeyFormat }
-export { JsSigningKeyFormat }
 export { VerifyingKeyFormat }
-export { JsVerifyingKeyFormat }
 export { Version }
-export { JsVersion }
 export { writeBundle }
 export { writeBundleIntoBuffer }

@@ -4,8 +4,8 @@ use webview_bundle::http::{HeaderMap, HeaderName, HeaderValue};
 use webview_bundle::remote::HttpConfig;
 
 #[derive(Default)]
-#[napi(object, js_name = "HttpOptions")]
-pub struct JsHttpOptions {
+#[napi(object)]
+pub struct HttpOptions {
   pub default_headers: Option<HashMap<String, String>>,
   pub user_agent: Option<String>,
   pub timeout: Option<u32>,
@@ -18,9 +18,9 @@ pub struct JsHttpOptions {
   pub hickory_dns: Option<bool>,
 }
 
-impl TryFrom<JsHttpOptions> for HttpConfig {
+impl TryFrom<HttpOptions> for HttpConfig {
   type Error = crate::Error;
-  fn try_from(value: JsHttpOptions) -> Result<Self, Self::Error> {
+  fn try_from(value: HttpOptions) -> Result<Self, Self::Error> {
     let mut config = HttpConfig::new();
     if let Some(default_headers) = value.default_headers {
       let mut headers = HeaderMap::with_capacity(default_headers.len());

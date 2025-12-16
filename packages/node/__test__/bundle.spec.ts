@@ -49,13 +49,13 @@ describe('bundle', () => {
   it('version', () => {
     const builder = new BundleBuilder('v1');
     const bundle = builder.build();
-    expect(bundle.manifest().header().version()).toEqual('v1');
+    expect(bundle.descriptor().header().version()).toEqual('v1');
   });
 
   it('default version', () => {
     const builder = new BundleBuilder();
     const bundle = builder.build();
-    expect(bundle.manifest().header().version()).toEqual(DEFAULT_VERSION);
+    expect(bundle.descriptor().header().version()).toEqual(DEFAULT_VERSION);
   });
 
   it('get data', () => {
@@ -63,9 +63,9 @@ describe('bundle', () => {
     builder.insertEntry('/index.js', INDEX_JS_BUF);
     builder.insertEntry('/index.html', INDEX_HTML_BUF);
     const bundle = builder.build();
-    expect(bundle.manifest().index().containsPath('/index.js')).toBe(true);
-    expect(bundle.manifest().index().containsPath('/index.html')).toBe(true);
-    expect(bundle.manifest().index().containsPath('/not_exists')).toBe(false);
+    expect(bundle.descriptor().index().containsPath('/index.js')).toBe(true);
+    expect(bundle.descriptor().index().containsPath('/index.html')).toBe(true);
+    expect(bundle.descriptor().index().containsPath('/not_exists')).toBe(false);
     expect(bundle.getData('/index.js')).toEqual(Buffer.from(INDEX_JS_BUF));
     expect(bundle.getData('/index.html')).toEqual(Buffer.from(INDEX_HTML_BUF));
     expect(bundle.getData('/not_exists')).toBeNull();
@@ -77,7 +77,7 @@ describe('bundle', () => {
       'content-type': 'text/javascript',
     });
     const bundle = builder.build();
-    const entry = bundle.manifest().index().getEntry('/index.js');
+    const entry = bundle.descriptor().index().getEntry('/index.js');
     expect(entry?.headers).toEqual({
       'content-type': 'text/javascript',
     });
@@ -106,8 +106,8 @@ describe('read/write', () => {
 
     await writeBundle(bundle, path.join(tmpdir, 'bundle.wvb'));
     const loadedBundle = await readBundle(path.join(tmpdir, 'bundle.wvb'));
-    expect(loadedBundle.manifest().header().version()).toEqual('v1');
-    const index = loadedBundle.manifest().index();
+    expect(loadedBundle.descriptor().header().version()).toEqual('v1');
+    const index = loadedBundle.descriptor().index();
     expect(Object.keys(index.entries())).toHaveLength(2);
     expect(index.containsPath('/index.js')).toBe(true);
     expect(index.containsPath('/index.html')).toBe(true);

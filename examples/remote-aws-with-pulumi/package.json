@@ -9,7 +9,7 @@
     "@webview-bundle/remote-aws-pulumi": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "22.18.3",
-    "typescript": "5.9.2"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

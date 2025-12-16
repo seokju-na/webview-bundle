@@ -1,7 +1,13 @@
 import type { IpcMainInvokeEvent } from 'electron';
-import type { BundleUpdateInfo, RemoteBundleInfo } from './api-interface.js';
+import type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from './api.js';
 
 export const IpcChannels = {
+  Source: {
+    ListBundles: 'webview-bundle:source:list-bundles',
+    LoadVersion: 'webview-bundle:source:load-version',
+    UpdateVersion: 'webview-bundle:source:update-version',
+    Filepath: 'webview-bundle:source:filepath',
+  },
   Remote: {
     ListBundles: 'webview-bundle:remote:list-bundles',
     GetInfo: 'webview-bundle:remote:get-info',
@@ -12,7 +18,6 @@ export const IpcChannels = {
     ListRemotes: 'webview-bundle:updater:list-remotes',
     GetUpdate: 'webview-bundle:updater:get-update',
     DownloadUpdate: 'webview-bundle:updater:download-update',
-    ApplyUpdate: 'webview-bundle:updater:apply-update',
   },
 } as const;
 
@@ -27,17 +32,23 @@ export type IpcHandler<Return = unknown, Args extends unknown[] = []> = (
   ...args: Args
 ) => Promise<Return>;
 export type IpcHandlerSpecs = {
+  // source
+  'webview-bundle:source:list-bundles': IpcHandler<ListBundleItem[]>;
+  'webview-bundle:source:load-version': IpcHandler<BundleSourceVersion | null, [bundleName: string]>;
+  'webview-bundle:source:update-version': IpcHandler<void, [bundleName: string, version: string]>;
+  'webview-bundle:source:filepath': IpcHandler<string, [bundleName: string]>;
+  // remote
   'webview-bundle:remote:list-bundles': IpcHandler<string[]>;
   'webview-bundle:remote:get-info': IpcHandler<RemoteBundleInfo, [bundleName: string]>;
   'webview-bundle:remote:download': IpcHandler<RemoteBundleInfo, [bundleName: string]>;
   'webview-bundle:remote:download-version': IpcHandler<RemoteBundleInfo, [bundleName: string, version: string]>;
+  // updater
   'webview-bundle:updater:list-remotes': IpcHandler<string[]>;
   'webview-bundle:updater:get-update': IpcHandler<BundleUpdateInfo, [bundleName: string]>;
   'webview-bundle:updater:download-update': IpcHandler<
     RemoteBundleInfo,
     [bundleName: string, version?: string | undefined]
   >;
-  'webview-bundle:updater:apply-update': IpcHandler<void, [bundleName: string, version: string]>;
 };
 export type IpcHandlerSpecsByScope<Scope extends IpcChannelScope> = {
   [K in Extract<keyof IpcHandlerSpecs, `webview-bundle:${Scope}:${string}`>]: IpcHandlerSpecs[K];

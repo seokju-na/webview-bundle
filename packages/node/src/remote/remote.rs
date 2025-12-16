@@ -1,28 +1,28 @@
-use crate::bundle::JsBundle;
+use crate::bundle::Bundle;
 use crate::js::{JsCallback, JsCallbackExt};
-use crate::remote::JsHttpOptions;
+use crate::remote::HttpOptions;
 use napi::bindgen_prelude::*;
 use napi::Status;
 use napi_derive::napi;
 use std::sync::Arc;
+use webview_bundle::remote;
 use webview_bundle::remote::HttpConfig;
-use webview_bundle::remote::{Remote, RemoteBundleInfo};
 
-#[napi(object, js_name = "RemoteOptions", object_to_js = false)]
-pub struct JsRemoteOptions {
-  pub http: Option<JsHttpOptions>,
+#[napi(object, object_to_js = false)]
+pub struct RemoteOptions {
+  pub http: Option<HttpOptions>,
   #[napi(ts_type = "(data: RemoteOnDownloadData) => void")]
-  pub on_download: Option<JsCallback<JsRemoteOnDownloadData, ()>>,
+  pub on_download: Option<JsCallback<RemoteOnDownloadData, ()>>,
 }
 
-#[napi(object, js_name = "RemoteOnDownloadData")]
-pub struct JsRemoteOnDownloadData {
+#[napi(object)]
+pub struct RemoteOnDownloadData {
   pub downloaded_bytes: u32,
   pub total_bytes: u32,
 }
 
-#[napi(object, js_name = "RemoteBundleInfo")]
-pub struct JsRemoteBundleInfo {
+#[napi(object)]
+pub struct RemoteBundleInfo {
   pub name: String,
   pub version: String,
   pub etag: Option<String>,
@@ -31,7 +31,20 @@ pub struct JsRemoteBundleInfo {
   pub last_modified: Option<String>,
 }
 
-impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
+impl From<remote::RemoteBundleInfo> for RemoteBundleInfo {
+  fn from(value: remote::RemoteBundleInfo) -> Self {
+    Self {
+      name: value.name,
+      version: value.version,
+      etag: value.etag,
+      integrity: value.integrity,
+      signature: value.signature,
+      last_modified: value.last_modified,
+    }
+  }
+}
+
+impl From<RemoteBundleInfo> for remote::RemoteBundleInfo {
   fn from(value: RemoteBundleInfo) -> Self {
     Self {
       name: value.name,
@@ -44,29 +57,16 @@ impl From<RemoteBundleInfo> for JsRemoteBundleInfo {
   }
 }
 
-impl From<JsRemoteBundleInfo> for RemoteBundleInfo {
-  fn from(value: JsRemoteBundleInfo) -> Self {
-    Self {
-      name: value.name,
-      version: value.version,
-      etag: value.etag,
-      integrity: value.integrity,
-      signature: value.signature,
-      last_modified: value.last_modified,
-    }
-  }
-}
-
-#[napi(js_name = "Remote")]
-pub struct JsRemote {
-  pub(crate) inner: Arc<Remote>,
+#[napi]
+pub struct Remote {
+  pub(crate) inner: Arc<remote::Remote>,
 }
 
 #[napi]
-impl JsRemote {
+impl Remote {
   #[napi(constructor)]
-  pub fn new(endpoint: String, options: Option<JsRemoteOptions>) -> crate::Result<JsRemote> {
-    let mut builder = Remote::builder().endpoint(endpoint);
+  pub fn new(endpoint: String, options: Option<RemoteOptions>) -> crate::Result<Remote> {
+    let mut builder = remote::Remote::builder().endpoint(endpoint);
     if let Some(options) = options {
       if let Some(http) = options.http {
         builder = builder.http(
@@ -76,7 +76,7 @@ impl JsRemote {
       if let Some(on_download) = options.on_download {
         builder = builder.on_download(move |downloaded_bytes, total_bytes| {
           let on_download_fn = Arc::clone(&on_download);
-          let _ = on_download_fn.invoke_sync(JsRemoteOnDownloadData {
+          let _ = on_download_fn.invoke_sync(RemoteOnDownloadData {
             downloaded_bytes: downloaded_bytes as u32,
             total_bytes: total_bytes as u32,
           });
@@ -84,7 +84,7 @@ impl JsRemote {
       }
     }
     let inner = builder.build()?;
-    Ok(JsRemote {
+    Ok(Remote {
       inner: Arc::new(inner),
     })
   }
@@ -96,7 +96,7 @@ impl JsRemote {
   }
 
   #[napi]
-  pub async fn get_info(&self, bundle_name: String) -> crate::Result<JsRemoteBundleInfo> {
+  pub async fn get_info(&self, bundle_name: String) -> crate::Result<RemoteBundleInfo> {
     let info = self.inner.get_current_info(&bundle_name).await?;
     Ok(info.into())
   }
@@ -105,9 +105,9 @@ impl JsRemote {
   pub async fn download(
     &self,
     bundle_name: String,
-  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle, Buffer)> {
+  ) -> crate::Result<(RemoteBundleInfo, Bundle, Buffer)> {
     let (info, inner, data) = self.inner.download(&bundle_name).await?;
-    Ok((info.into(), JsBundle { inner }, data.into()))
+    Ok((info.into(), Bundle { inner }, data.into()))
   }
 
   #[napi]
@@ -115,8 +115,8 @@ impl JsRemote {
     &self,
     bundle_name: String,
     version: String,
-  ) -> crate::Result<(JsRemoteBundleInfo, JsBundle, Buffer)> {
+  ) -> crate::Result<(RemoteBundleInfo, Bundle, Buffer)> {
     let (info, inner, data) = self.inner.download_version(&bundle_name, &version).await?;
-    Ok((info.into(), JsBundle { inner }, data.into()))
+    Ok((info.into(), Bundle { inner }, data.into()))
   }
 }

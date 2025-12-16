@@ -1,6 +1,13 @@
-import type { BundleUpdateInfo, RemoteBundleInfo } from '@webview-bundle/node';
+import type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@webview-bundle/node';
 
-export type { BundleUpdateInfo, RemoteBundleInfo } from '@webview-bundle/node';
+export type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@webview-bundle/node';
+
+export interface WebviewBundleSourceApi {
+  listBundles(): Promise<ListBundleItem[]>;
+  loadVersion(bundleName: string): Promise<BundleSourceVersion | null>;
+  updateVersion(bundleName: string, version: string): Promise<void>;
+  filepath(bundleName: string): Promise<string>;
+}
 
 export interface WebviewBundleRemoteApi {
   listBundles(): Promise<string[]>;
@@ -13,10 +20,10 @@ export interface WebviewBundleUpdaterApi {
   listRemotes(): Promise<string[]>;
   getUpdate(bundleName: string): Promise<BundleUpdateInfo>;
   downloadUpdate(bundleName: string, version?: string): Promise<RemoteBundleInfo>;
-  applyUpdate(bundleName: string, version: string): Promise<void>;
 }
 
 export interface WebviewBundleApi {
+  readonly source: WebviewBundleSourceApi;
   readonly remote: WebviewBundleRemoteApi;
   readonly updater: WebviewBundleUpdaterApi;
 }

@@ -49,10 +49,10 @@
   "devDependencies": {
     "@pulumi/cloudflare": "^6.10.0",
     "@pulumi/pulumi": "^3.201.0",
-    "@types/node": "22.18.3",
+    "@types/node": "catalog:",
     "esbuild": "0.25.3",
-    "tsdown": "0.15.1",
-    "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "tsdown": "0.18.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

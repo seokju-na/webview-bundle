@@ -1,14 +1,15 @@
-use crate::bundle::JsBundle;
-use crate::integrity::JsIntegrityMaker;
-use crate::remote::JsHttpOptions;
-use crate::signature::JsSignatureSigner;
+use crate::bundle::Bundle;
+use crate::integrity::IntegrityMaker;
+use crate::remote::HttpOptions;
+use crate::signature::SignatureSigner;
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::remote::uploader::{S3Uploader, S3UploaderBuilder, Uploader};
+use webview_bundle::remote::uploader;
+use webview_bundle::remote::uploader::Uploader;
 
 #[derive(Default)]
-#[napi(object, js_name = "S3UploaderOptions", object_to_js = false)]
-pub struct JsS3UploaderOptions {
+#[napi(object, object_to_js = false)]
+pub struct S3UploaderOptions {
   pub access_key_id: Option<String>,
   pub secret_access_key: Option<String>,
   pub session_token: Option<String>,
@@ -18,21 +19,21 @@ pub struct JsS3UploaderOptions {
   pub role_session_name: Option<String>,
   pub external_id: Option<String>,
   #[napi(ts_type = "IntegrityMakerOptions | ((data: Uint8Array) => Promise<string>)")]
-  pub integrity_maker: Option<JsIntegrityMaker>,
+  pub integrity_maker: Option<IntegrityMaker>,
   #[napi(ts_type = "SignatureSignerOptions | ((data: Uint8Array) => Promise<string>)")]
-  pub signature_signer: Option<JsSignatureSigner>,
+  pub signature_signer: Option<SignatureSigner>,
 
   // config for opendal
   pub write_concurrent: Option<u32>,
   pub write_chunk: Option<u32>,
   pub cache_control: Option<String>,
-  pub http: Option<JsHttpOptions>,
+  pub http: Option<HttpOptions>,
 }
 
-impl TryFrom<JsS3UploaderOptions> for S3UploaderBuilder {
+impl TryFrom<S3UploaderOptions> for uploader::S3UploaderBuilder {
   type Error = crate::Error;
-  fn try_from(value: JsS3UploaderOptions) -> Result<Self, Self::Error> {
-    let mut builder = S3Uploader::builder();
+  fn try_from(value: S3UploaderOptions) -> Result<Self, Self::Error> {
+    let mut builder = uploader::S3Uploader::builder();
     if let Some(access_key_id) = value.access_key_id {
       builder = builder.access_key_id(access_key_id);
     }
@@ -79,19 +80,19 @@ impl TryFrom<JsS3UploaderOptions> for S3UploaderBuilder {
   }
 }
 
-#[napi(js_name = "S3Uploader")]
-pub struct JsS3Uploader {
-  pub(crate) inner: Arc<S3Uploader>,
+#[napi]
+pub struct S3Uploader {
+  pub(crate) inner: Arc<uploader::S3Uploader>,
 }
 
 #[napi]
-impl JsS3Uploader {
+impl S3Uploader {
   #[napi(constructor)]
-  pub fn new(bucket: String, options: Option<JsS3UploaderOptions>) -> crate::Result<JsS3Uploader> {
-    let builder: S3UploaderBuilder =
-      S3UploaderBuilder::try_from(options.unwrap_or_default())?.bucket(bucket);
+  pub fn new(bucket: String, options: Option<S3UploaderOptions>) -> crate::Result<S3Uploader> {
+    let builder: uploader::S3UploaderBuilder =
+      uploader::S3UploaderBuilder::try_from(options.unwrap_or_default())?.bucket(bucket);
     let inner = builder.build()?;
-    Ok(JsS3Uploader {
+    Ok(S3Uploader {
       inner: Arc::new(inner),
     })
   }
@@ -101,7 +102,7 @@ impl JsS3Uploader {
     &self,
     bundle_name: String,
     version: String,
-    bundle: &JsBundle,
+    bundle: &Bundle,
   ) -> crate::Result<()> {
     self
       .inner

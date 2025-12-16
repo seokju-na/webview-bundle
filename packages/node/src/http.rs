@@ -6,8 +6,8 @@ use std::ops::Deref;
 use webview_bundle::http;
 use webview_bundle::http::HeaderMap;
 
-#[napi(string_enum = "lowercase", js_name = "HttpMethod")]
-pub enum JsHttpMethod {
+#[napi(string_enum = "lowercase")]
+pub enum HttpMethod {
   Get,
   Head,
   Options,
@@ -19,40 +19,40 @@ pub enum JsHttpMethod {
   Connect,
 }
 
-impl From<JsHttpMethod> for http::Method {
-  fn from(method: JsHttpMethod) -> Self {
+impl From<HttpMethod> for http::Method {
+  fn from(method: HttpMethod) -> Self {
     match method {
-      JsHttpMethod::Get => Self::GET,
-      JsHttpMethod::Head => Self::HEAD,
-      JsHttpMethod::Options => Self::OPTIONS,
-      JsHttpMethod::Post => Self::POST,
-      JsHttpMethod::Put => Self::PUT,
-      JsHttpMethod::Patch => Self::PATCH,
-      JsHttpMethod::Delete => Self::DELETE,
-      JsHttpMethod::Trace => Self::TRACE,
-      JsHttpMethod::Connect => Self::CONNECT,
+      HttpMethod::Get => Self::GET,
+      HttpMethod::Head => Self::HEAD,
+      HttpMethod::Options => Self::OPTIONS,
+      HttpMethod::Post => Self::POST,
+      HttpMethod::Put => Self::PUT,
+      HttpMethod::Patch => Self::PATCH,
+      HttpMethod::Delete => Self::DELETE,
+      HttpMethod::Trace => Self::TRACE,
+      HttpMethod::Connect => Self::CONNECT,
     }
   }
 }
 
-pub struct JsHttpHeaders(pub HashMap<String, String>);
+pub struct HttpHeaders(pub HashMap<String, String>);
 
-impl Deref for JsHttpHeaders {
+impl Deref for HttpHeaders {
   type Target = HashMap<String, String>;
   fn deref(&self) -> &Self::Target {
     &self.0
   }
 }
 
-impl From<HashMap<String, String>> for JsHttpHeaders {
+impl From<HashMap<String, String>> for HttpHeaders {
   fn from(value: HashMap<String, String>) -> Self {
     Self(value)
   }
 }
 
-impl TryFrom<JsHttpHeaders> for HeaderMap {
+impl TryFrom<HttpHeaders> for HeaderMap {
   type Error = crate::Error;
-  fn try_from(value: JsHttpHeaders) -> Result<Self, Self::Error> {
+  fn try_from(value: HttpHeaders) -> Result<Self, Self::Error> {
     let mut headers = HeaderMap::with_capacity(value.len());
     for (n, v) in value.0 {
       let name = http::HeaderName::from_bytes(n.as_bytes())?;
@@ -63,7 +63,7 @@ impl TryFrom<JsHttpHeaders> for HeaderMap {
   }
 }
 
-impl From<&HeaderMap> for JsHttpHeaders {
+impl From<&HeaderMap> for HttpHeaders {
   fn from(value: &HeaderMap) -> Self {
     Self(
       value
@@ -77,19 +77,19 @@ impl From<&HeaderMap> for JsHttpHeaders {
   }
 }
 
-#[napi(object, js_name = "HttpResponse")]
-pub struct JsHttpResponse {
+#[napi(object)]
+pub struct HttpResponse {
   pub status: u16,
   pub headers: HashMap<String, String>,
   pub body: Buffer,
 }
 
-impl From<http::Response<Cow<'static, [u8]>>> for JsHttpResponse {
+impl From<http::Response<Cow<'static, [u8]>>> for HttpResponse {
   fn from(value: http::Response<Cow<'static, [u8]>>) -> Self {
     let status = value.status().as_u16();
-    let headers = JsHttpHeaders::from(value.headers()).0;
+    let headers = HttpHeaders::from(value.headers()).0;
     let body = Buffer::from(value.body().as_ref());
-    JsHttpResponse {
+    HttpResponse {
       status,
       headers,
       body,
@@ -98,7 +98,7 @@ impl From<http::Response<Cow<'static, [u8]>>> for JsHttpResponse {
 }
 
 pub(crate) fn request(
-  method: JsHttpMethod,
+  method: HttpMethod,
   uri: String,
   headers: Option<HashMap<String, String>>,
 ) -> crate::Result<http::Request<Vec<u8>>> {

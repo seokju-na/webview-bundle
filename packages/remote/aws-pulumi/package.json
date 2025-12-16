@@ -51,10 +51,10 @@
   "devDependencies": {
     "@pulumi/aws": "^7.8.0",
     "@pulumi/pulumi": "^3.201.0",
-    "@types/node": "22.18.3",
-    "tsdown": "0.15.1",
+    "@types/node": "catalog:",
+    "tsdown": "0.18.0",
     "tsx": "^4.20.6",
-    "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

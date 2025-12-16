@@ -238,7 +238,7 @@ mod tests {
   async fn load_metadata() {
     let fixture = Fixtures::bundles();
     let manifest = BundleManifest::new(&fixture.get_path("builtin/manifest.json"), ReadOnly);
-    let metadata = manifest
+    manifest
       .load_metadata("app", "1.0.0")
       .await
       .unwrap()

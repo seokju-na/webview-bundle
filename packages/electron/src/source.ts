@@ -1,15 +1,19 @@
 import path from 'node:path';
-import { BundleSource } from '@webview-bundle/node';
+import { BundleSource, type BundleSourceConfig } from '@webview-bundle/node';
 import { app } from 'electron';
 
-export interface SourceOptions {
+export interface SourceOptions extends Omit<BundleSourceConfig, 'builtinDir' | 'remoteDir'> {
   builtinDir?: string;
   remoteDir?: string;
 }
 
 export function bundleSource(options: SourceOptions = {}): BundleSource {
-  const { builtinDir = defaultBuiltinDir(), remoteDir = defaultRemoteDir() } = options;
-  return new BundleSource(builtinDir, remoteDir);
+  const { builtinDir = defaultBuiltinDir(), remoteDir = defaultRemoteDir(), ...otherOptions } = options;
+  return new BundleSource({
+    builtinDir,
+    remoteDir,
+    ...otherOptions,
+  });
 }
 
 function defaultBuiltinDir(): string {

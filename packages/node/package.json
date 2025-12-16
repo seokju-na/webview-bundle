@@ -65,10 +65,10 @@
   "devDependencies": {
     "@hono/node-server": "^1.19.2",
     "@napi-rs/cli": "3.1.5",
-    "@types/node": "22.18.3",
+    "@types/node": "catalog:",
     "get-port": "^7.1.0",
     "hono": "^4.10.3",
-    "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
