@@ -1,5 +1,5 @@
 use crate::js::{JsCallback, JsCallbackExt};
-use napi::bindgen_prelude::{Buffer, FromNapiValue, Promise, TypeName, ValidateNapiValue};
+use napi::bindgen_prelude::{Buffer, FnArgs, FromNapiValue, Promise, TypeName, ValidateNapiValue};
 use napi::{sys, Either, ValueType};
 use napi_derive::napi;
 use std::sync::Arc;
@@ -262,7 +262,8 @@ pub struct SignatureVerifyingKeyOptions {
   pub data: Either<String, Buffer>,
 }
 
-type NapiVerifier = Either<SignatureVerifierOptions, JsCallback<(Buffer, String), Promise<bool>>>;
+type NapiVerifier =
+  Either<SignatureVerifierOptions, JsCallback<FnArgs<(Buffer, String)>, Promise<bool>>>;
 
 impl TypeName for SignatureVerifier {
   fn type_name() -> &'static str {
@@ -439,7 +440,7 @@ impl FromNapiValue for SignatureVerifier {
             let callback = Arc::clone(&inner);
             Box::pin(async move {
               let ret = callback
-                .invoke_async((message_buf, signature))
+                .invoke_async((message_buf, signature).into())
                 .await?
                 .await?;
               Ok(ret)
