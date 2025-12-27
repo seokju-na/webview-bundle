@@ -51,11 +51,13 @@ impl From<BundleUpdateInfo> for updater::BundleUpdateInfo {
   }
 }
 
+pub(crate) type UpdateIntegrityChecker = JsCallback<FnArgs<(Buffer, String)>, Promise<bool>>;
+
 #[napi(object, object_to_js = false)]
 pub struct UpdaterOptions {
   pub integrity_policy: Option<IntegrityPolicy>,
   #[napi(ts_type = "(data: Uint8Array, integrity: string) => Promise<boolean>")]
-  pub integrity_checker: Option<JsCallback<(Buffer, String), Promise<bool>>>,
+  pub integrity_checker: Option<UpdateIntegrityChecker>,
   #[napi(
     ts_type = "SignatureVerifierOptions | ((data: Uint8Array, signature: string) => Promise<boolean>)"
   )]
@@ -75,7 +77,10 @@ impl From<UpdaterOptions> for updater::UpdaterConfig {
           let signature = signature.to_string();
           let callback = Arc::clone(&checker);
           Box::pin(async move {
-            let ret = callback.invoke_async((buffer, signature)).await?.await?;
+            let ret = callback
+              .invoke_async((buffer, signature).into())
+              .await?
+              .await?;
             Ok(ret)
           })
         },
