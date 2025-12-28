@@ -3,19 +3,19 @@
   "description": "Configuration for webview bundle",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./remote": {
-      "import": "./dist/remote/index.js",
+      "import": "./dist/remote/index.mjs",
       "require": "./dist/remote/index.cjs"
     },
     "./signature": {
-      "import": "./dist/signature/index.js",
+      "import": "./dist/signature/index.mjs",
       "require": "./dist/signature/index.cjs"
     },
     "./package.json": "./package.json"
@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "tsdown": "0.18.0",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

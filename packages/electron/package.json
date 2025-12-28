@@ -3,20 +3,20 @@
   "description": "Webview Bundle API for Electron",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "sideEffects": false,
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./preload": {
-      "import": "./dist/preload/index.js",
+      "import": "./dist/preload/index.mjs",
       "require": "./dist/preload/index.cjs"
     },
     "./renderer": {
-      "import": "./dist/renderer/index.js",
+      "import": "./dist/renderer/index.mjs",
       "require": "./dist/renderer/index.cjs"
     },
     "./package.json": "./package.json"
@@ -55,7 +55,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "electron": "^35.7.5",
-    "tsdown": "0.18.0",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

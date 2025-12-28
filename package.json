@@ -5,6 +5,7 @@
   "workspaces": [
     "packages/**/*",
     "examples/*",
+    "!examples/electron-forge-vite",
     "bench/**/*",
     "xtask"
   ],

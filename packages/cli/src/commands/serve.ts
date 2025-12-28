@@ -2,7 +2,6 @@ import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
-import { ColorModeOption, setColorMode } from 'xtask/console.js';
 import { c } from '../console.js';
 import { parseMimeType } from '../mime-type.js';
 import { BaseCommand } from './base.js';
@@ -28,11 +27,8 @@ export class ServeCommand extends BaseCommand {
   readonly silent = Option.Boolean('--silent', false, {
     description: 'Disable log output.',
   });
-  readonly colorMode = ColorModeOption;
 
   async run() {
-    setColorMode(this.colorMode);
-
     const { Hono } = await import('hono');
     const { serve } = await import('@hono/node-server');
 
@@ -50,10 +46,10 @@ export class ServeCommand extends BaseCommand {
     }
     app.get('*', async c => {
       const p = this.resolvePath(c.req.path);
-      if (!bundle.manifest().index().containsPath(p)) {
+      if (!bundle.descriptor().index().containsPath(p)) {
         return c.notFound();
       }
-      const entry = bundle.manifest().index().getEntry(p)!;
+      const entry = bundle.descriptor().index().getEntry(p)!;
       const data = bundle.getData(p)!;
       for (const [name, value] of Object.entries(entry.headers)) {
         c.header(name, value, { append: true });

@@ -18,7 +18,8 @@
     "index.d.ts",
     "index.d.cts",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "*.node"
   ],
   "homepage": "https://github.com/seokju-na/webview-bundle",
   "repository": {
@@ -55,7 +56,6 @@
     "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   },
   "scripts": {
-    "prepack": "yarn build-napi",
     "artifacts": "just xtask artifacts napi packages/node && napi artifacts",
     "build-napi": "yarn build-napi-esm && yarn build-napi-cjs",
     "build-napi-esm": "napi build --platform --release --js=index.js --dts=index.d.ts --esm --no-const-enum --no-dts-cache",
