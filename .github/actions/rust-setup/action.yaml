@@ -12,7 +12,7 @@ runs:
   steps:
     - name: Install rust
       id: install-rust
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7 # stable
       with:
         toolchain: 1.91.0
         components: ${{ inputs.components }}
