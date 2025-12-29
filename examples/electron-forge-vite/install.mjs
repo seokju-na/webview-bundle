@@ -48,3 +48,8 @@ for (const [name, version] of Object.entries(dependencies)) {
   console.log(`Moving package: ${path.relative(rootDir, src)} -> ${path.relative(rootDir, dest)}`);
   fs.copyFileSync(src, dest);
 }
+
+execSync('npm install', {
+  cwd: dirname,
+  stdio: 'inherit',
+});

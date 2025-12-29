@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execa } from 'execa';
@@ -64,8 +65,21 @@ export async function findAllFixtureFiles(name: string): Promise<FixtureFile[]> 
   return files;
 }
 
+let cliPrepared = false;
+
+export async function prepareCli(name: string): Promise<void> {
+  if (cliPrepared) {
+    return;
+  }
+  const require = createRequire(getFixtureDir(name));
+  const cliPath = path.dirname(require.resolve('@webview-bundle/cli/package.json'));
+  await execa('yarn', ['build'], { cwd: cliPath });
+  cliPrepared = true;
+}
+
 export async function buildFixture(name: string): Promise<boolean> {
   await execa('yarn', ['out'], { cwd: getFixtureDir(name) });
+  await prepareCli(name);
   await execa(
     'yarn',
     ['wvb', 'create', getFixtureOutDir(name), '-O', getFixtureOutWebviewBundleFilePath(name), '--truncate'],

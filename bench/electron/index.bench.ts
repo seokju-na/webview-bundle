@@ -6,13 +6,14 @@ function startup(mainFilePath: string): BenchFunction {
     const app = await electron.launch({ args: [mainFilePath] });
     const win = await app.firstWindow();
     await win.waitForLoadState();
-    await app.close();
+    app.close();
+    await app.waitForEvent('close', { timeout: 5_000 });
   };
 }
 
 describe('startup', () => {
-  bench('fs', startup('./dist/fs/main.mjs'), { iterations: 10, time: 1_000 });
-  bench('webview-bundle', startup('./dist/wvb/main.mjs'), { iterations: 10, time: 1_000 });
+  bench('fs', startup('./dist/fs/main.mjs'), { iterations: 10 });
+  bench('webview-bundle', startup('./dist/wvb/main.mjs'), { iterations: 10 });
 });
 
 function navigation(mainFilePath: string): BenchFunction {
@@ -28,11 +29,12 @@ function navigation(mainFilePath: string): BenchFunction {
     await win.getByText(/Page 3/).waitFor({ state: 'visible' });
     await win.getByRole('link', { name: '10' }).click();
     await win.getByText(/Page 10/).waitFor({ state: 'visible' });
-    await app.close();
+    app.close();
+    await app.waitForEvent('close', { timeout: 5_000 });
   };
 }
 
 describe('navigation', () => {
-  bench('fs', navigation('./dist/fs/main.mjs'), { iterations: 10, time: 2_000 });
-  bench('webview-bundle', navigation('./dist/wvb/main.mjs'), { iterations: 10, time: 2_000 });
+  bench('fs', navigation('./dist/fs/main.mjs'), { iterations: 10 });
+  bench('webview-bundle', navigation('./dist/wvb/main.mjs'), { iterations: 10 });
 });
