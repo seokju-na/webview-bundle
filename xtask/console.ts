@@ -4,6 +4,10 @@ import kleur from 'kleur';
 import supportsColor from 'supports-color';
 import { isEnum } from 'typanion';
 
+export function isColorEnabled(): boolean {
+  return kleur.enabled;
+}
+
 export function enableColor(): void {
   kleur.enabled = true;
 }

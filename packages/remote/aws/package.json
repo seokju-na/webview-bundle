@@ -3,19 +3,19 @@
   "description": "Webview Bundle remote configuration for AWS",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./origin-request": {
-      "import": "./dist/origin-request/index.js",
+      "import": "./dist/origin-request/index.mjs",
       "require": "./dist/origin-request/index.cjs"
     },
     "./origin-response": {
-      "import": "./dist/origin-response/index.js",
+      "import": "./dist/origin-response/index.mjs",
       "require": "./dist/origin-response/index.cjs"
     },
     "./package.json": "./package.json"
@@ -47,14 +47,16 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3",
+    "@types/aws-lambda": "^8.10.159",
     "aws-lambda": "^1.0.7",
-    "hono": "^4.10.3"
+    "hono": "^4.10.3",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@types/node": "22.18.3",
+    "@types/node": "catalog:",
     "esbuild": "0.25.3",
-    "tsdown": "0.15.1",
-    "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

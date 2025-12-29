@@ -1,4 +1,4 @@
-import { type BundleSource, type Remote, Updater } from '@webview-bundle/node';
+import { type BundleSource, type Remote, Updater, type UpdaterOptions } from '@webview-bundle/node';
 import { registerIpc } from './ipc.js';
 import { type Protocol, registerProtocol } from './protocol.js';
 import { type RemoteOptions, remote } from './remote.js';
@@ -8,9 +8,13 @@ export interface WebviewBundleRemoteConfig extends RemoteOptions {
   endpoint: string;
 }
 
+export interface WebviewBundleUpdaterConfig extends UpdaterOptions {
+  remote: WebviewBundleRemoteConfig;
+}
+
 export interface WebviewBundleConfig {
   source?: SourceOptions;
-  remote?: WebviewBundleRemoteConfig;
+  updater?: WebviewBundleUpdaterConfig;
   protocols: Protocol[];
 }
 
@@ -22,10 +26,11 @@ export class WebviewBundle {
 
   constructor(private readonly config: WebviewBundleConfig) {
     this._source = bundleSource(config.source);
-    if (config.remote != null) {
-      const { endpoint, ...remoteOptions } = config.remote;
+    if (config.updater != null) {
+      const { remote: remoteConfig, ...updaterOptions } = config.updater;
+      const { endpoint, ...remoteOptions } = remoteConfig;
       this._remote = remote(endpoint, remoteOptions);
-      this._updater = new Updater(this._source, this._remote);
+      this._updater = new Updater(this._source, this._remote, updaterOptions);
     }
     this._whenProtocolRegistered = new Promise<void>((resolve, reject) => {
       Promise.all(config.protocols.map(p => registerProtocol(p, this._source)))

@@ -3,10 +3,16 @@
   "version": "0.0.0",
   "type": "module",
   "bin": {
-    "webview-bundle": "./dist/main.js",
-    "wvb": "./dist/main.js"
+    "webview-bundle": "./dist/cli.mjs",
+    "wvb": "./dist/cli.mjs"
   },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -34,30 +40,32 @@
   "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
-    "build": "tsdown",
+    "build": "yarn build-js && yarn build-cli",
+    "build-cli": "tsdown -c tsdown.cli.config.ts",
+    "build-js": "tsdown -c tsdown.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.2",
     "@logtape/logtape": "1.0.4",
+    "@webview-bundle/config": "workspace:^",
     "@webview-bundle/node": "workspace:^",
     "ci-info": "^4.2.0",
-    "clipanion": "^4.0.0-rc.4",
+    "clipanion": "4.0.0-rc.4",
     "file-type": "^21.0.0",
     "hono": "^4.10.3",
     "kleur": "^4.1.5",
     "picomatch": "^4.0.3",
+    "rolldown": "1.0.0-beta.51",
     "supports-color": "^10.0.0",
     "tinyglobby": "^0.2.14",
-    "typanion": "^3.14.0",
-    "zod": "^4.0.5"
+    "typanion": "^3.14.0"
   },
   "devDependencies": {
-    "@napi-rs/cli": "3.1.5",
-    "@types/node": "22.18.3",
+    "@types/node": "catalog:",
     "@types/picomatch": "^4",
-    "tsdown": "0.15.1",
-    "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

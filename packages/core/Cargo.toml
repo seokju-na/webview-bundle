@@ -29,8 +29,10 @@ p384             = { workspace = true, optional = true }
 percent-encoding = { workspace = true, optional = true }
 reqwest          = { workspace = true, default-features = false, optional = true }
 rsa              = { workspace = true, optional = true }
+semver           = { workspace = true, optional = true }
 serde            = { workspace = true, optional = true }
 serde_json       = { workspace = true, optional = true }
+serde_repr       = { workspace = true, optional = true }
 sha3             = { workspace = true, optional = true }
 thiserror        = { workspace = true }
 tokio            = { workspace = true, optional = true }
@@ -44,7 +46,7 @@ tokio     = { workspace = true, features = ["full"] }
 [features]
 _opendal = ["dep:opendal"]
 _reqwest = ["dep:reqwest"]
-_serde = ["dep:serde", "dep:serde_json"]
+_serde = ["dep:serde", "dep:serde_json", "dep:serde_repr"]
 async = ["dep:tokio", "tokio/io-util", "tokio/rt", "tokio/rt-multi-thread", "tokio/fs", "tokio/sync"]
 full = [
   "async",
@@ -78,13 +80,13 @@ remote = [
   "dep:opendal",
 ]
 remote-uploader-s3 = ["remote", "_opendal", "opendal/services-s3"]
-signature = []
+signature = ["integrity"]
 signature-ecdsa_secp256r1 = ["dep:p256"]
 signature-ecdsa_secp384r1 = ["dep:p384"]
 signature-edd25519 = ["dep:ed25519-dalek", "ed25519-dalek/pem"]
 signature-rsa_pkcs1_v1_5 = ["dep:rsa", "rsa/sha2"]
 signature-rsa_pss = ["dep:rsa", "rsa/sha2", "rsa/getrandom"]
-source = ["dep:dashmap", "async", "_serde"]
+source = ["dep:dashmap", "async", "_serde", "dep:semver"]
 updater = ["remote", "source"]
 
 [lints.clippy]

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { c } from '../console.js';
-import { formatByteLength } from '../utils/format.js';
+import { formatByteLength } from '../format.js';
 import { BaseCommand } from './base.js';
 
 export class ExtractCommand extends BaseCommand {
@@ -34,9 +34,9 @@ If not provided, will use webview bundle file name as directory.`,
     const filepath = path.isAbsolute(this.file) ? this.file : path.join(process.cwd(), this.file);
     const bundle = await readBundle(filepath);
     this.logger.info(`Webview Bundle info for ${c.info(filepath)}`);
-    this.logger.info(`Version: ${c.bold(c.info(bundle.manifest().header().version()))}`);
+    this.logger.info(`Version: ${c.bold(c.info(bundle.descriptor().header().version()))}`);
     this.logger.info(`Entries:`);
-    const entries = Object.entries(bundle.manifest().index().entries());
+    const entries = Object.entries(bundle.descriptor().index().entries());
     entries.sort((a, b) => {
       if (a[0] < b[0]) {
         return -1;
@@ -70,7 +70,7 @@ If not provided, will use webview bundle file name as directory.`,
       this.logger.error(`Outdir already exists: ${outdirPath}`);
       return 1;
     }
-    const entryPaths = Object.keys(bundle.manifest().index().entries());
+    const entryPaths = Object.keys(bundle.descriptor().index().entries());
     for (const p of entryPaths) {
       const filepath = path.join(outdirPath, p);
       await fs.mkdir(path.dirname(filepath), { recursive: true });

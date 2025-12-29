@@ -36,17 +36,17 @@ impl super::Protocol for BundleProtocol {
       return Ok(method_not_allowed);
     }
 
-    let manifest = self.source.load_manifest(&name).await?;
-    if !manifest.index().contains_path(&path) {
+    let descriptor = self.source.load_descriptor(&name).await?;
+    if !descriptor.index().contains_path(&path) {
       let not_found = resp.status(404).body(Vec::new().into())?;
       return Ok(not_found);
     }
 
     let reader = self.source.reader(&name).await?;
-    let data = manifest.async_get_data(reader, &path).await?.unwrap();
+    let data = descriptor.async_get_data(reader, &path).await?.unwrap();
 
     if let Some(headers_mut) = resp.headers_mut() {
-      if let Some(headers) = manifest.index().get_entry(&path).map(|x| x.headers()) {
+      if let Some(headers) = descriptor.index().get_entry(&path).map(|x| x.headers()) {
         headers_mut.clone_from(headers);
       }
       // append if content-type header does not exists
@@ -70,23 +70,22 @@ impl super::Protocol for BundleProtocol {
 mod tests {
   use super::*;
   use crate::protocol::Protocol;
-  use std::path::PathBuf;
+  use crate::testing::Fixtures;
 
   #[tokio::test]
   async fn smoke() {
-    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-      .join("tests")
-      .join("fixtures")
-      .join("bundles");
-    let source = Arc::new(BundleSource::new(
-      &base_dir.join("builtin"),
-      &base_dir.join("remote"),
-    ));
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/index.html")
+          .uri("https://app.wvb/index.html")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -97,7 +96,7 @@ mod tests {
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/not_found.html")
+          .uri("https://app.wvb/not_found.html")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -111,7 +110,7 @@ mod tests {
       let handle = tokio::spawn(async move {
         p.handle(
           Request::builder()
-            .uri("https://nextjs.wvb/index.html")
+            .uri("https://app.wvb/index.html")
             .method("GET")
             .body(vec![])
             .unwrap(),
@@ -128,19 +127,18 @@ mod tests {
 
   #[tokio::test]
   async fn resolve_index_html() {
-    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-      .join("tests")
-      .join("fixtures")
-      .join("bundles");
-    let source = Arc::new(BundleSource::new(
-      &base_dir.join("builtin"),
-      &base_dir.join("remote"),
-    ));
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb")
+          .uri("https://app.wvb")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -152,19 +150,18 @@ mod tests {
 
   #[tokio::test]
   async fn content_type() {
-    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-      .join("tests")
-      .join("fixtures")
-      .join("bundles");
-    let source = Arc::new(BundleSource::new(
-      &base_dir.join("builtin"),
-      &base_dir.join("remote"),
-    ));
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
+          .uri("https://app.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -178,7 +175,7 @@ mod tests {
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/_next/static/css/419406682a95b9a9.css")
+          .uri("https://app.wvb/_next/static/css/419406682a95b9a9.css")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -192,7 +189,7 @@ mod tests {
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/_next/static/media/build.583ad785.png")
+          .uri("https://app.wvb/_next/static/media/build.583ad785.png")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -207,19 +204,18 @@ mod tests {
 
   #[tokio::test]
   async fn content_length() {
-    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-      .join("tests")
-      .join("fixtures")
-      .join("bundles");
-    let source = Arc::new(BundleSource::new(
-      &base_dir.join("builtin"),
-      &base_dir.join("remote"),
-    ));
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
+          .uri("https://app.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -233,7 +229,7 @@ mod tests {
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/_next/static/css/419406682a95b9a9.css")
+          .uri("https://app.wvb/_next/static/css/419406682a95b9a9.css")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -247,7 +243,7 @@ mod tests {
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/_next/static/media/build.583ad785.png")
+          .uri("https://app.wvb/_next/static/media/build.583ad785.png")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -262,19 +258,18 @@ mod tests {
 
   #[tokio::test]
   async fn not_found() {
-    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-      .join("tests")
-      .join("fixtures")
-      .join("bundles");
-    let source = Arc::new(BundleSource::new(
-      &base_dir.join("builtin"),
-      &base_dir.join("remote"),
-    ));
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let resp = protocol
       .handle(
         Request::builder()
-          .uri("https://nextjs.wvb/path/not/exists")
+          .uri("https://app.wvb/path/does/not/exists")
           .method("GET")
           .body(vec![])
           .unwrap(),
@@ -286,14 +281,13 @@ mod tests {
 
   #[tokio::test]
   async fn bundle_not_found() {
-    let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-      .join("tests")
-      .join("fixtures")
-      .join("bundles");
-    let source = Arc::new(BundleSource::new(
-      &base_dir.join("builtin"),
-      &base_dir.join("remote"),
-    ));
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
     let protocol = Arc::new(BundleProtocol::new(source.clone()));
     let err = protocol
       .handle(

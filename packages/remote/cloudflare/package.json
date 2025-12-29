@@ -3,11 +3,11 @@
   "description": "Webview Bundle remote for Cloudflare",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./package.json": "./package.json"
@@ -42,9 +42,9 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@types/node": "22.18.3",
-    "tsdown": "0.15.1",
-    "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -32,6 +32,19 @@ pub enum Error {
   ChecksumMismatch,
   #[error("bundle not found")]
   BundleNotFound,
+  #[cfg(feature = "source")]
+  #[error("bundle entry not exists (bundle_name: {bundle_name}, version: {version})")]
+  BundleEntryNotExists {
+    bundle_name: String,
+    version: String,
+  },
+  #[cfg(feature = "source")]
+  #[error("bundle cannot be removed (bundle_name: {bundle_name}, version: {version}): {reason}")]
+  BundleCannotBeRemoved {
+    bundle_name: String,
+    version: String,
+    reason: String,
+  },
   #[cfg(feature = "_serde")]
   #[error("serde json error: {0}")]
   SerdeJson(#[from] serde_json::Error),
@@ -66,6 +79,9 @@ pub enum Error {
   #[error("invalid integrity: {0}")]
   InvalidIntegrity(String),
   #[cfg(feature = "integrity")]
+  #[error("integrity required")]
+  IntegrityRequired,
+  #[cfg(feature = "integrity")]
   #[error("integrity verify failed")]
   IntegrityVerifyFailed,
   #[cfg(feature = "signature")]
@@ -86,11 +102,35 @@ pub enum Error {
   #[cfg(feature = "signature")]
   #[error("signature verify failed")]
   SignatureVerifyFailed,
-  #[error("unknown error: {0}")]
-  Unknown(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
+  #[error("generic error: {0}")]
+  Generic(#[source] Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 impl Error {
+  #[cfg(feature = "source")]
+  pub(crate) fn bundle_entry_not_exists(
+    bundle_name: impl Into<String>,
+    version: impl Into<String>,
+  ) -> Self {
+    Self::BundleEntryNotExists {
+      bundle_name: bundle_name.into(),
+      version: version.into(),
+    }
+  }
+
+  #[cfg(feature = "source")]
+  pub(crate) fn bundle_cannot_be_removed(
+    bundle_name: impl Into<String>,
+    version: impl Into<String>,
+    reason: impl Into<String>,
+  ) -> Self {
+    Self::BundleCannotBeRemoved {
+      bundle_name: bundle_name.into(),
+      version: version.into(),
+      reason: reason.into(),
+    }
+  }
+
   #[cfg(feature = "remote")]
   pub(crate) fn invalid_remote_config(message: impl Into<String>) -> Self {
     Self::InvalidRemoteConfig(message.into())
@@ -135,9 +175,9 @@ impl Error {
     Self::InvalidVerifyingKey(error.into())
   }
 
-  pub(crate) fn unknown(
+  pub(crate) fn generic(
     error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
   ) -> Self {
-    Self::Unknown(error.into())
+    Self::Generic(error.into())
   }
 }

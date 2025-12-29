@@ -1,10 +1,12 @@
 import { defineConfig, type UserConfig } from 'tsdown';
 
 const config: UserConfig = defineConfig({
-  entry: ['./src/main.ts'],
-  format: ['esm'],
+  entry: ['./src/index.ts'],
+  format: ['esm', 'cjs'],
   platform: 'node',
   target: 'node18',
+  dts: true,
+  clean: false,
 });
 
 export { config as default };

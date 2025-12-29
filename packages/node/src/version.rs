@@ -1,23 +1,22 @@
 use napi_derive::napi;
-use webview_bundle::Version;
 
-#[napi(string_enum = "lowercase", js_name = "Version")]
-pub enum JsVersion {
+#[napi(string_enum = "lowercase")]
+pub enum Version {
   V1,
 }
 
-impl From<JsVersion> for Version {
-  fn from(value: JsVersion) -> Self {
+impl From<Version> for webview_bundle::Version {
+  fn from(value: Version) -> Self {
     match value {
-      JsVersion::V1 => Version::V1,
+      Version::V1 => webview_bundle::Version::V1,
     }
   }
 }
 
-impl From<Version> for JsVersion {
-  fn from(value: Version) -> Self {
+impl From<webview_bundle::Version> for Version {
+  fn from(value: webview_bundle::Version) -> Self {
     match value {
-      Version::V1 => JsVersion::V1,
+      webview_bundle::Version::V1 => Version::V1,
     }
   }
 }

@@ -1,135 +1,184 @@
-use crate::bundle::JsBundle;
-use crate::bundle::JsBundleManifest;
-use crate::bundle::JsBundleManifestInner;
+use crate::bundle::Bundle;
+use crate::bundle::BundleDescriptor;
+use crate::bundle::BundleDescriptorInner;
 use napi_derive::napi;
-use std::path::Path;
 use std::sync::Arc;
-use webview_bundle::source::{BundleSource, BundleSourceVersion};
+use webview_bundle::source;
 
-#[napi(string_enum = "lowercase", js_name = "BundleSourceVersionType")]
-pub enum JsBundleSourceVersionKind {
+#[napi(string_enum = "lowercase")]
+pub enum BundleSourceKind {
   Builtin,
   Remote,
 }
 
-#[napi(object, js_name = "BundleSourceVersion")]
-pub struct JsBundleSourceVersion {
+impl From<source::BundleSourceKind> for BundleSourceKind {
+  fn from(value: source::BundleSourceKind) -> Self {
+    match value {
+      source::BundleSourceKind::Builtin => Self::Builtin,
+      source::BundleSourceKind::Remote => Self::Remote,
+    }
+  }
+}
+
+#[napi(object)]
+pub struct BundleSourceVersion {
   #[napi(js_name = "type")]
-  pub kind: JsBundleSourceVersionKind,
+  pub kind: BundleSourceKind,
   pub version: String,
 }
 
-impl From<BundleSourceVersion> for JsBundleSourceVersion {
-  fn from(value: BundleSourceVersion) -> Self {
-    match value {
-      BundleSourceVersion::Builtin(x) => Self {
-        kind: JsBundleSourceVersionKind::Builtin,
-        version: x,
-      },
-      BundleSourceVersion::Remote(x) => Self {
-        kind: JsBundleSourceVersionKind::Remote,
-        version: x,
-      },
+impl From<source::BundleSourceVersion> for BundleSourceVersion {
+  fn from(value: source::BundleSourceVersion) -> Self {
+    Self {
+      kind: value.kind.into(),
+      version: value.version,
     }
   }
 }
 
-impl From<JsBundleSourceVersion> for BundleSourceVersion {
-  fn from(value: JsBundleSourceVersion) -> Self {
-    match value.kind {
-      JsBundleSourceVersionKind::Builtin => Self::Builtin(value.version),
-      JsBundleSourceVersionKind::Remote => Self::Remote(value.version),
+#[napi(object)]
+pub struct BundleManifestMetadata {
+  pub etag: Option<String>,
+  pub integrity: Option<String>,
+  pub signature: Option<String>,
+  pub last_modified: Option<String>,
+}
+
+impl From<source::BundleManifestMetadata> for BundleManifestMetadata {
+  fn from(value: source::BundleManifestMetadata) -> Self {
+    Self {
+      etag: value.etag,
+      integrity: value.integrity,
+      signature: value.signature,
+      last_modified: value.last_modified,
     }
   }
 }
 
-#[napi(object, js_name = "ListBundles")]
-pub struct JsListBundles {
-  pub builtin: Vec<String>,
-  pub remote: Vec<String>,
+impl From<BundleManifestMetadata> for source::BundleManifestMetadata {
+  fn from(value: BundleManifestMetadata) -> Self {
+    Self {
+      etag: value.etag,
+      integrity: value.integrity,
+      signature: value.signature,
+      last_modified: value.last_modified,
+    }
+  }
 }
 
-#[napi(js_name = "BundleSource")]
-pub struct JsBundleSource {
-  pub(crate) inner: Arc<BundleSource>,
+#[napi(object)]
+pub struct ListBundleItem {
+  #[napi(js_name = "type")]
+  pub kind: BundleSourceKind,
+  pub name: String,
+  pub version: String,
+  pub current: bool,
+  pub metadata: BundleManifestMetadata,
+}
+
+impl From<source::ListBundleItem> for ListBundleItem {
+  fn from(value: source::ListBundleItem) -> Self {
+    Self {
+      kind: value.kind.into(),
+      name: value.item.name,
+      version: value.item.version,
+      current: value.item.current,
+      metadata: value.item.metadata.into(),
+    }
+  }
+}
+
+#[napi(object)]
+pub struct BundleSourceConfig {
+  pub builtin_dir: String,
+  pub remote_dir: String,
+  pub builtin_manifest_filepath: Option<String>,
+  pub remote_manifest_filepath: Option<String>,
 }
 
 #[napi]
-impl JsBundleSource {
+pub struct BundleSource {
+  pub(crate) inner: Arc<source::BundleSource>,
+}
+
+#[napi]
+impl BundleSource {
   #[napi(constructor)]
-  pub fn new(builtin_dir: String, remote_dir: String) -> JsBundleSource {
-    let inner = Arc::new(BundleSource::new(
-      Path::new(&builtin_dir),
-      Path::new(&remote_dir),
-    ));
-    JsBundleSource { inner }
+  pub fn new(config: BundleSourceConfig) -> BundleSource {
+    let mut builder = source::BundleSource::builder()
+      .builtin_dir(config.builtin_dir)
+      .remote_dir(config.remote_dir);
+    if let Some(builtin_manifest) = config.builtin_manifest_filepath {
+      builder = builder.builtin_manifest_filepath(builtin_manifest);
+    }
+    if let Some(remote_manifest) = config.remote_manifest_filepath {
+      builder = builder.remote_manifest_filepath(remote_manifest);
+    }
+    let source = builder.build();
+    BundleSource {
+      inner: Arc::new(source),
+    }
   }
 
   #[napi]
-  pub async fn list_bundles(&self) -> crate::Result<JsListBundles> {
-    let list = self.inner.list_bundles().await?;
-    Ok(JsListBundles {
-      builtin: list.builtin,
-      remote: list.remote,
-    })
-  }
-
-  #[napi]
-  pub async fn get_filepath(&self, bundle_name: String) -> crate::Result<Option<String>> {
-    let filepath = self
+  pub async fn list_bundles(&self) -> crate::Result<Vec<ListBundleItem>> {
+    let items = self
       .inner
-      .get_filepath(&bundle_name)
+      .list_bundles()
       .await?
-      .map(|x| x.to_string_lossy().to_string());
-    Ok(filepath)
+      .into_iter()
+      .map(ListBundleItem::from)
+      .collect::<Vec<_>>();
+    Ok(items)
   }
 
   #[napi]
-  pub async fn get_version(
+  pub async fn load_version(
     &self,
     bundle_name: String,
-  ) -> crate::Result<Option<JsBundleSourceVersion>> {
-    let version = self
-      .inner
-      .get_version(&bundle_name)
-      .await?
-      .map(JsBundleSourceVersion::from);
-    Ok(version)
+  ) -> crate::Result<Option<BundleSourceVersion>> {
+    let version = self.inner.load_version(&bundle_name).await?;
+    Ok(version.map(Into::into))
   }
 
   #[napi]
-  pub async fn set_version(&self, bundle_name: String, version: String) -> crate::Result<()> {
-    self.inner.set_version(&bundle_name, &version).await?;
+  pub async fn update_version(&self, bundle_name: String, version: String) -> crate::Result<()> {
+    self.inner.update_version(&bundle_name, &version).await?;
     Ok(())
   }
 
   #[napi]
-  pub async fn save_versions(&self) -> crate::Result<()> {
-    self.inner.save_versions().await?;
-    Ok(())
+  pub async fn filepath(&self, bundle_name: String) -> crate::Result<String> {
+    let filepath = self.inner.filepath(&bundle_name).await?;
+    Ok(filepath.to_string_lossy().to_string())
   }
 
   #[napi]
-  pub async fn is_exists(
-    &self,
-    bundle_name: String,
-    version: JsBundleSourceVersion,
-  ) -> crate::Result<bool> {
-    let is_exists = self.inner.is_exists(&bundle_name, &version.into()).await?;
-    Ok(is_exists)
-  }
-
-  #[napi]
-  pub async fn fetch(&self, bundle_name: String) -> crate::Result<JsBundle> {
+  pub async fn fetch(&self, bundle_name: String) -> crate::Result<Bundle> {
     let inner = self.inner.fetch(&bundle_name).await?;
-    Ok(JsBundle { inner })
+    Ok(Bundle { inner })
   }
 
   #[napi]
-  pub async fn fetch_manifest(&self, bundle_name: String) -> crate::Result<JsBundleManifest> {
-    let inner = self.inner.fetch_manifest(&bundle_name).await?;
-    Ok(JsBundleManifest {
-      inner: JsBundleManifestInner::Owned(inner),
+  pub async fn fetch_descriptor(&self, bundle_name: String) -> crate::Result<BundleDescriptor> {
+    let inner = self.inner.fetch_descriptor(&bundle_name).await?;
+    Ok(BundleDescriptor {
+      inner: BundleDescriptorInner::Owned(inner),
     })
+  }
+
+  #[napi]
+  pub async fn write_remote_bundle(
+    &self,
+    bundle_name: String,
+    version: String,
+    bundle: &Bundle,
+    metadata: BundleManifestMetadata,
+  ) -> crate::Result<()> {
+    self
+      .inner
+      .write_remote_bundle(&bundle_name, &version, &bundle.inner, metadata.into())
+      .await?;
+    Ok(())
   }
 }

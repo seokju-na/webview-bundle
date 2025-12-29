@@ -33,5 +33,7 @@ pub mod remote;
 pub mod signature;
 #[cfg(feature = "source")]
 pub mod source;
+#[cfg(test)]
+pub(crate) mod testing;
 #[cfg(feature = "updater")]
 pub mod updater;

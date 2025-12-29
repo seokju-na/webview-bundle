@@ -1,5 +1,6 @@
-mod bundle;
-mod versions;
+mod manifest;
+mod source;
+mod utils;
 
-pub use bundle::*;
-pub use versions::*;
+pub use manifest::*;
+pub use source::*;

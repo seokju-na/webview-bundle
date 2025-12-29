@@ -179,13 +179,14 @@ impl Uploader for S3Uploader {
       } else {
         IntegrityMaker::default().make(&data).await
       }?;
-      user_metadata.push(("webview-bundle-integrity".to_string(), integrity));
-    }
-    #[cfg(feature = "signature")]
-    {
-      if let Some(signer) = &self.config.signature_signer {
-        let signature = signer.sign(bundle, &data).await?;
-        user_metadata.push(("webview-bundle-signature".to_string(), signature));
+      user_metadata.push(("webview-bundle-integrity".to_string(), integrity.to_owned()));
+      #[cfg(feature = "signature")]
+      {
+        if let Some(signer) = &self.config.signature_signer {
+          let message = integrity.as_bytes();
+          let signature = signer.sign(bundle, message).await?;
+          user_metadata.push(("webview-bundle-signature".to_string(), signature));
+        }
       }
     }
     let path = self.config.opendal.resolve_path(bundle_name, version);

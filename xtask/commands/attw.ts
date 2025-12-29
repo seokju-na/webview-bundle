@@ -59,7 +59,10 @@ export class AttwCommand extends Command {
           }
         );
         if (attw.exitCode !== 0) {
-          return { type: 'failed' as const, error: `${prefix} attw failed with exit code: ${packed.exitCode}` };
+          return {
+            type: 'failed' as const,
+            error: `${prefix} attw failed with exit code: ${attw.exitCode}`,
+          };
         }
         return { type: 'succeed' as const };
       }),

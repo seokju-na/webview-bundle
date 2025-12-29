@@ -1,12 +1,9 @@
 import path from 'node:path';
-import { serve } from '@hono/node-server';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
-import { Hono } from 'hono';
-import { logger } from 'hono/logger';
 import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
 import { c } from '../console.js';
-import { parseMimeType } from '../utils/mime-type.js';
+import { parseMimeType } from '../mime-type.js';
 import { BaseCommand } from './base.js';
 
 export class ServeCommand extends BaseCommand {
@@ -27,22 +24,32 @@ export class ServeCommand extends BaseCommand {
   readonly port = Option.String('--port,-P', '4312', {
     validator: cascade(isNumber(), [isInteger(), isInExclusiveRange(1, 65535)]),
   });
+  readonly silent = Option.Boolean('--silent', false, {
+    description: 'Disable log output.',
+  });
 
   async run() {
+    const { Hono } = await import('hono');
+    const { serve } = await import('@hono/node-server');
+
     const filepath = path.isAbsolute(this.file) ? this.file : path.join(process.cwd(), this.file);
     const bundle = await readBundle(filepath);
     const app = new Hono();
-    app.use(
-      logger(str => {
-        this.logger.info(str);
-      })
-    );
+    if (!this.silent) {
+      // TODO: Need to rewrite it custom
+      const { logger } = await import('hono/logger');
+      app.use(
+        logger(str => {
+          this.logger.info(str);
+        })
+      );
+    }
     app.get('*', async c => {
       const p = this.resolvePath(c.req.path);
-      if (!bundle.manifest().index().containsPath(p)) {
+      if (!bundle.descriptor().index().containsPath(p)) {
         return c.notFound();
       }
-      const entry = bundle.manifest().index().getEntry(p)!;
+      const entry = bundle.descriptor().index().getEntry(p)!;
       const data = bundle.getData(p)!;
       for (const [name, value] of Object.entries(entry.headers)) {
         c.header(name, value, { append: true });

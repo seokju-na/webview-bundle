@@ -4,8 +4,22 @@ import { IpcChannels, type IpcHandlerSpecsByScope } from './ipc-spec.js';
 import type { WebviewBundle } from './webview-bundle.js';
 
 export function registerIpc(wvb: WebviewBundle): void {
+  registerSourceIpc(wvb);
   registerRemoteIpc(wvb);
   registerUpdaterIpc(wvb);
+}
+
+function registerSourceIpc(wvb: WebviewBundle): void {
+  const handlers = {
+    [IpcChannels.Source.ListBundles]: async () => wvb.source.listBundles(),
+    [IpcChannels.Source.LoadVersion]: async (_, bundleName) => wvb.source.loadVersion(bundleName),
+    [IpcChannels.Source.UpdateVersion]: async (_, bundleName, version) => wvb.source.updateVersion(bundleName, version),
+    [IpcChannels.Source.Filepath]: async (_, bundleName) => wvb.source.filepath(bundleName),
+  } satisfies IpcHandlerSpecsByScope<'source'>;
+
+  for (const [channel, handler] of Object.entries(handlers)) {
+    ipcMain.handle(channel, handler);
+  }
 }
 
 function registerRemoteIpc(wvb: WebviewBundle): void {
@@ -46,9 +60,6 @@ function registerUpdaterIpc(wvb: WebviewBundle): void {
     [IpcChannels.Updater.DownloadUpdate]: async (_, remoteName, version) => {
       const info = await updater().downloadUpdate(remoteName, version);
       return info;
-    },
-    [IpcChannels.Updater.ApplyUpdate]: async (_, remoteName, version) => {
-      await updater().applyUpdate(remoteName, version);
     },
   } satisfies IpcHandlerSpecsByScope<'updater'>;
 

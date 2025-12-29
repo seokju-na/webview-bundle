@@ -5,7 +5,7 @@ import { Command, Option } from 'clipanion';
 import pm from 'picomatch';
 import { glob } from 'tinyglobby';
 import { c } from '../console.js';
-import { formatByteLength } from '../utils/format.js';
+import { formatByteLength } from '../format.js';
 import { BaseCommand } from './base.js';
 
 export class CreateCommand extends BaseCommand {
@@ -22,7 +22,7 @@ export class CreateCommand extends BaseCommand {
   });
 
   readonly dir = Option.String({
-    name: 'DIRECTORY',
+    name: 'DIR',
     required: true,
   });
   readonly outfile = Option.String('--outfile,-O', {

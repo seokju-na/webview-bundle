@@ -1,5 +1,25 @@
-import type { WebviewBundleApi, WebviewBundleRemoteApi, WebviewBundleUpdaterApi } from '../api-interface.js';
+import type {
+  WebviewBundleApi,
+  WebviewBundleRemoteApi,
+  WebviewBundleSourceApi,
+  WebviewBundleUpdaterApi,
+} from '../api.js';
 import type { IpcInvoke } from '../ipc-spec.js';
+
+const sourceListBundles: IpcInvoke<'webview-bundle:source:list-bundles'> = async () => api().source.listBundles();
+const sourceLoadVersion: IpcInvoke<'webview-bundle:source:load-version'> = async bundleName =>
+  api().source.loadVersion(bundleName);
+const sourceUpdateVersion: IpcInvoke<'webview-bundle:source:update-version'> = async (bundleName, version) =>
+  api().source.updateVersion(bundleName, version);
+const sourceFilepath: IpcInvoke<'webview-bundle:source:filepath'> = async bundleName =>
+  api().source.filepath(bundleName);
+
+export const source: WebviewBundleSourceApi = {
+  listBundles: sourceListBundles,
+  loadVersion: sourceLoadVersion,
+  updateVersion: sourceUpdateVersion,
+  filepath: sourceFilepath,
+};
 
 const remoteListBundles: IpcInvoke<'webview-bundle:updater:list-remotes'> = async () => api().remote.listBundles();
 const remoteGetInfo: IpcInvoke<'webview-bundle:remote:get-info'> = async bundleName => api().remote.getInfo(bundleName);
@@ -20,14 +40,11 @@ const updaterGetUpdate: IpcInvoke<'webview-bundle:updater:get-update'> = async b
   api().updater.getUpdate(bundleName);
 const updateDownloadUpdate: IpcInvoke<'webview-bundle:updater:download-update'> = async (bundleName, version) =>
   api().updater.downloadUpdate(bundleName, version);
-const updaterApplyUpdate: IpcInvoke<'webview-bundle:updater:apply-update'> = async (bundleName, version) =>
-  api().updater.applyUpdate(bundleName, version);
 
 export const updater: WebviewBundleUpdaterApi = {
   listRemotes: updaterListRemotes,
   getUpdate: updaterGetUpdate,
   downloadUpdate: updateDownloadUpdate,
-  applyUpdate: updaterApplyUpdate,
 };
 
 function api(): WebviewBundleApi {

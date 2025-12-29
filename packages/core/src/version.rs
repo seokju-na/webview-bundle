@@ -2,16 +2,11 @@ use std::fmt::{Display, Formatter};
 
 pub(crate) const VERSION_LEN: usize = 1;
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Default)]
 pub enum Version {
   /// Version 1
+  #[default]
   V1,
-}
-
-impl Default for Version {
-  fn default() -> Self {
-    Self::V1
-  }
 }
 
 impl Version {

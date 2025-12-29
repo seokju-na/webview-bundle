@@ -56,6 +56,10 @@ impl Integrity {
     Self { alg, value }
   }
 
+  pub fn value(&self) -> &[u8] {
+    &self.value
+  }
+
   pub fn validate(&self, data: &[u8]) -> bool {
     self.value == self.alg.digest(data)
   }

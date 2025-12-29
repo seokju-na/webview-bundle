@@ -3,7 +3,7 @@ use crate::integrity::{IntegrityChecker, IntegrityPolicy};
 use crate::remote::{Remote, RemoteBundleInfo};
 #[cfg(feature = "signature")]
 use crate::signature::SignatureVerifier;
-use crate::source::{BundleSource, BundleSourceVersion};
+use crate::source::{BundleManifestMetadata, BundleSource};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -14,8 +14,10 @@ pub struct BundleUpdateInfo {
   pub version: String,
   pub local_version: Option<String>,
   pub is_available: bool,
+  pub etag: Option<String>,
   pub integrity: Option<String>,
   pub signature: Option<String>,
+  pub last_modified: Option<String>,
 }
 
 impl From<&BundleUpdateInfo> for RemoteBundleInfo {
@@ -23,8 +25,21 @@ impl From<&BundleUpdateInfo> for RemoteBundleInfo {
     Self {
       name: value.name.to_string(),
       version: value.version.to_string(),
+      etag: value.etag.clone(),
       integrity: value.integrity.clone(),
       signature: value.signature.clone(),
+      last_modified: value.last_modified.clone(),
+    }
+  }
+}
+
+impl From<&RemoteBundleInfo> for BundleManifestMetadata {
+  fn from(value: &RemoteBundleInfo) -> Self {
+    Self {
+      etag: value.etag.clone(),
+      integrity: value.integrity.clone(),
+      signature: value.signature.clone(),
+      last_modified: value.last_modified.clone(),
     }
   }
 }
@@ -129,63 +144,54 @@ impl Updater {
         }
         _ => Ok(()),
       }?;
-    }
-    #[cfg(feature = "signature")]
-    {
-      if let Some(ref verifier) = self.config.signature_verifier {
-        let signature = info
-          .signature
-          .clone()
-          .ok_or(crate::Error::SignatureNotExists)?;
-        let verified = verifier.verify(&bundle, &data, &signature).await?;
-        if !verified {
-          return Err(crate::Error::SignatureVerifyFailed);
+      #[cfg(feature = "signature")]
+      {
+        if let Some(ref verifier) = self.config.signature_verifier {
+          let message = info
+            .integrity
+            .clone()
+            .ok_or(crate::Error::IntegrityRequired)?;
+          let signature = info
+            .signature
+            .clone()
+            .ok_or(crate::Error::SignatureNotExists)?;
+          let verified = verifier
+            .verify(&bundle, message.as_bytes(), &signature)
+            .await?;
+          if !verified {
+            return Err(crate::Error::SignatureVerifyFailed);
+          }
         }
       }
     }
     self
       .source
-      .write_bundle(&info.name, &info.version, &bundle)
+      .write_remote_bundle(
+        &info.name,
+        &info.version,
+        &bundle,
+        BundleManifestMetadata::from(&info),
+      )
       .await?;
     Ok(info)
   }
 
-  pub async fn apply_update(
-    &self,
-    bundle_name: impl Into<String>,
-    version: impl Into<String>,
-  ) -> crate::Result<()> {
-    let bundle_name = bundle_name.into();
-    let version = version.into();
-    let exists = self
-      .source
-      .is_exists(
-        &bundle_name,
-        &BundleSourceVersion::Remote(version.to_string()),
-      )
-      .await?;
-    if !exists {
-      return Err(crate::Error::BundleNotFound);
-    }
-    self.source.set_version(&bundle_name, &version).await?;
-    self.source.unload_manifest(&bundle_name);
-    Ok(())
-  }
-
   async fn to_update_info(&self, info: RemoteBundleInfo) -> crate::Result<BundleUpdateInfo> {
-    let local_version = self.source.get_version(&info.name).await?;
+    let local_version = self.source.load_version(&info.name).await?;
     let is_available = if let Some(ref local_ver) = local_version {
-      local_ver.to_string() != info.version
+      local_ver.version != info.version
     } else {
       true
     };
     Ok(BundleUpdateInfo {
       name: info.name,
       version: info.version,
-      local_version: local_version.map(|x| x.to_string()),
+      local_version: local_version.map(|x| x.version),
       is_available,
+      etag: info.etag.clone(),
       integrity: info.integrity.clone(),
       signature: info.signature.clone(),
+      last_modified: info.last_modified.clone(),
     })
   }
 }

@@ -1,5 +1,5 @@
-use crate::http::JsHttpHeaders;
-use crate::version::JsVersion;
+use crate::http::HttpHeaders;
+use crate::version::Version;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
@@ -8,21 +8,20 @@ use std::ops::Deref;
 use tokio::fs;
 use webview_bundle::http::HeaderMap;
 use webview_bundle::{
-  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, Bundle, BundleBuilder,
-  BundleBuilderOptions, BundleManifest, BundleReader, BundleWriter, Header, HeaderWriterOptions,
-  Index, IndexEntry, IndexWriterOptions, Reader, Writer,
+  AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, BundleBuilderOptions,
+  BundleReader, BundleWriter, HeaderWriterOptions, IndexWriterOptions, Reader, Writer,
 };
 
-#[napi(js_name = "Header")]
-pub struct JsHeader {
-  pub(crate) inner: SharedReference<JsBundleManifest, &'static Header>,
+#[napi]
+pub struct Header {
+  pub(crate) inner: SharedReference<BundleDescriptor, &'static webview_bundle::Header>,
 }
 
 #[napi]
-impl JsHeader {
+impl Header {
   #[napi]
-  pub fn version(&self) -> JsVersion {
-    JsVersion::from(self.inner.version())
+  pub fn version(&self) -> Version {
+    Version::from(self.inner.version())
   }
 
   #[napi]
@@ -36,44 +35,44 @@ impl JsHeader {
   }
 }
 
-#[napi(object, js_name = "IndexEntry")]
-pub struct JsIndexEntry {
+#[napi(object)]
+pub struct IndexEntry {
   pub offset: u32,
   pub len: u32,
   pub is_empty: bool,
   pub headers: HashMap<String, String>,
 }
 
-impl From<&IndexEntry> for JsIndexEntry {
-  fn from(value: &IndexEntry) -> Self {
+impl From<&webview_bundle::IndexEntry> for IndexEntry {
+  fn from(value: &webview_bundle::IndexEntry) -> Self {
     Self {
       offset: value.offset() as u32,
       len: value.len() as u32,
       is_empty: value.is_empty(),
-      headers: JsHttpHeaders::from(value.headers()).0,
+      headers: HttpHeaders::from(value.headers()).0,
     }
   }
 }
 
-#[napi(js_name = "Index")]
-pub struct JsIndex {
-  pub(crate) inner: SharedReference<JsBundleManifest, &'static Index>,
+#[napi]
+pub struct Index {
+  pub(crate) inner: SharedReference<BundleDescriptor, &'static webview_bundle::Index>,
 }
 
 #[napi]
-impl JsIndex {
+impl Index {
   #[napi]
-  pub fn entries(&self) -> HashMap<String, JsIndexEntry> {
+  pub fn entries(&self) -> HashMap<String, IndexEntry> {
     let mut entries = HashMap::with_capacity(self.inner.entries().len());
     for (key, value) in self.inner.entries() {
-      entries.insert(key.to_string(), JsIndexEntry::from(value));
+      entries.insert(key.to_string(), IndexEntry::from(value));
     }
     entries
   }
 
   #[napi]
-  pub fn get_entry(&self, path: String) -> Option<JsIndexEntry> {
-    self.inner.get_entry(&path).map(JsIndexEntry::from)
+  pub fn get_entry(&self, path: String) -> Option<IndexEntry> {
+    self.inner.get_entry(&path).map(IndexEntry::from)
   }
 
   #[napi]
@@ -82,16 +81,16 @@ impl JsIndex {
   }
 }
 
-pub(crate) enum JsBundleManifestInner {
-  Owned(BundleManifest),
-  Bundle(SharedReference<JsBundle, &'static BundleManifest>),
+pub(crate) enum BundleDescriptorInner {
+  Owned(webview_bundle::BundleDescriptor),
+  Bundle(SharedReference<Bundle, &'static webview_bundle::BundleDescriptor>),
 }
 
-unsafe impl Send for JsBundleManifestInner {}
-unsafe impl Sync for JsBundleManifestInner {}
+unsafe impl Send for BundleDescriptorInner {}
+unsafe impl Sync for BundleDescriptorInner {}
 
-impl Deref for JsBundleManifestInner {
-  type Target = BundleManifest;
+impl Deref for BundleDescriptorInner {
+  type Target = webview_bundle::BundleDescriptor;
   fn deref(&self) -> &Self::Target {
     match self {
       Self::Owned(x) => x,
@@ -100,38 +99,38 @@ impl Deref for JsBundleManifestInner {
   }
 }
 
-#[napi(js_name = "BundleManifest")]
-pub struct JsBundleManifest {
-  pub(crate) inner: JsBundleManifestInner,
+#[napi]
+pub struct BundleDescriptor {
+  pub(crate) inner: BundleDescriptorInner,
 }
 
 #[napi]
-impl JsBundleManifest {
+impl BundleDescriptor {
   #[napi]
-  pub fn header(&self, this: Reference<JsBundleManifest>, env: Env) -> crate::Result<JsHeader> {
+  pub fn header(&self, this: Reference<BundleDescriptor>, env: Env) -> crate::Result<Header> {
     let inner = this.share_with(env, |manifest| Ok(manifest.inner.header()))?;
-    Ok(JsHeader { inner })
+    Ok(Header { inner })
   }
 
   #[napi]
-  pub fn index(&self, this: Reference<JsBundleManifest>, env: Env) -> crate::Result<JsIndex> {
+  pub fn index(&self, this: Reference<BundleDescriptor>, env: Env) -> crate::Result<Index> {
     let inner = this.share_with(env, |manifest| Ok(manifest.inner.index()))?;
-    Ok(JsIndex { inner })
+    Ok(Index { inner })
   }
-}
-
-#[napi(js_name = "Bundle")]
-pub struct JsBundle {
-  pub(crate) inner: Bundle,
 }
 
 #[napi]
-impl JsBundle {
+pub struct Bundle {
+  pub(crate) inner: webview_bundle::Bundle,
+}
+
+#[napi]
+impl Bundle {
   #[napi]
-  pub fn manifest(&self, this: Reference<JsBundle>, env: Env) -> crate::Result<JsBundleManifest> {
-    let inner = this.share_with(env, |bundle| Ok(bundle.inner.manifest()))?;
-    Ok(JsBundleManifest {
-      inner: JsBundleManifestInner::Bundle(inner),
+  pub fn descriptor(&self, this: Reference<Bundle>, env: Env) -> crate::Result<BundleDescriptor> {
+    let inner = this.share_with(env, |bundle| Ok(bundle.inner.descriptor()))?;
+    Ok(BundleDescriptor {
+      inner: BundleDescriptorInner::Bundle(inner),
     })
   }
 
@@ -149,47 +148,51 @@ impl JsBundle {
 }
 
 #[napi]
-pub fn read_bundle_from_buffer(buffer: BufferSlice) -> crate::Result<JsBundle> {
+pub fn read_bundle_from_buffer(buffer: BufferSlice) -> crate::Result<Bundle> {
   let cursor = Cursor::new(buffer.as_ref());
-  let bundle = Reader::<Bundle>::read(&mut BundleReader::new(cursor))?;
-  Ok(JsBundle { inner: bundle })
+  let bundle = Reader::<webview_bundle::Bundle>::read(&mut BundleReader::new(cursor))?;
+  Ok(Bundle { inner: bundle })
 }
 
 #[napi]
-pub async fn read_bundle(filepath: String) -> crate::Result<JsBundle> {
+pub async fn read_bundle(filepath: String) -> crate::Result<Bundle> {
   let mut file = fs::File::open(&filepath)
     .await
     .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
-  let bundle = AsyncReader::<Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
-  Ok(JsBundle { inner: bundle })
+  let bundle =
+    AsyncReader::<webview_bundle::Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
+  Ok(Bundle { inner: bundle })
 }
 
 #[napi]
-pub async fn write_bundle(bundle: &JsBundle, filepath: String) -> crate::Result<usize> {
+pub async fn write_bundle(bundle: &Bundle, filepath: String) -> crate::Result<usize> {
   let mut file = fs::File::create(&filepath)
     .await
     .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
-  let size =
-    AsyncWriter::<Bundle>::write(&mut AsyncBundleWriter::new(&mut file), &bundle.inner).await?;
+  let size = AsyncWriter::<webview_bundle::Bundle>::write(
+    &mut AsyncBundleWriter::new(&mut file),
+    &bundle.inner,
+  )
+  .await?;
   Ok(size)
 }
 
 #[napi]
-pub fn write_bundle_into_buffer(bundle: &JsBundle) -> crate::Result<Buffer> {
+pub fn write_bundle_into_buffer(bundle: &Bundle) -> crate::Result<Buffer> {
   let mut buf = vec![];
-  Writer::<Bundle>::write(&mut BundleWriter::new(&mut buf), &bundle.inner)?;
+  Writer::<webview_bundle::Bundle>::write(&mut BundleWriter::new(&mut buf), &bundle.inner)?;
   Ok(buf.into())
 }
 
-#[napi(object, js_name = "BuildOptions")]
-pub struct JsBuildOptions {
-  pub header: Option<JsBuildHeaderOptions>,
-  pub index: Option<JsBuildIndexOptions>,
+#[napi(object)]
+pub struct BuildOptions {
+  pub header: Option<BuildHeaderOptions>,
+  pub index: Option<BuildIndexOptions>,
   pub data_checksum_seed: Option<u32>,
 }
 
-impl From<JsBuildOptions> for BundleBuilderOptions {
-  fn from(value: JsBuildOptions) -> Self {
+impl From<BuildOptions> for BundleBuilderOptions {
+  fn from(value: BuildOptions) -> Self {
     let mut options = BundleBuilderOptions::new();
     if let Some(header) = value.header {
       options.header(header.into());
@@ -204,13 +207,13 @@ impl From<JsBuildOptions> for BundleBuilderOptions {
   }
 }
 
-#[napi(object, js_name = "BuildHeaderOptions")]
-pub struct JsBuildHeaderOptions {
+#[napi(object)]
+pub struct BuildHeaderOptions {
   pub checksum_seed: Option<u32>,
 }
 
-impl From<JsBuildHeaderOptions> for HeaderWriterOptions {
-  fn from(value: JsBuildHeaderOptions) -> Self {
+impl From<BuildHeaderOptions> for HeaderWriterOptions {
+  fn from(value: BuildHeaderOptions) -> Self {
     let mut options = HeaderWriterOptions::new();
     if let Some(seed) = value.checksum_seed {
       options.checksum_seed(seed);
@@ -219,13 +222,13 @@ impl From<JsBuildHeaderOptions> for HeaderWriterOptions {
   }
 }
 
-#[napi(object, js_name = "BuildIndexOptions")]
-pub struct JsBuildIndexOptions {
+#[napi(object)]
+pub struct BuildIndexOptions {
   pub checksum_seed: Option<u32>,
 }
 
-impl From<JsBuildIndexOptions> for IndexWriterOptions {
-  fn from(value: JsBuildIndexOptions) -> Self {
+impl From<BuildIndexOptions> for IndexWriterOptions {
+  fn from(value: BuildIndexOptions) -> Self {
     let mut options = IndexWriterOptions::new();
     if let Some(seed) = value.checksum_seed {
       options.checksum_seed(seed);
@@ -234,24 +237,24 @@ impl From<JsBuildIndexOptions> for IndexWriterOptions {
   }
 }
 
-#[napi(js_name = "BundleBuilder")]
-pub struct JsNapiBundleBuilder {
-  pub(crate) version: JsVersion,
-  pub(crate) inner: BundleBuilder,
+#[napi]
+pub struct BundleBuilder {
+  pub(crate) version: Version,
+  pub(crate) inner: webview_bundle::BundleBuilder,
 }
 
 #[napi]
-impl JsNapiBundleBuilder {
+impl BundleBuilder {
   #[napi(constructor)]
-  pub fn new(version: Option<JsVersion>) -> JsNapiBundleBuilder {
+  pub fn new(version: Option<Version>) -> BundleBuilder {
     Self {
-      version: version.unwrap_or(JsVersion::V1),
-      inner: BundleBuilder::new(),
+      version: version.unwrap_or(Version::V1),
+      inner: webview_bundle::BundleBuilder::new(),
     }
   }
 
   #[napi(getter)]
-  pub fn version(&self) -> &JsVersion {
+  pub fn version(&self) -> &Version {
     &self.version
   }
 
@@ -268,7 +271,7 @@ impl JsNapiBundleBuilder {
     headers: Option<HashMap<String, String>>,
   ) -> crate::Result<bool> {
     let headers = if let Some(h) = headers {
-      Some(HeaderMap::try_from(JsHttpHeaders::from(h))?)
+      Some(HeaderMap::try_from(HttpHeaders::from(h))?)
     } else {
       None
     };
@@ -291,11 +294,11 @@ impl JsNapiBundleBuilder {
   }
 
   #[napi]
-  pub fn build(&mut self, options: Option<JsBuildOptions>) -> crate::Result<JsBundle> {
+  pub fn build(&mut self, options: Option<BuildOptions>) -> crate::Result<Bundle> {
     if let Some(options) = options {
       self.inner.set_options(options.into());
     }
     let bundle = self.inner.build()?;
-    Ok(JsBundle { inner: bundle })
+    Ok(Bundle { inner: bundle })
   }
 }
