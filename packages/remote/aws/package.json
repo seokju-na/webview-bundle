@@ -49,8 +49,7 @@
     "@aws-sdk/client-s3": "^3",
     "@types/aws-lambda": "^8.10.159",
     "aws-lambda": "^1.0.7",
-    "hono": "^4.10.3",
-    "zod": "^4.0.5"
+    "hono": "^4.10.3"
   },
   "devDependencies": {
     "@types/node": "catalog:",

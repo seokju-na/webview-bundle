@@ -7014,7 +7014,6 @@ __metadata:
     tsdown: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
-    zod: "npm:^4.0.5"
   languageName: unknown
   linkType: soft
 
@@ -7045,7 +7044,6 @@ __metadata:
     tsdown: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
-    zod: "npm:^4.0.5"
   languageName: unknown
   linkType: soft
 

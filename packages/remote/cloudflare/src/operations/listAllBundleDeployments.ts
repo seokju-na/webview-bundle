@@ -1,6 +1,6 @@
 import type { Context } from '../context.js';
 import type { RemoteBundleDeployment } from '../types.js';
-import { listBundleStores } from './listBundleStores.js';
+import { listBundleDeployments } from './listBundleDeployments.js';
 
 export interface ListAllBundleDeploymentsOptions {
   cacheTtl?: number;
@@ -13,7 +13,7 @@ export async function listAllBundleDeployments(
   const deployments: RemoteBundleDeployment[] = [];
   let cursor: string | undefined;
   do {
-    const result = await listBundleStores(context, { cursor, ...options });
+    const result = await listBundleDeployments(context, { ...options, cursor });
     deployments.push(...result.deployments);
     cursor = result.nextCursor;
   } while (cursor != null);

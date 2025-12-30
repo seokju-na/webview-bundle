@@ -1,5 +1,5 @@
 import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { type Context, type RemoteBundleDeployment, RemoteBundleDeploymentSchema } from '../types.js';
+import type { Context, RemoteBundleDeployment } from '../types.js';
 import { isNoSuchKeyError } from '../utils.js';
 
 export async function getBundleDeployment(
@@ -17,8 +17,7 @@ export async function getBundleDeployment(
     if (raw == null) {
       throw new Error('Response body is empty');
     }
-    const json = JSON.parse(raw);
-    return RemoteBundleDeploymentSchema.parse(json);
+    return JSON.parse(raw);
   } catch (e) {
     if (isNoSuchKeyError(e)) {
       return null;

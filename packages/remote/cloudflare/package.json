@@ -38,8 +38,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4",
-    "zod": "^4.0.5"
+    "hono": "^4"
   },
   "devDependencies": {
     "@types/node": "catalog:",

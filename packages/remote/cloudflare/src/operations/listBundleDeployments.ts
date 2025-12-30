@@ -1,5 +1,5 @@
 import type { Context } from '../context.js';
-import { type RemoteBundleDeployment, RemoteBundleDeploymentSchema } from '../types.js';
+import type { RemoteBundleDeployment } from '../types.js';
 
 export interface ListBundleDeploymentsOptions {
   limit?: number;
@@ -14,7 +14,7 @@ export interface ListBundleDeploymentsResult {
 
 const MAX_LIMIT = 100;
 
-export async function listBundleStores(
+export async function listBundleDeployments(
   context: Context,
   options: ListBundleDeploymentsOptions = {}
 ): Promise<ListBundleDeploymentsResult> {
@@ -26,25 +26,15 @@ export async function listBundleStores(
   if (keysResult.keys.length === 0) {
     return { deployments: [], nextCursor: undefined };
   }
-  const valuesResult = await context.kv.get(
+  const values = await context.kv.get<RemoteBundleDeployment>(
     keysResult.keys.map(x => x.name),
     {
       type: 'json',
       cacheTtl,
     }
   );
-  const deployments: RemoteBundleDeployment[] = [];
-  for (const value of Object.values(valuesResult)) {
-    if (value == null) {
-      continue;
-    }
-    const parsed = RemoteBundleDeploymentSchema.safeParse(value);
-    if (parsed.success) {
-      deployments.push(parsed.data);
-    }
-  }
   return {
-    deployments,
+    deployments: Object.values(values).filter(x => x != null),
     nextCursor: keysResult.list_complete ? undefined : keysResult.cursor,
   };
 }

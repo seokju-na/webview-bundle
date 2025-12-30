@@ -20,7 +20,7 @@ export interface LambdaCodeConfig {
 export function getLambdaCode(
   filename: string,
   config: LambdaCodeConfig,
-  allowOnlyLatest?: boolean
+  allowOtherVersions?: boolean
 ): pulumi.Input<pulumi.asset.AssetArchive> {
   return pulumi
     .all([
@@ -35,7 +35,7 @@ export function getLambdaCode(
       const config: WebviewBundleRemoteConfig = {
         bucketName,
         region,
-        allowOnlyLatest,
+        allowOtherVersions,
       };
       const input = path.join(dirname, '..', 'lambda', filename);
       const codes = await generateCode(input, {
