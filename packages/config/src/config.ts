@@ -1,3 +1,4 @@
+import type { CreateConfig } from './create.js';
 import type { RemoteConfig } from './remote/index.js';
 
 export type ConfigInputFnObj = () => Config;
@@ -23,5 +24,6 @@ export interface Config {
    * @default process.cwd()
    */
   root?: string;
+  create?: CreateConfig;
   remote?: RemoteConfig;
 }

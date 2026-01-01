@@ -11,8 +11,21 @@ import { Option } from 'clipanion';
 import { isEnum } from 'typanion';
 import { c } from './console.js';
 
-const LOG_LEVELS = ['debug', 'info', 'error', 'warning'] as const;
+const LOG_LEVELS = ['debug', 'info', 'warning', 'error'] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];
+
+export function compareLogLevel(source: LogLevel, target: LogLevel): -1 | 0 | 1 {
+  const sourceLevel = LOG_LEVELS.indexOf(source);
+  const targetLevel = LOG_LEVELS.indexOf(target);
+  if (sourceLevel === targetLevel) {
+    return 0;
+  }
+  return sourceLevel < targetLevel ? -1 : 1;
+}
+
+export function isLogLevelAtLeast(source: LogLevel, target: LogLevel): boolean {
+  return compareLogLevel(source, target) >= 0;
+}
 
 export const LogLevelOption = Option.String('--log-level', 'info', {
   description: 'Set the log level for output. [Default: "info"]',
