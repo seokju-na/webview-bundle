@@ -1,44 +1,24 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { WorkerArgs, WorkersDeploymentArgs } from '@pulumi/cloudflare';
 import * as cloudflare from '@pulumi/cloudflare';
-import type {
-  WorkerObservability,
-  WorkerSubdomain,
-  WorkerTailConsumer,
-  WorkerVersionAssets,
-  WorkerVersionBinding,
-  WorkerVersionLimits,
-  WorkerVersionPlacement,
-} from '@pulumi/cloudflare/types/input.js';
+import type { R2BucketArgs } from '@pulumi/cloudflare/r2bucket.js';
+import type { WorkersKvNamespaceArgs } from '@pulumi/cloudflare/workersKvNamespace.js';
+import type { WorkerVersionArgs } from '@pulumi/cloudflare/workerVersion.js';
 import * as pulumi from '@pulumi/pulumi';
+import type { Optional } from './types.js';
 
 const dirname =
   typeof import.meta.dirname === 'string' ? import.meta.dirname : path.dirname(fileURLToPath(import.meta.url));
 
 export interface WebviewBundleRemoteProviderConfig {
-  accountId: string;
-  bucketName?: string;
-  bucketJurisdiction?: 'default' | 'eu' | 'fedramp';
-  bucketLocation?: 'apac' | 'eeur' | 'enam' | 'weur' | 'wnam' | 'oc';
-  bucketStorageClass?: 'Standard' | 'InfrequentAccess';
-  kvTitle?: string;
-  workerName?: string;
-  workerLogpush?: boolean;
-  workerObservability?: WorkerObservability;
-  workerSubdomain?: WorkerSubdomain;
-  workerTags?: string[];
-  workerTailConsumers?: WorkerTailConsumer[];
-  workerCompatibilityDate?: string;
-  workerCompatibilityFlags?: string[];
-  workerAssets?: WorkerVersionAssets;
-  workerLimits?: WorkerVersionLimits;
-  workerPlacement?: WorkerVersionPlacement;
-  workerFile?: string;
-  workerSourcemap?: boolean;
-  workerSourcemapFile?: string;
-  workerKvBindingName?: string;
-  workerR2BucketBindingName?: string;
-  workerBindings?: WorkerVersionBinding[];
+  accountId: pulumi.Input<string>;
+  bucket?: Optional<R2BucketArgs, 'accountId' | 'name'>;
+  kv?: Optional<WorkersKvNamespaceArgs, 'accountId' | 'title'>;
+  worker?: Optional<WorkerArgs, 'accountId' | 'name'>;
+  workerVersion?: Optional<Omit<WorkerVersionArgs, 'workerId'>, 'accountId'>;
+  workerDeploymentPercentage?: pulumi.Input<number>;
+  workerDeploymentAnnotations?: WorkersDeploymentArgs['annotations'];
 }
 
 export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
@@ -53,47 +33,31 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
 
     const {
       accountId,
-      bucketName = 'webview-bundle',
-      bucketJurisdiction,
-      bucketLocation,
-      bucketStorageClass,
-      kvTitle = 'webview-bundle',
-      workerName = 'webview-bundle',
-      workerLogpush,
-      workerObservability,
-      workerSubdomain,
-      workerTags,
-      workerTailConsumers,
-      workerCompatibilityDate = new Date().toISOString().split('T')[0]!,
-      workerCompatibilityFlags,
-      workerAssets,
-      workerLimits,
-      workerPlacement,
-      workerFile,
-      workerSourcemap = true,
-      workerSourcemapFile,
-      workerKvBindingName = 'KV',
-      workerR2BucketBindingName = 'BUCKET',
-      workerBindings = [],
+      bucket: bucketArgs,
+      kv: kvArgs,
+      worker: workerArgs,
+      workerVersion: workerVersionArgs,
+      workerDeploymentPercentage = 100,
+      workerDeploymentAnnotations,
     } = config;
 
     const bucket = new cloudflare.R2Bucket(
       'bucket',
       {
         accountId,
-        name: bucketName,
-        jurisdiction: bucketJurisdiction,
-        location: bucketLocation,
-        storageClass: bucketStorageClass,
+        name: 'webview-bundle',
+        ...bucketArgs,
       },
       { parent: this }
     );
+    const bucketName = pulumi.output(bucket).apply(x => x.name);
 
     const kv = new cloudflare.WorkersKvNamespace(
       'kv',
       {
         accountId,
-        title: kvTitle,
+        title: 'webview-bundle',
+        ...kvArgs,
       },
       { parent: this }
     );
@@ -102,57 +66,58 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
       'worker',
       {
         accountId,
-        name: workerName,
-        logpush: workerLogpush,
-        observability: workerObservability,
-        subdomain: workerSubdomain,
-        tags: workerTags,
-        tailConsumers: workerTailConsumers,
+        name: 'webview-bundle',
+        ...workerArgs,
       },
       { parent: this, dependsOn: [bucket, kv] }
     );
+    const workerName = pulumi.output(worker).apply(x => x.name);
 
-    const scriptName = `${workerName}.mjs`;
+    const defaultScriptName = workerName.apply(x => `${x}.mjs`);
     const defaultWorkerFile = path.join(dirname, 'worker-script.js');
     const defaultWorkerSourcemapFile = path.join(dirname, 'worker-script.js.map');
+
+    const workerMainModule = workerVersionArgs?.mainModule == null ? defaultScriptName : workerVersionArgs?.mainModule;
+    const workerModules =
+      workerVersionArgs?.modules == null
+        ? [
+            {
+              name: workerMainModule,
+              contentType: 'application/javascript+module',
+              contentFile: defaultWorkerFile,
+            },
+            {
+              name: pulumi.output(workerMainModule).apply(x => `${x}.map`),
+              contentType: 'application/source-map',
+              contentFile: defaultWorkerSourcemapFile,
+            },
+          ]
+        : workerVersionArgs.modules;
+    const workerBindings =
+      workerVersionArgs?.bindings == null
+        ? [
+            {
+              type: 'r2_bucket',
+              bucketName: bucketName,
+              name: 'BUCKET',
+            },
+            {
+              type: 'kv_namespace',
+              namespaceId: kv.id,
+              name: 'KV',
+            },
+          ]
+        : workerVersionArgs.bindings;
+
     const workerVersion = new cloudflare.WorkerVersion(
       'worker_version',
       {
         workerId: worker.id,
         accountId,
-        mainModule: scriptName,
-        compatibilityDate: workerCompatibilityDate,
-        compatibilityFlags: workerCompatibilityFlags,
-        assets: workerAssets,
-        limits: workerLimits,
-        bindings: [
-          {
-            type: 'r2_bucket',
-            bucketName: bucketName,
-            name: workerR2BucketBindingName,
-          },
-          {
-            type: 'kv_namespace',
-            namespaceId: kv.id,
-            name: workerKvBindingName,
-          },
-          ...workerBindings,
-        ],
-        modules: [
-          {
-            name: scriptName,
-            contentType: 'application/javascript+module',
-            contentFile: workerFile ?? defaultWorkerFile,
-          },
-          workerSourcemap
-            ? {
-                name: `${scriptName}.map`,
-                contentType: 'application/source-map',
-                contentFile: workerSourcemapFile ?? defaultWorkerSourcemapFile,
-              }
-            : null,
-        ].filter(x => x != null),
-        placement: workerPlacement,
+        ...workerVersionArgs,
+        mainModule: workerMainModule,
+        bindings: workerBindings,
+        modules: workerModules,
       },
       { parent: this, dependsOn: [worker] }
     );
@@ -163,9 +128,10 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
         accountId,
         scriptName: workerName,
         strategy: 'percentage',
+        annotations: workerDeploymentAnnotations,
         versions: [
           {
-            percentage: 100,
+            percentage: workerDeploymentPercentage,
             versionId: workerVersion.id,
           },
         ],

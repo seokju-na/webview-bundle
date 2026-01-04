@@ -2254,7 +2254,7 @@ __metadata:
   resolution: "@example/remote-cloudflare-with-pulumi@workspace:examples/remote-cloudflare-with-pulumi"
   dependencies:
     "@pulumi/cloudflare": "npm:^6.10.0"
-    "@pulumi/pulumi": "npm:^3.113.0"
+    "@pulumi/pulumi": "npm:^3.201.0"
     "@types/node": "catalog:"
     "@webview-bundle/remote-cloudflare-pulumi": "workspace:^"
     typescript: "catalog:"
@@ -3146,10 +3146,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@logtape/logtape@npm:1.0.4":
-  version: 1.0.4
-  resolution: "@logtape/logtape@npm:1.0.4"
-  checksum: 10c0/e3519fbf79a761c7cfe3feef80dc9e6e222a49b5628076a26692070a183eaf3dd67105f28c466df45e508d80b842465e404c80f59811c4a532e59d9b5869b540
+"@logtape/logtape@npm:1.3.5":
+  version: 1.3.5
+  resolution: "@logtape/logtape@npm:1.3.5"
+  checksum: 10c0/49c3aa93236685ed907db6134220026e5c7253169eb4fa0b32edc680d16b34ba8e59c1ae96a1ec931633d7cd085dab5fa1635b7a45ef12ef690d7c9bf63794db
   languageName: node
   linkType: hard
 
@@ -6849,13 +6849,14 @@ __metadata:
   resolution: "@webview-bundle/cli@workspace:packages/cli"
   dependencies:
     "@hono/node-server": "npm:^1.19.2"
-    "@logtape/logtape": "npm:1.0.4"
+    "@logtape/logtape": "npm:1.3.5"
     "@types/node": "catalog:"
     "@types/picomatch": "npm:^4"
     "@webview-bundle/config": "workspace:^"
     "@webview-bundle/node": "workspace:^"
     ci-info: "npm:^4.2.0"
     clipanion: "npm:4.0.0-rc.4"
+    es-toolkit: "npm:^1.43.0"
     file-type: "npm:^21.0.0"
     hono: "npm:^4.10.3"
     kleur: "npm:^4.1.5"
@@ -7014,7 +7015,6 @@ __metadata:
     tsdown: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
-    zod: "npm:^4.0.5"
   languageName: unknown
   linkType: soft
 
@@ -7045,7 +7045,6 @@ __metadata:
     tsdown: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
-    zod: "npm:^4.0.5"
   languageName: unknown
   linkType: soft
 
@@ -8272,6 +8271,18 @@ __metadata:
     prettier-plugin-sort-re-exports@0.0.1:
       unplugged: true
   checksum: 10c0/244dd6be25bc8c7af9f085f5b9aae08169eca760fc7d4735020f8f711b6a572e0bf205400326fa85a7924e20747d315756dba1b3a5f0d2887231374ec3651a98
+  languageName: node
+  linkType: hard
+
+"es-toolkit@npm:^1.43.0":
+  version: 1.43.0
+  resolution: "es-toolkit@npm:1.43.0"
+  dependenciesMeta:
+    "@trivago/prettier-plugin-sort-imports@4.3.0":
+      unplugged: true
+    prettier-plugin-sort-re-exports@0.0.1:
+      unplugged: true
+  checksum: 10c0/bbff0b591fd01be9f37a34dad7964b590e4952fc594c1230140771687f05136caa6ab21962a6e9cde7c4b529a149171ed5179d6379d4a8e656dbf7e8d126999c
   languageName: node
   linkType: hard
 

@@ -5,9 +5,11 @@ const config = new pulumi.Config();
 
 const remoteProvider = new WvbRemoteProvider('webview-bundle', {
   accountId: config.require('accountId'),
-  workerSubdomain: {
-    enabled: true,
-    previewsEnabled: true,
+  worker: {
+    subdomain: {
+      enabled: true,
+      previewsEnabled: true,
+    },
   },
 });
 

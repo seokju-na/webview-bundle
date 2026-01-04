@@ -41,7 +41,7 @@ export interface WebviewBundleRemoteProviderConfig {
   cloudfrontEnabled?: pulumi.Input<boolean>;
   cloudfrontHttpVersion?: pulumi.Input<'http1.1' | 'http2' | 'http2and3' | 'http3'>;
   cloudfrontWaitForDeployment?: pulumi.Input<boolean>;
-  allowOnlyLatest?: boolean;
+  allowOtherVersions?: boolean;
 }
 
 export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
@@ -77,7 +77,7 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
       },
       cloudfrontWaitForDeployment = true,
       cloudfrontTags,
-      allowOnlyLatest,
+      allowOtherVersions,
     } = config;
 
     const provider = new aws.Provider(
@@ -219,7 +219,7 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
           sourcemap: lambdaOriginRequest?.codeSourcemap,
           minify: lambdaOriginRequest?.codeMinify,
         },
-        allowOnlyLatest
+        allowOtherVersions
       );
 
     const lambdaOriginRequestFn = new aws.lambda.Function(
@@ -258,7 +258,7 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
           sourcemap: lambdaOriginResponse?.codeSourcemap,
           minify: lambdaOriginResponse?.codeMinify,
         },
-        allowOnlyLatest
+        allowOtherVersions
       );
 
     const lambdaOriginResponseFn = new aws.lambda.Function(

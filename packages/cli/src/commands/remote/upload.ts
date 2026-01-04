@@ -1,9 +1,12 @@
 import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
-import { resolveConfig } from '../config.js';
+import { resolveConfig } from '../../config.js';
+import { BaseCommand } from '../base.js';
 
-export class RemoteUploadCommand extends Command {
+export class RemoteUploadCommand extends BaseCommand {
+  readonly name = 'remote-upload';
+
   static paths = [['remote', 'upload']];
   static usage = Command.Usage({
     description: 'Upload webview bundle to remote server.',
@@ -17,7 +20,7 @@ export class RemoteUploadCommand extends Command {
     name: 'VERSION',
     required: true,
   });
-  readonly name = Option.String('--name,-N', {
+  readonly bundleName = Option.String('--name,-N', {
     description: 'Bundle name to upload. Default to file name.',
   });
   readonly configFile = Option.String('--config,-C', {
@@ -27,7 +30,7 @@ export class RemoteUploadCommand extends Command {
     description: 'Current working directory.',
   });
 
-  async execute() {
+  async run() {
     const config = await resolveConfig({
       root: this.cwd,
       configFile: this.configFile,
@@ -37,7 +40,7 @@ export class RemoteUploadCommand extends Command {
     }
     const bundleFilepath = path.isAbsolute(this.file) ? this.file : path.join(config.root, this.file);
     const bundle = await readBundle(bundleFilepath);
-    let bundleName = this.name ?? path.basename(bundleFilepath);
+    let bundleName = this.bundleName ?? path.basename(bundleFilepath);
     if (bundleName.endsWith('.wvb')) {
       bundleName = bundleName.replace(/\.wvb$/, '');
     }

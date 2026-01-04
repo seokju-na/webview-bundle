@@ -61,3 +61,7 @@ export async function fileExists(filepath: string): Promise<boolean> {
     return false;
   }
 }
+
+export function toAbsolutePath(p: string, cwd = process.cwd()): string {
+  return path.isAbsolute(p) ? p : path.join(cwd, p);
+}

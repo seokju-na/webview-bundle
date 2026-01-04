@@ -3,7 +3,7 @@ import { ColorOption, configureColor } from '../console.js';
 import { configureLogger, getLogger, type Logger, LogLevelOption, LogVerboseOption } from '../log.js';
 
 export abstract class BaseCommand extends Command {
-  abstract name: string;
+  abstract readonly name: string;
 
   readonly color = ColorOption;
   readonly logLevel = LogLevelOption;

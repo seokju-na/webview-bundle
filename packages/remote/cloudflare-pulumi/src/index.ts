@@ -1,5 +1,2 @@
-export {
-  WebviewBundleRemoteProvider,
-  type WebviewBundleRemoteProviderConfig,
-  WvbRemoteProvider,
-} from './provider.js';
+export type { WebviewBundleRemoteProviderConfig } from './provider.js';
+export { WebviewBundleRemoteProvider, WvbRemoteProvider } from './provider.js';

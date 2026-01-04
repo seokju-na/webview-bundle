@@ -4,7 +4,7 @@
   "main": "index.ts",
   "dependencies": {
     "@pulumi/cloudflare": "^6.10.0",
-    "@pulumi/pulumi": "^3.113.0",
+    "@pulumi/pulumi": "^3.201.0",
     "@webview-bundle/remote-cloudflare-pulumi": "workspace:^"
   },
   "devDependencies": {
