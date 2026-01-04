@@ -1,3 +1,9 @@
+export type IgnoreConfig = Array<string | RegExp> | ((file: string) => boolean | Promise<boolean>);
+export type HeadersConfig =
+  | Record<string, HeadersInit>
+  | Array<[string, HeadersInit]>
+  | ((file: string) => HeadersInit | null | undefined | Promise<HeadersInit | null | undefined>);
+
 /**
  * Webview Bundle create config.
  */
@@ -20,7 +26,7 @@ export interface CreateConfig {
   /**
    * Ignore patterns which exclude files from the bundle.
    */
-  ignore?: Array<string | RegExp> | ((file: string) => boolean | Promise<boolean>);
+  ignore?: IgnoreConfig;
   /**
    * Headers to set for each files in the Webview Bundle.
    *
@@ -32,8 +38,5 @@ export interface CreateConfig {
    *   "*.js": ["cache-control", "max-age=0"]
    * }
    */
-  headers?:
-    | Record<string, HeadersInit>
-    | Array<[string, HeadersInit]>
-    | ((file: string) => HeadersInit | Promise<HeadersInit>);
+  headers?: HeadersConfig;
 }

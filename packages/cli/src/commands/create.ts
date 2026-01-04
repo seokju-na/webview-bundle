@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import type { HeadersConfig, IgnoreConfig } from '@webview-bundle/config';
 import { BundleBuilder, writeBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { filterAsync } from 'es-toolkit';
@@ -41,7 +42,7 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
   readonly dryRun = Option.Boolean('--dry-run', false, {
     description: "Don't create webview bundle file on disk, instead just simulate packing files. [Default: false]",
   });
-  readonly headers = Option.Array('--header,-H', [], {
+  readonly headers = Option.Array('--header,-H', {
     description:
       "Headers to set for each file. For example, `--header '*.html' 'cache-control' 'max-age=3600'` will set `cache-control: max-age=3600` for all files with extension `.html`.",
     arity: 3,
@@ -90,7 +91,14 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
       const filepath = path.join(dir, file);
       const data = await fs.readFile(filepath);
       this.logger.info(`- ${c.info(file)} ${c.bytes(formatByteLength(data.byteLength))}`);
-      builder.insertEntry(file, data, this.getHeaders(file));
+
+      const headersInput = [
+        config.create?.headers,
+        this.headers != null ? this.intoHeaderConfig(this.headers) : undefined,
+      ].filter(x => x != null);
+      const headers = await this.getHeaders(file, headersInput);
+
+      builder.insertEntry(file, data, headers);
     }
     let outfile = this.outfile ?? config.create?.outFile ?? path.basename(dir);
     if (path.extname(outfile) === '') {
@@ -117,27 +125,52 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
     this.logger.info(`Output: ${c.bold(c.success(outfile))} ${c.bytes(formatByteLength(Number(size)))}`);
   }
 
-  private async getHeaders(
-    file: string,
-    headerInputs:
-      | Record<string, HeadersInit>
-      | Array<[string, HeadersInit]>
-      | ((file: string) => HeadersInit | Promise<HeadersInit>)
-  ): Promise<Record<string, string> | undefined> {
-    const value: Record<string, string> = {};
-    for (const header of this.headers) {
-      const [pattern, headerName, headerValue] = header;
-      if (pm.isMatch(file, pattern)) {
-        value[headerName] = headerValue;
+  private intoHeaderConfig(headers: [string, string, string][]): HeadersConfig {
+    const config: Record<string, [string, string][]> = {};
+    for (const [pattern, key, value] of headers) {
+      if (config[pattern] == null) {
+        config[pattern] = [[key, value]];
+      } else {
+        config[pattern]!.push([key, value]);
       }
     }
-    return Object.keys(value).length === 0 ? undefined : value;
+    return config;
   }
 
-  private async isMatchIgnores(
-    file: string,
-    ignoreInputs: Array<Array<string | RegExp> | ((file: string) => boolean | Promise<boolean>)>
-  ): Promise<boolean> {
+  private async getHeaders(file: string, headerInputs: HeadersConfig[]): Promise<Record<string, string> | undefined> {
+    if (headerInputs.length === 0) {
+      return undefined;
+    }
+    let headers = new Headers();
+    for (const headerInput of headerInputs) {
+      if (typeof headerInput === 'function') {
+        const init = await headerInput(file);
+        if (init != null) {
+          headers = new Headers(init);
+        }
+      }
+      const normalizedInput = Array.isArray(headerInput)
+        ? headerInput
+        : typeof headerInput === 'object' && headerInput != null
+          ? Object.entries(headerInput)
+          : [];
+      for (const [pattern, init] of normalizedInput) {
+        if (pm.isMatch(file, pattern)) {
+          const appendHeaders = new Headers(init);
+          for (const [key, value] of appendHeaders.entries()) {
+            headers.set(key, value);
+          }
+        }
+      }
+    }
+    const entries = [...headers.entries()];
+    if (entries.length === 0) {
+      return undefined;
+    }
+    return Object.fromEntries(entries);
+  }
+
+  private async isMatchIgnores(file: string, ignoreInputs: IgnoreConfig[]): Promise<boolean> {
     for (const ignoreInput of ignoreInputs) {
       if (typeof ignoreInput === 'function') {
         return ignoreInput(file);

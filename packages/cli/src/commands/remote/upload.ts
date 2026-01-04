@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
-import { resolveConfig } from '../../config';
-import { BaseCommand } from '../base';
+import { resolveConfig } from '../../config.js';
+import { BaseCommand } from '../base.js';
 
 export class RemoteUploadCommand extends BaseCommand {
   readonly name = 'remote-upload';

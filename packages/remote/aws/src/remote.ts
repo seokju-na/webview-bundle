@@ -3,7 +3,7 @@ import { Hono, type Context as HonoContext } from 'hono';
 import { getBundleDeployment } from './operations/getBundleDeployment.js';
 import { getBundleDownloadPath } from './operations/getBundleDownloadPath.js';
 import { listAllBundleDeployments } from './operations/listAllBundleDeployments.js';
-import type { Bindings, Context } from './types.js';
+import { type Bindings, type Context, getRemoteBundleDeploymentVersion } from './types.js';
 
 export type WebviewBundleRemote = Hono<{ Bindings: Bindings; Variables: Context }>;
 
@@ -36,7 +36,7 @@ export function webviewBundleRemote(config: WebviewBundleRemoteConfig): WebviewB
     const deployments = await listAllBundleDeployments(getContext(c));
     const bundles = deployments
       .map(x => {
-        const version = channel != null ? (x.channels?.[channel] ?? x.version) : x.version;
+        const version = getRemoteBundleDeploymentVersion(x, channel);
         if (version == null) {
           return null;
         }

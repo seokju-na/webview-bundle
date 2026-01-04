@@ -1,16 +1,16 @@
 import { Cli } from 'clipanion';
-import { version } from '../package.json' with { type: 'json' };
+import pkg from '../package.json' with { type: 'json' };
 import { CreateCommand } from './commands/create.js';
 import { ExtractCommand } from './commands/extract.js';
 import { RemoteUploadCommand } from './commands/remote/upload.js';
 import { ServeCommand } from './commands/serve.js';
 
-const [, app, ...args] = process.argv;
+const [, , ...args] = process.argv;
 
 const cli = new Cli({
   binaryLabel: 'webview-bundle-cli',
-  binaryName: app,
-  binaryVersion: version,
+  binaryName: 'wvb',
+  binaryVersion: pkg.version,
 });
 
 cli.register(CreateCommand);

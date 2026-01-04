@@ -2254,7 +2254,7 @@ __metadata:
   resolution: "@example/remote-cloudflare-with-pulumi@workspace:examples/remote-cloudflare-with-pulumi"
   dependencies:
     "@pulumi/cloudflare": "npm:^6.10.0"
-    "@pulumi/pulumi": "npm:^3.113.0"
+    "@pulumi/pulumi": "npm:^3.201.0"
     "@types/node": "catalog:"
     "@webview-bundle/remote-cloudflare-pulumi": "workspace:^"
     typescript: "catalog:"

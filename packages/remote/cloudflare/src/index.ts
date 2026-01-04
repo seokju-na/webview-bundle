@@ -3,6 +3,7 @@ import type { Context } from './context.js';
 import { getBundleDataResponse } from './operations/getBundleDataResponse.js';
 import { getBundleDeployment } from './operations/getBundleDeployment.js';
 import { listAllBundleDeployments } from './operations/listAllBundleDeployments.js';
+import { getRemoteBundleDeploymentVersion } from './types.js';
 
 export type { Context } from './context.js';
 
@@ -23,7 +24,7 @@ export function webviewBundleRemote(options: WebviewBundleRemoteOptions = {}): W
     const deployments = await listAllBundleDeployments(c.env);
     const bundles = deployments
       .map(x => {
-        const version = channel != null ? (x.channels?.[channel] ?? x.version) : x.version;
+        const version = getRemoteBundleDeploymentVersion(x, channel);
         if (version == null) {
           return null;
         }

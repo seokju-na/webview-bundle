@@ -72,7 +72,7 @@
 
 ### List bundles (`GET /bundles`)
 
-This returns a list of bundle names.
+This returns a list of bundles.
 
 Remote bundles must be version-specified. Therefore, bundles with un-deployed versions should be excluded from the response.
 
@@ -85,7 +85,7 @@ Accept: application/json
 HTTP 200 OK
 Content-Type: application/json
 
-["bundle_name_1", "bundle_name_2"]
+[{ "name": "bundle1", "version": "1.0.0" }]
 ```
 
 ### Get the current bundle info (`HEAD /bundles/{name}`)
@@ -97,6 +97,7 @@ Bundle metadata includes the following metadata in response headers:
 - `webview-bundle-name` : The name of this bundle.
 - `webview-bundle-version` : Currently deployed version of this bundle.
 - `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for verification.
+- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for verification.
 
 ```http request
 HEAD /bundles/{name}
@@ -108,6 +109,7 @@ Content-Type: application/webview-bundle
 Webview-Bundle-Name: bundle_name_1
 Webview-Bundle-Version: 1.0.0
 Webview-Bundle-Integrity: ...
+Webview-Bundle-Signature: ...
 ```
 
 #### Exceptions
@@ -131,6 +133,7 @@ Bundle metadata includes the following metadata in response headers:
 - `webview-bundle-name` : The name of this bundle.
 - `webview-bundle-version` : Currently deployed version of this bundle.
 - `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for verification.
+- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for verification.
 
 ```http request
 GET /bundles/{name}
@@ -142,6 +145,9 @@ Content-Type: application/webview-bundle
 Webview-Bundle-Name: bundle_name_1
 Webview-Bundle-Version: 1.0.0
 Webview-Bundle-Integrity: ...
+Webview-Bundle-Signature: ...
+
+(binary data)
 ```
 
 #### Exceptions
@@ -160,7 +166,7 @@ HTTP 404 Not Found
 
 Get a specific version of the bundle with the specified name and version.
 
-In the enterprise cases, you may want to prevent downloading specific versions. You can disable this feature by using the `allowOnlyLatest` option.
+In the enterprise cases, you may want to prevent downloading specific versions. You can enable this feature by using the `allowOtherVersions` option.
 
 ```http request
 GET /bundles/{name}/{version}
@@ -172,6 +178,7 @@ Content-Type: application/webview-bundle
 Webview-Bundle-Name: bundle_name_1
 Webview-Bundle-Version: 1.0.0
 Webview-Bundle-Integrity: ...
+Webview-Bundle-Signature: ...
 ```
 
 #### Exceptions
@@ -186,7 +193,7 @@ Host: wvb.example.com
 HTTP 404 Not Found
 ```
 
-If the `allowOnlyLatest` option is enabled, the server will return a 403 Forbidden response.
+If the `allowOtherVersions` option is not enabled, the server will return a 403 Forbidden response.
 
 ```http request
 GET /bundles/{name}/{version}
