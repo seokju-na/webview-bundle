@@ -69,11 +69,6 @@ impl MimeType {
     }
   }
 
-  /// infer mimetype from content (or) URI if needed.
-  pub fn parse(content: &[u8], uri: &str) -> String {
-    Self::parse_with_fallback(content, uri, Self::Html)
-  }
-
   /// infer mimetype from content (or) URI if needed with specified fallback for unknown file extensions.
   pub fn parse_with_fallback(content: &[u8], uri: &str, fallback: MimeType) -> String {
     let mime = if uri.ends_with(".svg") {

@@ -22,16 +22,28 @@ use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, As
 pub struct IndexEntry {
   offset: u64,
   len: u64,
+  content_type: String,
+  content_length: u64,
   pub(crate) headers: HeaderMap,
 }
 
 impl IndexEntry {
-  pub fn new(offset: u64, len: u64) -> Self {
+  pub fn new(offset: u64, len: u64, content_type: impl Into<String>, content_length: u64) -> Self {
     Self {
       offset,
       len,
+      content_type: content_type.into(),
+      content_length,
       headers: HeaderMap::default(),
     }
+  }
+
+  pub fn content_type(&self) -> &str {
+    &self.content_type
+  }
+
+  pub fn content_length(&self) -> u64 {
+    self.content_length
   }
 
   pub fn headers(&self) -> &HeaderMap {
@@ -53,11 +65,17 @@ impl IndexEntry {
 
 impl Encode for IndexEntry {
   fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-    let mut pairs: Vec<(String, Vec<u8>)> = Vec::with_capacity(self.headers.len());
+    let mut headers: Vec<(String, Vec<u8>)> = Vec::with_capacity(self.headers.len());
     for (name, value) in self.headers.iter() {
-      pairs.push((name.as_str().to_string(), value.as_bytes().to_vec()));
+      headers.push((name.as_str().to_string(), value.as_bytes().to_vec()));
     }
-    let tuple = (self.offset, self.len, pairs);
+    let tuple = (
+      self.offset,
+      self.len,
+      self.content_type.as_bytes(),
+      self.content_length,
+      headers,
+    );
     tuple.encode(encoder)?;
     Ok(())
   }
@@ -65,7 +83,15 @@ impl Encode for IndexEntry {
 
 impl<T> Decode<T> for IndexEntry {
   fn decode<D: Decoder>(decoder: &mut D) -> Result<Self, DecodeError> {
-    let (offset, len, pairs): (u64, u64, Vec<(String, Vec<u8>)>) = Decode::decode(decoder)?;
+    let (offset, len, content_type_raw, content_length, pairs): (
+      u64,
+      u64,
+      Vec<u8>,
+      u64,
+      Vec<(String, Vec<u8>)>,
+    ) = Decode::decode(decoder)?;
+    let content_type = String::from_utf8(content_type_raw)
+      .map_err(|_| DecodeError::OtherString("invalid content type".into()))?;
     let mut headers = HeaderMap::new();
     for (name, value_bytes) in pairs {
       let header_name = HeaderName::try_from(name.as_str())
@@ -77,6 +103,8 @@ impl<T> Decode<T> for IndexEntry {
     Ok(IndexEntry {
       offset,
       len,
+      content_type,
+      content_length,
       headers,
     })
   }
@@ -431,20 +459,23 @@ mod tests {
   #[test]
   fn index() {
     let mut index = Index::default();
-    let mut entry = IndexEntry::new(0, 0);
-    entry.headers.append(
-      HeaderName::from_static("content-type"),
-      HeaderValue::from_static("application/javascript"),
-    );
+    let entry = IndexEntry::new(0, 0, "application/javascript", 42);
     index.insert_entry("/index.jsx", entry);
 
     assert!(index.contains_path("/index.jsx"));
     assert_eq!(
       index
         .get_entry("/index.jsx")
-        .map(|x| x.headers.get("content-type"))
+        .map(|x| x.content_type().to_string())
         .unwrap(),
-      Some(&HeaderValue::from_static("application/javascript"))
+      "application/javascript"
+    );
+    assert_eq!(
+      index
+        .get_entry("/index.jsx")
+        .map(|x| x.content_length())
+        .unwrap(),
+      42
     );
   }
 
@@ -456,11 +487,7 @@ mod tests {
     use std::io::Cursor;
 
     let mut index = Index::default();
-    let mut entry = IndexEntry::new(0, 0);
-    entry.headers.append(
-      HeaderName::from_static("content-type"),
-      HeaderValue::from_static("application/javascript"),
-    );
+    let entry = IndexEntry::new(0, 0, "application/javascript", 55);
     index.insert_entry("/index.jsx", entry);
 
     let mut buf = vec![];
@@ -469,9 +496,9 @@ mod tests {
     assert_eq!(
       buf,
       vec![
-        1, 10, 47, 105, 110, 100, 101, 120, 46, 106, 115, 120, 0, 0, 1, 12, 99, 111, 110, 116, 101,
-        110, 116, 45, 116, 121, 112, 101, 22, 97, 112, 112, 108, 105, 99, 97, 116, 105, 111, 110,
-        47, 106, 97, 118, 97, 115, 99, 114, 105, 112, 116, 49, 24, 219, 15
+        1, 10, 47, 105, 110, 100, 101, 120, 46, 106, 115, 120, 0, 0, 22, 97, 112, 112, 108, 105,
+        99, 97, 116, 105, 111, 110, 47, 106, 97, 118, 97, 115, 99, 114, 105, 112, 116, 55, 0, 198,
+        6, 219, 80
       ]
     );
     let header = Header::new(Version::V1, (buf.len() - CHECKSUM_LEN) as u32);

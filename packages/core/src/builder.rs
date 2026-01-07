@@ -10,14 +10,18 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq, Clone)]
 pub struct BundleEntry {
   compressed: Vec<u8>,
+  content_type: String,
+  content_length: u64,
   pub headers: Option<HeaderMap>,
 }
 
 impl BundleEntry {
-  pub fn new(data: &[u8], headers: Option<HeaderMap>) -> Self {
+  pub fn new(data: &[u8], content_type: impl Into<String>, headers: Option<HeaderMap>) -> Self {
     let compressed = compress_prepend_size(data);
     Self {
       compressed,
+      content_type: content_type.into(),
+      content_length: data.len() as u64,
       headers,
     }
   }
@@ -30,44 +34,16 @@ impl BundleEntry {
     self.compressed.is_empty()
   }
 
+  pub fn content_type(&self) -> &str {
+    &self.content_type
+  }
+
+  pub fn content_length(&self) -> u64 {
+    self.content_length
+  }
+
   pub fn len(&self) -> usize {
     self.compressed.len()
-  }
-}
-
-impl From<&[u8]> for BundleEntry {
-  fn from(data: &[u8]) -> Self {
-    Self::new(data, None)
-  }
-}
-
-impl From<Vec<u8>> for BundleEntry {
-  fn from(data: Vec<u8>) -> Self {
-    Self::new(&data, None)
-  }
-}
-
-impl From<(&[u8], Option<HeaderMap>)> for BundleEntry {
-  fn from((data, headers): (&[u8], Option<HeaderMap>)) -> Self {
-    Self::new(data, headers)
-  }
-}
-
-impl From<(Vec<u8>, Option<HeaderMap>)> for BundleEntry {
-  fn from((data, headers): (Vec<u8>, Option<HeaderMap>)) -> Self {
-    Self::new(&data, headers)
-  }
-}
-
-impl From<(&[u8], HeaderMap)> for BundleEntry {
-  fn from((data, headers): (&[u8], HeaderMap)) -> Self {
-    Self::new(data, Some(headers))
-  }
-}
-
-impl From<(Vec<u8>, HeaderMap)> for BundleEntry {
-  fn from((data, headers): (Vec<u8>, HeaderMap)) -> Self {
-    Self::new(&data, Some(headers))
   }
 }
 
@@ -197,7 +173,8 @@ impl BundleBuilder {
     let mut offset = 0;
     for (path, entry) in self.entries() {
       let len = entry.len() as u64;
-      let mut index_entry = IndexEntry::new(offset, len);
+      let mut index_entry =
+        IndexEntry::new(offset, len, entry.content_type(), entry.content_length);
       if let Some(headers) = entry.headers.as_ref() {
         index_entry.headers.clone_from(headers);
       }

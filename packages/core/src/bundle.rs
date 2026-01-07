@@ -354,6 +354,7 @@ impl<W: AsyncWrite + Unpin> AsyncWriter<Bundle> for AsyncBundleWriter<W> {
 mod tests {
   use super::*;
   use crate::version::Version;
+  use crate::BundleEntry;
   use http::{header, HeaderMap};
   use std::io::Cursor;
 
@@ -372,24 +373,23 @@ mod tests {
   #[test]
   fn descriptor() {
     let mut builder = Bundle::builder();
-    let mut headers = HeaderMap::new();
-    headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
-    builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
+    builder.insert_entry(
+      "/index.html",
+      BundleEntry::new(INDEX_HTML.as_bytes(), "text/html", None),
+    );
     let bundle = builder.build().unwrap();
     let mut data = vec![];
     let mut writer = BundleWriter::new(Cursor::new(&mut data));
     let size = writer.write(&bundle).unwrap();
-    assert_eq!(size, 162);
+    assert_eq!(size, 150);
     let mut reader = BundleReader::new(Cursor::new(&data));
     let descriptor: BundleDescriptor = reader.read().unwrap();
     assert_eq!(descriptor.header.version(), Version::V1);
-    assert_eq!(descriptor.header.index_size(), 39);
+    assert_eq!(descriptor.header.index_size(), 27);
 
     let html = descriptor.index.get_entry("/index.html").unwrap();
-    assert_eq!(
-      html.headers().get(header::CONTENT_TYPE).unwrap(),
-      "text/html"
-    );
+    assert_eq!(html.content_type(), "text/html");
+    assert_eq!(html.content_length(), INDEX_HTML.as_bytes().len() as u64);
     assert_eq!(html.offset(), 0);
     assert_eq!(html.len(), 98);
   }
@@ -399,13 +399,19 @@ mod tests {
     let mut builder = Bundle::builder();
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
-    builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
-    builder.insert_entry("/index.js", INDEX_JS.as_bytes());
+    builder.insert_entry(
+      "/index.html",
+      BundleEntry::new(INDEX_HTML.as_bytes(), "text/html", Some(headers)),
+    );
+    builder.insert_entry(
+      "/index.js",
+      BundleEntry::new(INDEX_JS.as_bytes(), "text/javascript", None),
+    );
     let bundle = builder.build().unwrap();
     let mut data = vec![];
     let mut writer = BundleWriter::new(Cursor::new(&mut data));
     let size = writer.write(&bundle).unwrap();
-    assert_eq!(size, 212);
+    assert_eq!(size, 240);
     let mut reader = BundleReader::new(Cursor::new(&data));
     let bundle: Bundle = reader.read().unwrap();
 
@@ -425,8 +431,14 @@ mod tests {
     let mut builder = Bundle::builder();
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, "text/html".parse().unwrap());
-    builder.insert_entry("/index.html", (INDEX_HTML.as_bytes(), headers));
-    builder.insert_entry("/index.js", INDEX_JS.as_bytes());
+    builder.insert_entry(
+      "/index.html",
+      BundleEntry::new(INDEX_HTML.as_bytes(), "text/html", Some(headers)),
+    );
+    builder.insert_entry(
+      "/index.js",
+      BundleEntry::new(INDEX_JS.as_bytes(), "text/javascript", None),
+    );
     let bundle = builder.build().unwrap();
     let mut data = vec![];
     let mut writer = BundleWriter::new(Cursor::new(&mut data));

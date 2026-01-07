@@ -24,7 +24,7 @@ export function compareLogLevel(source: LogLevel, target: LogLevel): -1 | 0 | 1 
 }
 
 export function isLogLevelAtLeast(source: LogLevel, target: LogLevel): boolean {
-  return compareLogLevel(source, target) >= 0;
+  return compareLogLevel(source, target) <= 0;
 }
 
 export const LogLevelOption = Option.String('--log-level', 'info', {

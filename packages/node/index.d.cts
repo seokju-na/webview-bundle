@@ -10,7 +10,7 @@ export declare class BundleBuilder {
   constructor(version?: Version | undefined | null)
   get version(): Version
   entryPaths(): Array<string>
-  insertEntry(path: string, data: Buffer, headers?: Record<string, string> | undefined | null): boolean
+  insertEntry(path: string, data: Buffer, contentType?: string | undefined | null, headers?: Record<string, string> | undefined | null): boolean
   removeEntry(path: string): boolean
   containsEntry(path: string): boolean
   build(options?: BuildOptions | undefined | null): Bundle
@@ -154,6 +154,8 @@ export interface IndexEntry {
   offset: number
   len: number
   isEmpty: boolean
+  contentType: string
+  contentLength: number
   headers: Record<string, string>
 }
 

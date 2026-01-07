@@ -15,6 +15,7 @@ crate-type = ["cdylib"]
 doctest    = false
 
 [dependencies]
+infer          = { workspace = true }
 napi           = { workspace = true, features = ["napi8", "async"] }
 napi-derive    = { workspace = true }
 thiserror      = { workspace = true }
