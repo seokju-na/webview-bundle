@@ -40,29 +40,27 @@ impl super::Protocol for BundleProtocol {
     let descriptor = self.source.load_descriptor(&name).await?;
 
     if let Some(entry) = descriptor.index().get_entry(&path) {
-      if let Some(resp_headers) = resp.headers_mut() {
-        resp_headers.clone_from(&entry.headers());
-        // insert content-type header
-        if let Ok(content_type) = HeaderValue::try_from(entry.content_type()) {
-          resp_headers.insert(header::CONTENT_TYPE, content_type);
-        }
-        // insert content-length header
-        let content_length = HeaderValue::from(entry.content_length());
-        resp_headers.insert(header::CONTENT_LENGTH, content_length);
-      }
-
-      if request.method() == Method::HEAD {
-        let response = resp.status(StatusCode::OK).body(Vec::new().into())?;
-        return Ok(response);
-      }
+      let resp_headers = resp.headers_mut().unwrap();
+      resp_headers.clone_from(entry.headers());
+      resp_headers.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_str(entry.content_type()).unwrap(),
+      );
+      resp_headers.insert(
+        header::CONTENT_LENGTH,
+        HeaderValue::from(entry.content_length()),
+      );
 
       if let Some(range_header) = request
         .headers()
         .get(header::RANGE)
         .and_then(|x| x.to_str().map(|x| x.to_string()).ok())
       {
-        resp = resp.header(header::ACCEPT_RANGES, "bytes");
-        resp = resp.header(header::ACCESS_CONTROL_EXPOSE_HEADERS, "content-range");
+        resp_headers.insert(header::ACCEPT_RANGES, HeaderValue::from_static("bytes"));
+        resp_headers.insert(
+          header::ACCESS_CONTROL_EXPOSE_HEADERS,
+          HeaderValue::from_static("content-range"),
+        );
 
         let len = entry.content_length();
         let not_stisifiable = || {
@@ -100,17 +98,24 @@ impl super::Protocol for BundleProtocol {
           }
           end = adjust_end(start, end, len);
 
-          let reader = self.source.reader(&name).await?;
-          let buf = if let Some(data) = descriptor.async_get_data(reader, &path).await? {
-            extract_buf(&data, start, end)
-          } else {
-            return not_found();
-          };
-
-          resp = resp.header(header::CONTENT_RANGE, format!("bytes {start}-{end}/{len}"));
-          resp = resp.header(header::CONTENT_LENGTH, end + 1 - start);
+          resp_headers.insert(
+            header::CONTENT_RANGE,
+            HeaderValue::from_str(&format!("bytes {start}-{end}/{len}")).unwrap(),
+          );
+          resp_headers.insert(header::CONTENT_LENGTH, HeaderValue::from(end + 1 - start));
           resp = resp.status(StatusCode::PARTIAL_CONTENT);
-          resp.body(buf.into())
+
+          if request.method() == Method::HEAD {
+            resp.body(Vec::new().into())
+          } else {
+            let reader = self.source.reader(&name).await?;
+            let buf = if let Some(data) = descriptor.async_get_data(reader, &path).await? {
+              extract_buf(&data, start, end)
+            } else {
+              return not_found();
+            };
+            resp.body(buf.into())
+          }
         } else {
           let ranges = ranges
             .iter()
@@ -132,39 +137,48 @@ impl super::Protocol for BundleProtocol {
           let boundary = random_boundary();
           let boundary_sep = format!("\r\n--{boundary}\r\n");
 
-          resp = resp.header(
+          resp_headers.insert(
             header::CONTENT_TYPE,
-            format!("multipart/byteranges; boundary={boundary}"),
+            HeaderValue::from_str(&format!("multipart/byteranges; boundary={boundary}")).unwrap(),
           );
+          resp = resp.status(StatusCode::PARTIAL_CONTENT);
 
-          let reader = self.source.reader(&name).await?;
-          let buf = if let Some(data) = descriptor.async_get_data(reader, &path).await? {
-            let mut buf = Vec::new();
-            for (start, end) in ranges {
+          if request.method() == Method::HEAD {
+            resp.body(Vec::new().into())
+          } else {
+            let reader = self.source.reader(&name).await?;
+            let buf = if let Some(data) = descriptor.async_get_data(reader, &path).await? {
+              let mut buf = Vec::new();
+              for (start, end) in ranges {
+                buf.write_all(boundary_sep.as_bytes()).await?;
+                buf
+                  .write_all(
+                    format!("{}: {}\r\n", header::CONTENT_TYPE, entry.content_type()).as_bytes(),
+                  )
+                  .await?;
+                buf
+                  .write_all(
+                    format!("{}: bytes {start}-{end}/{len}\r\n", header::CONTENT_RANGE).as_bytes(),
+                  )
+                  .await?;
+                buf.write_all("\r\n".as_bytes()).await?;
+
+                let range_buf = extract_buf(&data, start, end);
+                buf.extend_from_slice(&range_buf);
+              }
               buf.write_all(boundary_sep.as_bytes()).await?;
               buf
-                .write_all(
-                  format!("{}: {}\r\n", header::CONTENT_TYPE, entry.content_type()).as_bytes(),
-                )
-                .await?;
-              buf
-                .write_all(
-                  format!("{}: bytes {start}-{end}/{len}\r\n", header::CONTENT_RANGE).as_bytes(),
-                )
-                .await?;
-              buf.write_all("\r\n".as_bytes()).await?;
-
-              let range_buf = extract_buf(&data, start, end);
-              buf.extend_from_slice(&range_buf);
-            }
-            buf.write_all(boundary_sep.as_bytes()).await?;
-            buf
-          } else {
-            return not_found();
-          };
-          resp.body(buf.into())
+            } else {
+              return not_found();
+            };
+            resp.body(buf.into())
+          }
         }?;
+        return Ok(response);
+      }
 
+      if request.method() == Method::HEAD {
+        let response = resp.body(Vec::new().into())?;
         return Ok(response);
       }
 
@@ -193,7 +207,7 @@ fn not_found() -> crate::Result<super::ProtocolResponse> {
 fn random_boundary() -> String {
   let mut values = [0_u8; 30];
   getrandom::fill(&mut values).expect("failed to get random bytes");
-  (values[..])
+  values[..]
     .iter()
     .map(|&val| format!("{val:x}"))
     .fold(String::new(), |mut acc, x| {
@@ -451,5 +465,116 @@ mod tests {
       .await
       .unwrap_err();
     assert!(matches!(err, crate::Error::BundleNotFound));
+  }
+
+  #[tokio::test]
+  async fn head_request() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/_next/static/chunks/framework-98177fb2e8834792.js")
+          .method("HEAD")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 200);
+    assert_eq!(
+      resp.headers().get(header::CONTENT_TYPE).unwrap(),
+      HeaderValue::from_static("text/javascript")
+    );
+  }
+
+  #[tokio::test]
+  async fn partial_request() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/build.png")
+          .method("GET")
+          .header(header::RANGE, "bytes=0-100")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 206);
+    assert_eq!(resp.headers().get(header::ACCEPT_RANGES).unwrap(), "bytes");
+    assert_eq!(
+      resp.headers().get(header::CONTENT_RANGE).unwrap(),
+      "bytes 0-100/475918"
+    );
+    assert_eq!(resp.headers().get(header::CONTENT_LENGTH).unwrap(), "101");
+    let body = resp.body().to_vec();
+    assert_eq!(
+      body,
+      vec![
+        137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 5, 192, 0, 0, 2, 244,
+        8, 6, 0, 0, 0, 43, 255, 148, 215, 0, 0, 12, 107, 105, 67, 67, 80, 73, 67, 67, 32, 80, 114,
+        111, 102, 105, 108, 101, 0, 0, 72, 137, 149, 87, 7, 88, 83, 201, 22, 158, 91, 146, 144,
+        144, 208, 2, 8, 72, 9, 189, 35, 82, 3, 72, 9, 161, 5, 144, 94, 4, 27, 33, 9, 36, 148, 24,
+        19, 130, 138, 189, 44, 42, 184, 118, 17, 197, 138
+      ]
+    );
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/build.png")
+          .method("GET")
+          .header(header::RANGE, "bytes=0-100,200-500")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 206);
+    assert_eq!(resp.headers().get(header::ACCEPT_RANGES).unwrap(), "bytes");
+    assert!(resp
+      .headers()
+      .get(header::CONTENT_TYPE)
+      .unwrap()
+      .to_str()
+      .unwrap()
+      .starts_with("multipart/byteranges; boundary="));
+  }
+
+  #[tokio::test]
+  async fn not_allowed() {
+    let fixture = Fixtures::bundles();
+    let source = Arc::new(
+      BundleSource::builder()
+        .builtin_dir(fixture.get_path("builtin"))
+        .remote_dir(fixture.get_path("remote"))
+        .build(),
+    );
+    let protocol = Arc::new(BundleProtocol::new(source.clone()));
+    let resp = protocol
+      .handle(
+        Request::builder()
+          .uri("https://app.wvb/build.png")
+          .method("POST")
+          .body(vec![])
+          .unwrap(),
+      )
+      .await
+      .unwrap();
+    assert_eq!(resp.status(), 405);
   }
 }
