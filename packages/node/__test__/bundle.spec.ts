@@ -73,13 +73,15 @@ describe('bundle', () => {
 
   it('get headers', () => {
     const builder = new BundleBuilder();
-    builder.insertEntry('/index.js', INDEX_JS_BUF, {
-      'content-type': 'text/javascript',
+    builder.insertEntry('/index.js', INDEX_JS_BUF, 'text/javascript', {
+      foo: 'bar',
     });
     const bundle = builder.build();
     const entry = bundle.descriptor().index().getEntry('/index.js');
+    expect(entry?.contentType).toEqual('text/javascript');
+    expect(entry?.contentLength).toEqual(27);
     expect(entry?.headers).toEqual({
-      'content-type': 'text/javascript',
+      foo: 'bar',
     });
   });
 });

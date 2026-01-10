@@ -1,4 +1,5 @@
 use crate::http::HttpHeaders;
+use crate::mime::MimeType;
 use crate::version::Version;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -9,7 +10,7 @@ use tokio::fs;
 use webview_bundle::http::HeaderMap;
 use webview_bundle::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, BundleBuilderOptions,
-  BundleReader, BundleWriter, HeaderWriterOptions, IndexWriterOptions, Reader, Writer,
+  BundleEntry, BundleReader, BundleWriter, HeaderWriterOptions, IndexWriterOptions, Reader, Writer,
 };
 
 #[napi]
@@ -40,6 +41,8 @@ pub struct IndexEntry {
   pub offset: u32,
   pub len: u32,
   pub is_empty: bool,
+  pub content_type: String,
+  pub content_length: u32,
   pub headers: HashMap<String, String>,
 }
 
@@ -49,6 +52,8 @@ impl From<&webview_bundle::IndexEntry> for IndexEntry {
       offset: value.offset() as u32,
       len: value.len() as u32,
       is_empty: value.is_empty(),
+      content_type: value.content_type().to_string(),
+      content_length: value.content_length() as u32,
       headers: HttpHeaders::from(value.headers()).0,
     }
   }
@@ -268,6 +273,7 @@ impl BundleBuilder {
     &mut self,
     path: String,
     data: Buffer,
+    content_type: Option<String>,
     headers: Option<HashMap<String, String>>,
   ) -> crate::Result<bool> {
     let headers = if let Some(h) = headers {
@@ -275,10 +281,14 @@ impl BundleBuilder {
     } else {
       None
     };
+    let content_type = content_type.unwrap_or_else(|| {
+      let mime = MimeType::parse_with_fallback(data.as_ref(), &path, MimeType::OctetStream);
+      mime.to_string()
+    });
     Ok(
       self
         .inner
-        .insert_entry(path, (data.as_ref(), headers))
+        .insert_entry(path, BundleEntry::new(data.as_ref(), content_type, headers))
         .is_some(),
     )
   }

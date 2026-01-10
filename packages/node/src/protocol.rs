@@ -38,7 +38,7 @@ impl BundleProtocol {
         .handle(req)
         .await
         .map(HttpResponse::from)
-        .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))
+        .map_err(crate::Error::Core)
         .map_err(|e| e.into())
     })
     .build(&env)?;
@@ -75,7 +75,7 @@ impl LocalProtocol {
         .handle(req)
         .await
         .map(HttpResponse::from)
-        .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))
+        .map_err(crate::Error::Core)
         .map_err(|e| e.into())
     })
     .build(&env)?;

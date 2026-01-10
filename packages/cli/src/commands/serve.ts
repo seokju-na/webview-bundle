@@ -3,7 +3,6 @@ import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
 import { c } from '../console.js';
-import { parseMimeType } from '../mime-type.js';
 import { BaseCommand } from './base.js';
 
 export class ServeCommand extends BaseCommand {
@@ -54,10 +53,8 @@ export class ServeCommand extends BaseCommand {
       for (const [name, value] of Object.entries(entry.headers)) {
         c.header(name, value, { append: true });
       }
-      if (!c.res.headers.has('content-type')) {
-        const mime = await parseMimeType(data, p);
-        c.header('content-type', mime);
-      }
+      c.header('content-type', entry.contentType);
+      c.header('content-length', String(entry.contentLength));
       return c.body(data as Uint8Array<ArrayBuffer>, 200);
     });
     const server = serve({ fetch: app.fetch, port: this.port }, info => {

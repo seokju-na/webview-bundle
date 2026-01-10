@@ -3,6 +3,7 @@ mod error;
 pub mod http;
 pub mod integrity;
 pub mod js;
+pub mod mime;
 pub mod protocol;
 pub mod remote;
 pub mod signature;

@@ -98,7 +98,7 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
       ].filter(x => x != null);
       const headers = await this.getHeaders(file, headersInput);
 
-      builder.insertEntry(file, data, headers);
+      builder.insertEntry(`/${file}`, data, undefined, headers);
     }
     let outfile = this.outfile ?? config.create?.outFile ?? path.basename(dir);
     if (path.extname(outfile) === '') {

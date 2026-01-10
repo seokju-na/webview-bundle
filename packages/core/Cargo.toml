@@ -20,8 +20,9 @@ bytes            = { workspace = true, optional = true }
 dashmap          = { workspace = true, optional = true }
 ed25519-dalek    = { workspace = true, optional = true }
 futures-util     = { workspace = true, optional = true }
+getrandom        = { workspace = true, optional = true }
 http             = { workspace = true }
-infer            = { workspace = true, optional = true }
+http-range       = { workspace = true, optional = true }
 lz4_flex         = { workspace = true }
 opendal          = { workspace = true, optional = true }
 p256             = { workspace = true, optional = true }
@@ -65,7 +66,7 @@ full = [
   "signature-rsa_pss",
 ]
 integrity = ["_serde", "sha3", "base64ct", "base64ct/alloc"]
-protocol = ["source", "dep:bytes", "dep:infer", "dep:percent-encoding"]
+protocol = ["source", "dep:bytes", "dep:percent-encoding", "dep:http-range", "dep:getrandom"]
 protocol-local = ["protocol", "_reqwest", "reqwest/rustls-tls", "reqwest/macos-system-configuration", "reqwest/charset"]
 remote = [
   "async",
