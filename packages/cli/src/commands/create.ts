@@ -6,10 +6,11 @@ import { Command, Option } from 'clipanion';
 import { filterAsync } from 'es-toolkit';
 import pm from 'picomatch';
 import { glob } from 'tinyglobby';
+import { isBoolean } from 'typanion';
 import { resolveConfig } from '../config.js';
 import { c } from '../console.js';
 import { formatByteLength } from '../format.js';
-import { toAbsolutePath } from '../fs.js';
+import { pathExists, toAbsolutePath, withWVBExtension } from '../fs.js';
 import { isLogLevelAtLeast } from '../log.js';
 import { BaseCommand } from './base.js';
 
@@ -27,19 +28,23 @@ export class CreateCommand extends BaseCommand {
   });
 
   readonly dir = Option.String({ name: 'DIR', required: false });
-  readonly outfile = Option.String('--outfile,-O', {
+  readonly outFile = Option.String('--outfile,-O', {
     description: `Outfile path to create webview bundle archive.
 If not provided, will create file with directory name.
-If extension not set, will automatically add extension (\`.wvb\`)`,
+If extension not set, will automatically add extension (\`.wvb\`)
+[Default: out.wvb]
+`,
     required: false,
   });
   readonly ignores = Option.Array('--ignore', {
     description: 'Ignore patterns.',
   });
-  readonly truncate = Option.Boolean('--truncate', false, {
-    description: 'Truncate outfile if file is already exists. [Default: false]',
+  readonly overwrite = Option.String('--overwrite', {
+    validator: isBoolean(),
+    tolerateBoolean: true,
+    description: 'Truncate outfile if file is already exists. [Default: true]',
   });
-  readonly dryRun = Option.Boolean('--dry-run', false, {
+  readonly dryRun = Option.Boolean('--dry-run', {
     description: "Don't create webview bundle file on disk, instead just simulate packing files. [Default: false]",
   });
   readonly headers = Option.Array('--header,-H', {
@@ -62,11 +67,12 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
     const dirInput = this.dir ?? config.create?.srcDir;
     if (dirInput == null) {
       this.logger.error(
-        'Source directory is not specified. Set "create.srcDir" in the config file or pass <DIR> as a CLI argument.'
+        'Source directory is not specified. Set "create.srcDir" in the config file ' +
+          'or pass [DIR] as a CLI argument.'
       );
       return 1;
     }
-    const dir = toAbsolutePath(dirInput, this.cwd);
+    const dir = toAbsolutePath(dirInput, config.root);
     const allFiles = await glob('**/*', {
       cwd: dir,
       onlyFiles: true,
@@ -79,6 +85,9 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
         return true;
       }
       const ignored = await this.isMatchIgnores(file, ignores);
+      if (ignored) {
+        this.logger.debug(`File ignored: ${file}`);
+      }
       return !ignored;
     });
     if (files.length === 0) {
@@ -100,29 +109,25 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
 
       builder.insertEntry(`/${file}`, data, undefined, headers);
     }
-    let outfile = this.outfile ?? config.create?.outFile ?? path.basename(dir);
-    if (path.extname(outfile) === '') {
-      outfile = `${outfile}.wvb`;
-    }
-    const outfilePath = path.isAbsolute(outfile) ? outfile : path.join(process.cwd(), outfile);
+    const outFile = withWVBExtension(this.outFile ?? config.create?.outFile ?? 'out.wvb');
+    const outFilePath = toAbsolutePath(outFile, config.root);
     const bundle = builder.build();
-    if (this.dryRun) {
-      this.logger.debug(`Skip for write files on disk, because it's dry run.`);
+    const dryRun = this.dryRun ?? config.create?.dryRun ?? false;
+    if (dryRun) {
+      this.logger.info(`Skip writing files on disk, because it's dry run.`);
       return 0;
     }
-    if (!this.truncate) {
-      const exists = await fs
-        .access(outfilePath)
-        .then(() => true)
-        .catch(() => false);
+    const overwrite = this.overwrite ?? config.create?.overwrite ?? true;
+    if (!overwrite) {
+      const exists = await pathExists(outFilePath);
       if (exists) {
-        this.logger.error(`Outfile already exists: ${c.bold(c.error(outfile))}`);
+        this.logger.error(`Outfile already exists: ${c.bold(c.error(outFile))}`);
         return 1;
       }
     }
-    await fs.mkdir(path.dirname(outfilePath), { recursive: true });
-    const size = await writeBundle(bundle, outfilePath);
-    this.logger.info(`Output: ${c.bold(c.success(outfile))} ${c.bytes(formatByteLength(Number(size)))}`);
+    await fs.mkdir(path.dirname(outFilePath), { recursive: true });
+    const size = await writeBundle(bundle, outFilePath);
+    this.logger.info(`Output: ${c.bold(c.success(outFile))} ${c.bytes(formatByteLength(Number(size)))}`);
   }
 
   private intoHeaderConfig(headers: [string, string, string][]): HeadersConfig {

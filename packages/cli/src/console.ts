@@ -24,13 +24,17 @@ export function configureColor(val: typeof ColorOption) {
   }
 }
 
+export function isColorEnabled(): boolean {
+  return kleur.enabled;
+}
+
 export const colors = {
   debug: (msg: string | number) => kleur.gray(msg),
   info: (msg: string | number) => kleur.white(msg),
   warn: (msg: string | number) => kleur.yellow(msg),
   error: (msg: string | number) => kleur.red(msg),
   success: (msg: string | number) => kleur.green(msg),
-  header: (x: [string, string]) => kleur.yellow(`${x[0]}: ${x[1]}`),
+  header: (x: [string, string]) => kleur.gray(`${x[0]}: ${x[1]}`),
   bytes: (msg: string | number) => kleur.gray(msg),
   bold: (msg: string | number) => kleur.bold(msg),
   underline: (msg: string | number) => kleur.underline(msg),

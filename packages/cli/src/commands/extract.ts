@@ -2,8 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
+import { resolveConfig } from '../config.js';
 import { c } from '../console.js';
 import { formatByteLength } from '../format.js';
+import { pathExists, toAbsolutePath } from '../fs.js';
 import { BaseCommand } from './base.js';
 
 export class ExtractCommand extends BaseCommand {
@@ -19,19 +21,41 @@ export class ExtractCommand extends BaseCommand {
 
   readonly file = Option.String({
     name: 'FILE',
-    required: true,
+    required: false,
   });
-  readonly outdir = Option.String('--outdir,-O', {
+  readonly outDir = Option.String('--outdir,-O', {
     description: `Outdir path to extract webview bundle files.
 If not provided, will use webview bundle file name as directory.`,
   });
-  readonly dryRun = Option.Boolean('--dry-run', false, {
+  readonly dryRun = Option.Boolean('--dry-run', {
     description:
-      "Don't create extract files on disk, instead just look what inside on the webview bundle file. Default :false",
+      "Don't create extract files on disk, instead just look what inside on the webview bundle file. [Default: false]",
+  });
+  readonly configFile = Option.String('--config,-C', {
+    description: 'Config file path',
+  });
+  readonly cwd = Option.String('--cwd', {
+    description: 'Current working directory.',
   });
 
   async run() {
-    const filepath = path.isAbsolute(this.file) ? this.file : path.join(process.cwd(), this.file);
+    const config = await resolveConfig({
+      root: this.cwd,
+      configFile: this.configFile,
+    });
+    const file = this.file ?? config.extract?.file;
+    if (file == null) {
+      this.logger.error(
+        'Webview Bundle file is not specified. Set "extract.file" in the config file ' +
+          'or pass [FILE] as a CLI argument.'
+      );
+      return 1;
+    }
+    const filepath = toAbsolutePath(file, config.root);
+    if (!(await pathExists(filepath))) {
+      this.logger.error(`File not found: ${filepath}`);
+      return 1;
+    }
     const bundle = await readBundle(filepath);
     this.logger.info(`Webview Bundle info for ${c.info(filepath)}`);
     this.logger.info(`Version: ${c.bold(c.info(bundle.descriptor().header().version()))}`);
@@ -49,34 +73,30 @@ If not provided, will use webview bundle file name as directory.`,
       const data = bundle.getData(p)!;
       const bytes = formatByteLength(data.byteLength);
       this.logger.info(`${c.info(p)} ${c.bytes(bytes)}`);
+      this.logger.info(`  ${c.header(['content-type', entry.contentType])}`);
+      this.logger.info(`  ${c.header(['content-length', String(entry.contentLength)])}`);
       for (const h of Object.entries(entry.headers)) {
         this.logger.info(`  ${c.header(h)}`);
       }
     }
-    if (this.dryRun) {
-      this.logger.debug(`Skip for write files on disk, because it's dry run.`);
+    const dryRun = this.dryRun ?? config.extract?.dryRun ?? false;
+    if (dryRun) {
+      this.logger.info(`Skip writing files on disk, because it's dry run.`);
       return 0;
     }
-    let outdir = this.outdir ?? path.basename(filepath);
-    if (path.extname(outdir) === '.wvb') {
-      outdir = outdir.replace(/\.wvb$/, '');
-    }
-    const outdirPath = path.isAbsolute(outdir) ? outdir : path.join(process.cwd(), outdir);
-    const exists = await fs
-      .access(outdirPath)
-      .then(() => true)
-      .catch(() => false);
-    if (exists) {
-      this.logger.error(`Outdir already exists: ${outdirPath}`);
+    const outDir = this.outDir ?? config.extract?.outDir ?? path.basename(filepath, '.wvb');
+    const outDirPath = toAbsolutePath(outDir, config.root);
+    if (await pathExists(outDirPath)) {
+      this.logger.error(`Outdir already exists: ${outDirPath}`);
       return 1;
     }
     const entryPaths = Object.keys(bundle.descriptor().index().entries());
     for (const p of entryPaths) {
-      const filepath = path.join(outdirPath, p);
+      const filepath = path.join(outDirPath, p);
       await fs.mkdir(path.dirname(filepath), { recursive: true });
       await fs.writeFile(filepath, bundle.getData(p)!);
     }
-    this.logger.info(`Extract completed: ${c.bold(c.success(outdirPath))}`);
+    this.logger.info(`Extract completed: ${c.bold(c.success(outDirPath))}`);
     return 0;
   }
 }

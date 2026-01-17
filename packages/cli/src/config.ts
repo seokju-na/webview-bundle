@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import type { Config } from '@webview-bundle/config';
 import { rolldown } from 'rolldown';
 import { DEFAULT_CONFIG_FILES } from './constants.js';
-import { fileExists, findNearestPackageJsonFilePath, isEsmFile } from './fs.js';
+import { findNearestPackageJsonFilePath, isEsmFile, pathExists } from './fs.js';
 import { isNodeBuiltin } from './module.js';
 
 interface NodeModuleWithCompile extends NodeJS.Module {
@@ -22,7 +22,7 @@ export async function loadConfigFile(
   } else {
     for (const file of DEFAULT_CONFIG_FILES) {
       const candidateFile = path.resolve(cwd, file);
-      if (!(await fileExists(candidateFile))) {
+      if (!(await pathExists(candidateFile))) {
         continue;
       }
       resolvedFilePath = candidateFile;
@@ -172,6 +172,7 @@ export async function resolveConfig(inlineConfig: InlineConfig): Promise<Resolve
   }
   const root = config.root ?? process.cwd();
   const resolved: ResolvedConfig = {
+    ...config,
     root,
     configFile: configFile || undefined,
     configFileDependencies,
