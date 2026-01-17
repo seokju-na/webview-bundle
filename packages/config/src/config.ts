@@ -1,5 +1,7 @@
 import type { CreateConfig } from './create.js';
+import type { ExtractConfig } from './extract.js';
 import type { RemoteConfig } from './remote/index.js';
+import type { ServeConfig } from './serve.js';
 
 export type ConfigInputFnObj = () => Config;
 export type ConfigInputFnPromise = () => Promise<Config>;
@@ -25,5 +27,7 @@ export interface Config {
    */
   root?: string;
   create?: CreateConfig;
+  extract?: ExtractConfig;
   remote?: RemoteConfig;
+  serve?: ServeConfig;
 }

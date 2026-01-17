@@ -53,9 +53,9 @@ export async function findNearestPackageJson(basedir: string): Promise<PackageJs
   return json as PackageJson;
 }
 
-export async function fileExists(filepath: string): Promise<boolean> {
+export async function pathExists(p: string): Promise<boolean> {
   try {
-    await fs.access(filepath);
+    await fs.access(p);
     return true;
   } catch {
     return false;
@@ -64,4 +64,20 @@ export async function fileExists(filepath: string): Promise<boolean> {
 
 export function toAbsolutePath(p: string, cwd = process.cwd()): string {
   return path.isAbsolute(p) ? p : path.join(cwd, p);
+}
+
+export function normalizeFileName(filename: string): string {
+  return filename.replace(/\//g, '-');
+}
+
+export function withFileExtension(filename: string, ext: string): string {
+  const currentExt = path.extname(filename);
+  if (currentExt === ext) {
+    return filename;
+  }
+  return `${filename}${ext}`;
+}
+
+export function withWVBExtension(filename: string): string {
+  return withFileExtension(filename, '.wvb');
 }

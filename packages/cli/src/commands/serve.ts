@@ -1,8 +1,9 @@
-import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
 import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
-import { c } from '../console.js';
+import { resolveConfig } from '../config.js';
+import { c, isColorEnabled } from '../console.js';
+import { pathExists, toAbsolutePath } from '../fs.js';
 import { BaseCommand } from './base.js';
 
 export class ServeCommand extends BaseCommand {
@@ -18,29 +19,54 @@ export class ServeCommand extends BaseCommand {
 
   readonly file = Option.String({
     name: 'FILE',
-    required: true,
+    required: false,
   });
   readonly port = Option.String('--port,-P', '4312', {
+    description: 'Specify a port number on which to start the http server. [Default: 4312] [env: PORT]',
     validator: cascade(isNumber(), [isInteger(), isInExclusiveRange(1, 65535)]),
+    env: 'PORT',
   });
-  readonly silent = Option.Boolean('--silent', false, {
+  readonly silent = Option.Boolean('--silent', {
     description: 'Disable log output.',
+  });
+  readonly configFile = Option.String('--config,-C', {
+    description: 'Config file path',
+  });
+  readonly cwd = Option.String('--cwd', {
+    description: 'Current working directory.',
   });
 
   async run() {
     const { Hono } = await import('hono');
     const { serve } = await import('@hono/node-server');
 
-    const filepath = path.isAbsolute(this.file) ? this.file : path.join(process.cwd(), this.file);
+    const config = await resolveConfig({
+      root: this.cwd,
+      configFile: this.configFile,
+    });
+    const file = this.file ?? config.serve?.file;
+    if (file == null) {
+      this.logger.error(
+        'Webview Bundle file is not specified. Set "serve.file" in the config file ' +
+          'or pass [FILE] as a CLI argument.'
+      );
+      return 1;
+    }
+    const filepath = toAbsolutePath(file, config.root);
+    if (!(await pathExists(filepath))) {
+      this.logger.error(`File not found: ${filepath}`);
+      return 1;
+    }
     const bundle = await readBundle(filepath);
     const app = new Hono();
-    if (!this.silent) {
-      // TODO: Need to rewrite it custom
-      const { logger } = await import('hono/logger');
+
+    const silent = this.silent ?? config.serve?.silent ?? false;
+    if (!silent) {
+      const { logMiddleware } = await import('../utils/hono-logger.js');
       app.use(
-        logger(str => {
+        logMiddleware(str => {
           this.logger.info(str);
-        })
+        }, isColorEnabled())
       );
     }
     app.get('*', async c => {
@@ -49,6 +75,7 @@ export class ServeCommand extends BaseCommand {
         return c.notFound();
       }
       const entry = bundle.descriptor().index().getEntry(p)!;
+      this.logger.debug(`Read entry: ${p} (content-type=${entry.contentType}, content-length=${entry.contentLength})`);
       const data = bundle.getData(p)!;
       for (const [name, value] of Object.entries(entry.headers)) {
         c.header(name, value, { append: true });
@@ -57,7 +84,8 @@ export class ServeCommand extends BaseCommand {
       c.header('content-length', String(entry.contentLength));
       return c.body(data as Uint8Array<ArrayBuffer>, 200);
     });
-    const server = serve({ fetch: app.fetch, port: this.port }, info => {
+    const port = this.port ?? config.serve?.port ?? 4312;
+    const server = serve({ fetch: app.fetch, port }, info => {
       this.logger.info(`Server started: ${c.success(`http://localhost:${info.port}`)}`);
     });
     const shutdown = () => {

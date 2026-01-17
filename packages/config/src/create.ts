@@ -20,9 +20,20 @@ export interface CreateConfig {
    *
    * If not provided, will create file with directory name.
    * If extension is not set, will automatically use `.wvb` extension.
+   *
+   * @default out.wvb
    */
   outFile?: string;
-  truncate?: boolean;
+  /**
+   * Overwrite outfile if file is already exists
+   * @default true
+   */
+  overwrite?: boolean;
+  /**
+   * Don't create webview bundle file on disk, instead just simulate packing files.
+   * @default false
+   */
+  dryRun?: boolean;
   /**
    * Ignore patterns which exclude files from the bundle.
    */
