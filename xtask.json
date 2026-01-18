@@ -21,6 +21,9 @@
     "cli": {
       "path": "packages/cli"
     },
+    "config": {
+      "path": "packages/config"
+    },
     "electron": {
       "path": "packages/electron"
     },
