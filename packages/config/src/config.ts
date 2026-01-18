@@ -26,6 +26,23 @@ export interface Config {
    * @default process.cwd()
    */
   root?: string;
+  /**
+   * Path to the source directory.
+   *
+   * All files under this directory will be included in the Webview Bundle.
+   * Use "create.ignore" to exclude files you don't want to pack.
+   */
+  srcDir?: string;
+  /**
+   * Directory that out-file should be created.
+   * @default ".wvb"
+   */
+  outDir?: string;
+  /**
+   * Outfile name to create Webview Bundle archive.
+   * If not provided, default to name field in "package.json" with normalized.
+   */
+  outFile?: string;
   create?: CreateConfig;
   extract?: ExtractConfig;
   remote?: RemoteConfig;

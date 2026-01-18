@@ -2,10 +2,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { readBundle } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
-import { resolveConfig } from '../config.js';
+import { isBoolean } from 'typanion';
+import { defaultOutFile, resolveConfig } from '../config.js';
 import { c } from '../console.js';
 import { formatByteLength } from '../format.js';
-import { pathExists, toAbsolutePath } from '../fs.js';
+import { pathExists, toAbsolutePath, withWVBExtension } from '../fs.js';
 import { BaseCommand } from './base.js';
 
 export class ExtractCommand extends BaseCommand {
@@ -27,9 +28,16 @@ export class ExtractCommand extends BaseCommand {
     description: `Outdir path to extract webview bundle files.
 If not provided, will use webview bundle file name as directory.`,
   });
-  readonly dryRun = Option.Boolean('--dry-run', {
+  readonly dryRun = Option.String('--dry-run', {
+    tolerateBoolean: true,
+    validator: isBoolean(),
     description:
       "Don't create extract files on disk, instead just look what inside on the webview bundle file. [Default: false]",
+  });
+  readonly clean = Option.String('--clean', {
+    tolerateBoolean: true,
+    validator: isBoolean(),
+    description: 'Clean up extracted files if out directory already exists. [Default: false]',
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Config file path',
@@ -43,7 +51,7 @@ If not provided, will use webview bundle file name as directory.`,
       root: this.cwd,
       configFile: this.configFile,
     });
-    const file = this.file ?? config.extract?.file;
+    const file = this.file ?? config.extract?.file ?? defaultOutFile(config);
     if (file == null) {
       this.logger.error(
         'Webview Bundle file is not specified. Set "extract.file" in the config file ' +
@@ -51,7 +59,7 @@ If not provided, will use webview bundle file name as directory.`,
       );
       return 1;
     }
-    const filepath = toAbsolutePath(file, config.root);
+    const filepath = toAbsolutePath(withWVBExtension(file), config.root);
     if (!(await pathExists(filepath))) {
       this.logger.error(`File not found: ${filepath}`);
       return 1;
@@ -87,8 +95,13 @@ If not provided, will use webview bundle file name as directory.`,
     const outDir = this.outDir ?? config.extract?.outDir ?? path.basename(filepath, '.wvb');
     const outDirPath = toAbsolutePath(outDir, config.root);
     if (await pathExists(outDirPath)) {
-      this.logger.error(`Outdir already exists: ${outDirPath}`);
-      return 1;
+      const clean = this.clean ?? config.extract?.clean ?? false;
+      if (clean) {
+        await fs.rm(outDirPath, { recursive: true });
+      } else {
+        this.logger.error(`Outdir already exists: ${outDirPath}`);
+        return 1;
+      }
     }
     const entryPaths = Object.keys(bundle.descriptor().index().entries());
     for (const p of entryPaths) {

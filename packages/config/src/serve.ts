@@ -1,7 +1,7 @@
 export interface ServeConfig {
   /**
    * Webview Bundle file to use for serving with http server.
-   * If not provided, the file at the `outFile` path defined in create config is used by default.
+   * If not provided, the file at the "outFile" path is used by default.
    */
   file?: string;
   /**

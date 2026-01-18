@@ -19,7 +19,14 @@ export function awsS3RemoteUploader(config: AwsS3RemoteUploaderConfig): BaseRemo
 }
 
 export interface RemoteConfig {
-  endpoint?: string;
+  /**
+   * Endpoint to remote server.
+   */
+  endpoint: string;
+  /**
+   * Name of the bundle to be used in remote.
+   * Default to "outFile" name.
+   */
   bundleName?: string;
   uploader?: BaseRemoteUploader;
   /**

@@ -1,7 +1,7 @@
 export interface ExtractConfig {
   /**
    * Webview Bundle file to use for extracting.
-   * If not provided, the file at the `outFile` path defined in create config is used by default.
+   * If not provided, the file at the "outFile" path is used by default.
    */
   file?: string;
   /**
@@ -14,4 +14,9 @@ export interface ExtractConfig {
    * @default false
    */
   dryRun?: boolean;
+  /**
+   * Clean up extracted files if out directory already exists.
+   * @default false
+   */
+  clean?: boolean;
 }
