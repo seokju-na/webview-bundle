@@ -1,4 +1,4 @@
-import { type Bundle, S3Uploader, type S3UploaderOptions } from '@webview-bundle/node';
+import { type Bundle, type HttpOptions, S3Uploader, type S3UploaderOptions } from '@webview-bundle/node';
 
 export interface BaseRemoteUploader {
   upload(bundleName: string, version: string, bundle: Bundle): Promise<void>;
@@ -19,5 +19,11 @@ export function awsS3RemoteUploader(config: AwsS3RemoteUploaderConfig): BaseRemo
 }
 
 export interface RemoteConfig {
+  endpoint?: string;
+  bundleName?: string;
   uploader?: BaseRemoteUploader;
+  /**
+   * Options for http request.
+   */
+  http?: HttpOptions;
 }

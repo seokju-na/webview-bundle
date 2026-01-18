@@ -36,7 +36,10 @@ export class RemoteUploadCommand extends BaseCommand {
       configFile: this.configFile,
     });
     if (config.remote?.uploader == null) {
-      throw new Error('no remote config found');
+      this.logger.error(
+        'Cannot get "uploader" from remote config. Make sure the "uploader" is defined in remote config.'
+      );
+      return 1;
     }
     const bundleFilepath = path.isAbsolute(this.file) ? this.file : path.join(config.root, this.file);
     const bundle = await readBundle(bundleFilepath);

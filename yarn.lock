@@ -6524,6 +6524,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cli-progress@npm:^3":
+  version: 3.11.6
+  resolution: "@types/cli-progress@npm:3.11.6"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/d9a2d60b8fc6ccef73368fa20a23d5b16506808a81ec65f7e8eedf58d236ebaf2ab46578936c000c8e39dde825cb48a3cf9195c8b410177efd5388bcf9d07370
+  languageName: node
+  linkType: hard
+
 "@types/color-support@npm:^1":
   version: 1.1.4
   resolution: "@types/color-support@npm:1.1.4"
@@ -6825,11 +6834,13 @@ __metadata:
   dependencies:
     "@hono/node-server": "npm:^1.19.2"
     "@logtape/logtape": "npm:1.3.5"
+    "@types/cli-progress": "npm:^3"
     "@types/node": "catalog:"
     "@types/picomatch": "npm:^4"
     "@webview-bundle/config": "workspace:^"
     "@webview-bundle/node": "workspace:^"
     ci-info: "npm:^4.2.0"
+    cli-progress: "npm:^3.12.0"
     clipanion: "npm:4.0.0-rc.4"
     es-toolkit: "npm:^1.43.0"
     hono: "npm:^4.10.3"
@@ -7607,6 +7618,15 @@ __metadata:
   bin:
     highlight: bin/highlight
   checksum: 10c0/b5b4af3b968aa9df77eee449a400fbb659cf47c4b03a395370bd98d5554a00afaa5819b41a9a8a1ca0d37b0b896a94e57c65289b37359a25b700b1f56eb04852
+  languageName: node
+  linkType: hard
+
+"cli-progress@npm:^3.12.0":
+  version: 3.12.0
+  resolution: "cli-progress@npm:3.12.0"
+  dependencies:
+    string-width: "npm:^4.2.3"
+  checksum: 10c0/f464cb19ebde2f3880620a2adfaeeefaec6cb15c8e610c8a659ca1047ee90d69f3bf2fdabbb1fe33ac408678e882e3e0eecdb84ab5df0edf930b269b8a72682d
   languageName: node
   linkType: hard
 
