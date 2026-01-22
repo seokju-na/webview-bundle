@@ -32,8 +32,8 @@ export class RemoteCurrentCommand extends BaseCommand {
       root: this.cwd,
       configFile: this.configFile,
     });
-    const endpointInput = this.endpoint ?? config.remote?.endpoint;
-    if (endpointInput == null) {
+    const endpoint = this.endpoint ?? config.remote?.endpoint;
+    if (endpoint == null) {
       this.logger.error('"endpoint" is required for remote operations.');
       return 1;
     }
@@ -42,13 +42,15 @@ export class RemoteCurrentCommand extends BaseCommand {
       this.logger.error('"bundleName" is required for remote operations.');
       return 1;
     }
-    const remote = new Remote(endpointInput);
+    const remote = new Remote(endpoint, {
+      http: config.remote?.http,
+    });
     const info = await remote.getInfo(bundleName);
     this.logger.info(`Remote Webview Bundle info for ${c.info(bundleName)}`);
-    this.logger.info(`Version: ${c.bold(c.info(info.version))}`);
-    this.logger.info(`ETag: ${c.bold(c.info(info.etag ?? '(none)'))}`);
-    this.logger.info(`Integrity: ${c.bold(c.info(info.integrity ?? '(none)'))}`);
-    this.logger.info(`Signature: ${c.bold(c.info(info.signature ?? '(none)'))}`);
-    this.logger.info(`Last-Modified: ${c.bold(c.info(info.lastModified ?? '(none)'))}`);
+    this.logger.info(`  Version: ${c.bold(c.info(info.version))}`);
+    this.logger.info(`  ETag: ${c.bold(c.info(info.etag ?? '(none)'))}`);
+    this.logger.info(`  Integrity: ${c.bold(c.info(info.integrity ?? '(none)'))}`);
+    this.logger.info(`  Signature: ${c.bold(c.info(info.signature ?? '(none)'))}`);
+    this.logger.info(`  Last-Modified: ${c.bold(c.info(info.lastModified ?? '(none)'))}`);
   }
 }

@@ -1,7 +1,14 @@
 import { type Bundle, type HttpOptions, S3Uploader, type S3UploaderOptions } from '@webview-bundle/node';
 
+export interface RemoteUploadParams {
+  bundleName: string;
+  version: string;
+  bundle: Bundle;
+  force: boolean;
+}
+
 export interface BaseRemoteUploader {
-  upload(bundleName: string, version: string, bundle: Bundle): Promise<void>;
+  upload(params: RemoteUploadParams): Promise<void>;
 }
 
 export interface AwsS3RemoteUploaderConfig extends S3UploaderOptions {
@@ -22,10 +29,9 @@ export interface RemoteConfig {
   /**
    * Endpoint to remote server.
    */
-  endpoint: string;
+  endpoint?: string;
   /**
    * Name of the bundle to be used in remote.
-   * Default to "outFile" name.
    */
   bundleName?: string;
   uploader?: BaseRemoteUploader;

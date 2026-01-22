@@ -40,7 +40,7 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
   readonly overwrite = Option.String('--overwrite', {
     validator: isBoolean(),
     tolerateBoolean: true,
-    description: 'Truncate outfile if file is already exists. [Default: true]',
+    description: 'Overwrite outfile if file is already exists. [Default: true]',
   });
   readonly dryRun = Option.String('--dry-run', {
     tolerateBoolean: true,

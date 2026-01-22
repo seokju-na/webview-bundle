@@ -1,7 +1,12 @@
 import path from 'node:path';
-import { readBundle } from '@webview-bundle/node';
+import { readBundle, writeBundleIntoBuffer } from '@webview-bundle/node';
 import { Command, Option } from 'clipanion';
-import { resolveConfig } from '../../config.js';
+import { isBoolean } from 'typanion';
+import { defaultOutDir, defaultOutFile, resolveConfig } from '../../config.js';
+import { c } from '../../console.js';
+import { formatByteLength } from '../../format.js';
+import { toAbsolutePath } from '../../fs.js';
+import { buildURL } from '../../utils/url.js';
 import { BaseCommand } from '../base.js';
 
 export class RemoteUploadCommand extends BaseCommand {
@@ -12,16 +17,20 @@ export class RemoteUploadCommand extends BaseCommand {
     description: 'Upload webview bundle to remote server.',
   });
 
-  readonly file = Option.String({
-    name: 'FILE',
-    required: true,
+  readonly bundleName = Option.String({
+    name: 'BUNDLE',
+    required: false,
   });
-  readonly version = Option.String({
-    name: 'VERSION',
-    required: true,
+  readonly file = Option.String('--file,-F', {
+    description: '',
   });
-  readonly bundleName = Option.String('--name,-N', {
-    description: 'Bundle name to upload. Default to file name.',
+  readonly version = Option.String('--version,-V', {
+    description: `Version of Webview Bundle to upload.
+If not provided, default to version field in "package.json".`,
+  });
+  readonly force = Option.String('--force', {
+    tolerateBoolean: true,
+    validator: isBoolean(),
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Config file path',
@@ -41,12 +50,30 @@ export class RemoteUploadCommand extends BaseCommand {
       );
       return 1;
     }
-    const bundleFilepath = path.isAbsolute(this.file) ? this.file : path.join(config.root, this.file);
-    const bundle = await readBundle(bundleFilepath);
-    let bundleName = this.bundleName ?? path.basename(bundleFilepath);
-    if (bundleName.endsWith('.wvb')) {
-      bundleName = bundleName.replace(/\.wvb$/, '');
+    const defaultFile = defaultOutFile(config);
+    const fileInput = this.file ?? (defaultFile != null ? path.join(defaultOutDir(config), defaultFile) : undefined);
+    if (fileInput == null) {
+      this.logger.error(
+        'Webview Bundle file is not specified. Set "outFile" in the config file ' +
+          'or pass "--file,-F" as a CLI argument.'
+      );
+      return 1;
     }
-    await config.remote.uploader.upload(bundleName, this.version, bundle);
+    const filepath = toAbsolutePath(fileInput, config.root);
+    const bundle = await readBundle(filepath);
+    const bundleName = this.bundleName ?? config.remote?.bundleName ?? path.basename(filepath, '.wvb');
+    const version = this.version ?? config.packageJson?.version;
+    if (version == null) {
+      this.logger.error('Cannot get version of this Webview Bundle.');
+      return 1;
+    }
+    await config.remote.uploader.upload(bundleName, version, bundle);
+    const buf = writeBundleIntoBuffer(bundle);
+    const size = buf.byteLength;
+    const dest =
+      config.remote.endpoint != null
+        ? buildURL(config.remote.endpoint, `/bundles/${bundleName}`).toString()
+        : bundleName;
+    this.logger.info(`Webview Bundle uploaded: ${c.info(dest)} ${c.bytes(formatByteLength(size))}`);
   }
 }
