@@ -1,6 +1,6 @@
+export type { AwsS3RemoteUploaderConfig } from './aws.js';
+export { awsS3RemoteUploader } from './aws.js';
 export type {
-  AwsS3RemoteUploaderConfig,
   BaseRemoteUploader,
   RemoteConfig,
 } from './remote.js';
-export { awsS3RemoteUploader } from './remote.js';

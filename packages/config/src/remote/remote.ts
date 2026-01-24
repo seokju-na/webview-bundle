@@ -1,4 +1,4 @@
-import { type Bundle, type HttpOptions, S3Uploader, type S3UploaderOptions } from '@webview-bundle/node';
+import type { Bundle, HttpOptions } from '@webview-bundle/node';
 
 export interface RemoteUploadParams {
   bundleName: string;
@@ -8,21 +8,17 @@ export interface RemoteUploadParams {
 }
 
 export interface BaseRemoteUploader {
-  upload(params: RemoteUploadParams): Promise<void>;
+  upload(params: RemoteUploadParams, config: RemoteConfig): Promise<void>;
 }
 
-export interface AwsS3RemoteUploaderConfig extends S3UploaderOptions {
-  bucket: string;
+export interface RemoteDeployParams {
+  bundleName: string;
+  version: string;
+  channel?: string;
 }
 
-export function awsS3RemoteUploader(config: AwsS3RemoteUploaderConfig): BaseRemoteUploader {
-  return {
-    upload: async (bundleName, version, bundle) => {
-      const { bucket, ...options } = config;
-      const uploader = new S3Uploader(bucket, options);
-      await uploader.uploadBundle(bundleName, version, bundle);
-    },
-  };
+export interface BaseRemoteDeployer {
+  deploy(params: RemoteDeployParams, config: RemoteConfig): Promise<void>;
 }
 
 export interface RemoteConfig {
@@ -35,6 +31,7 @@ export interface RemoteConfig {
    */
   bundleName?: string;
   uploader?: BaseRemoteUploader;
+  deployer?: BaseRemoteDeployer;
   /**
    * Options for http request.
    */

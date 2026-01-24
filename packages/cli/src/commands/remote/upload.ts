@@ -67,7 +67,15 @@ If not provided, default to version field in "package.json".`,
       this.logger.error('Cannot get version of this Webview Bundle.');
       return 1;
     }
-    await config.remote.uploader.upload(bundleName, version, bundle);
+    await config.remote.uploader.upload(
+      {
+        bundle,
+        bundleName,
+        version,
+        force: this.force ?? false,
+      },
+      config.remote
+    );
     const buf = writeBundleIntoBuffer(bundle);
     const size = buf.byteLength;
     const dest =
