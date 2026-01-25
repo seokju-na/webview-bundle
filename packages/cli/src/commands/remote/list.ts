@@ -1,4 +1,4 @@
-import { Remote } from '@webview-bundle/node';
+import { Remote } from '@wvb/node';
 import { Command, Option } from 'clipanion';
 import { resolveConfig } from '../../config.js';
 import { BaseCommand } from '../base.js';

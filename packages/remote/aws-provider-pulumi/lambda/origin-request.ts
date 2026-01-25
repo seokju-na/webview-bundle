@@ -1,4 +1,4 @@
-import { originRequest } from '@webview-bundle/remote-aws/origin-request';
+import { originRequest } from '@wvb/remote-aws/origin-request';
 
 declare const __CONFIG__: any;
 

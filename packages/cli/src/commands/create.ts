@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { HeadersConfig, IgnoreConfig } from '@webview-bundle/config';
-import { BundleBuilder, writeBundle } from '@webview-bundle/node';
+import type { HeadersConfig, IgnoreConfig } from '@wvb/config';
+import { BundleBuilder, writeBundle } from '@wvb/node';
 import { Command, Option } from 'clipanion';
 import { filterAsync } from 'es-toolkit';
 import pm from 'picomatch';

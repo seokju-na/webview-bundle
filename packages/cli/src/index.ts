@@ -9,9 +9,9 @@ export type {
   HeadersConfig,
   IgnoreConfig,
   ServeConfig,
-} from '@webview-bundle/config';
-export { defineConfig } from '@webview-bundle/config';
-export type { AwsS3RemoteUploaderConfig, BaseRemoteUploader, RemoteConfig } from '@webview-bundle/config/remote';
-export { awsS3RemoteUploader } from '@webview-bundle/config/remote';
-export type { AwsKmsSignatureSignerConfig } from '@webview-bundle/config/signature';
-export { awsKmsSignatureSigner } from '@webview-bundle/config/signature';
+} from '@wvb/config';
+export { defineConfig } from '@wvb/config';
+export type { AwsS3RemoteUploaderConfig, BaseRemoteUploader, RemoteConfig } from '@wvb/config/remote';
+export { awsS3RemoteUploader } from '@wvb/config/remote';
+export type { AwsKmsSignatureSignerConfig } from '@wvb/config/signature';
+export { awsKmsSignatureSigner } from '@wvb/config/signature';

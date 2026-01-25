@@ -78,8 +78,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-android-arm64')
-        const bindingPackageVersion = require('@webview-bundle/node-android-arm64/package.json').version
+        const binding = require('@wvb/node-android-arm64')
+        const bindingPackageVersion = require('@wvb/node-android-arm64/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -94,8 +94,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-android-arm-eabi')
-        const bindingPackageVersion = require('@webview-bundle/node-android-arm-eabi/package.json').version
+        const binding = require('@wvb/node-android-arm-eabi')
+        const bindingPackageVersion = require('@wvb/node-android-arm-eabi/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -114,8 +114,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-win32-x64-msvc')
-        const bindingPackageVersion = require('@webview-bundle/node-win32-x64-msvc/package.json').version
+        const binding = require('@wvb/node-win32-x64-msvc')
+        const bindingPackageVersion = require('@wvb/node-win32-x64-msvc/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -130,8 +130,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-win32-ia32-msvc')
-        const bindingPackageVersion = require('@webview-bundle/node-win32-ia32-msvc/package.json').version
+        const binding = require('@wvb/node-win32-ia32-msvc')
+        const bindingPackageVersion = require('@wvb/node-win32-ia32-msvc/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -146,8 +146,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-win32-arm64-msvc')
-        const bindingPackageVersion = require('@webview-bundle/node-win32-arm64-msvc/package.json').version
+        const binding = require('@wvb/node-win32-arm64-msvc')
+        const bindingPackageVersion = require('@wvb/node-win32-arm64-msvc/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -165,8 +165,8 @@ function requireNative() {
       loadErrors.push(e)
     }
     try {
-      const binding = require('@webview-bundle/node-darwin-universal')
-      const bindingPackageVersion = require('@webview-bundle/node-darwin-universal/package.json').version
+      const binding = require('@wvb/node-darwin-universal')
+      const bindingPackageVersion = require('@wvb/node-darwin-universal/package.json').version
       if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
         throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
       }
@@ -181,8 +181,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-darwin-x64')
-        const bindingPackageVersion = require('@webview-bundle/node-darwin-x64/package.json').version
+        const binding = require('@wvb/node-darwin-x64')
+        const bindingPackageVersion = require('@wvb/node-darwin-x64/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -197,8 +197,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-darwin-arm64')
-        const bindingPackageVersion = require('@webview-bundle/node-darwin-arm64/package.json').version
+        const binding = require('@wvb/node-darwin-arm64')
+        const bindingPackageVersion = require('@wvb/node-darwin-arm64/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -217,8 +217,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-freebsd-x64')
-        const bindingPackageVersion = require('@webview-bundle/node-freebsd-x64/package.json').version
+        const binding = require('@wvb/node-freebsd-x64')
+        const bindingPackageVersion = require('@wvb/node-freebsd-x64/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -233,8 +233,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-freebsd-arm64')
-        const bindingPackageVersion = require('@webview-bundle/node-freebsd-arm64/package.json').version
+        const binding = require('@wvb/node-freebsd-arm64')
+        const bindingPackageVersion = require('@wvb/node-freebsd-arm64/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -254,8 +254,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-x64-musl')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-x64-musl/package.json').version
+          const binding = require('@wvb/node-linux-x64-musl')
+          const bindingPackageVersion = require('@wvb/node-linux-x64-musl/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -270,8 +270,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-x64-gnu')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-x64-gnu/package.json').version
+          const binding = require('@wvb/node-linux-x64-gnu')
+          const bindingPackageVersion = require('@wvb/node-linux-x64-gnu/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -288,8 +288,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-arm64-musl')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-arm64-musl/package.json').version
+          const binding = require('@wvb/node-linux-arm64-musl')
+          const bindingPackageVersion = require('@wvb/node-linux-arm64-musl/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -304,8 +304,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-arm64-gnu')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-arm64-gnu/package.json').version
+          const binding = require('@wvb/node-linux-arm64-gnu')
+          const bindingPackageVersion = require('@wvb/node-linux-arm64-gnu/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -322,8 +322,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-arm-musleabihf')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-arm-musleabihf/package.json').version
+          const binding = require('@wvb/node-linux-arm-musleabihf')
+          const bindingPackageVersion = require('@wvb/node-linux-arm-musleabihf/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -338,8 +338,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-arm-gnueabihf')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-arm-gnueabihf/package.json').version
+          const binding = require('@wvb/node-linux-arm-gnueabihf')
+          const bindingPackageVersion = require('@wvb/node-linux-arm-gnueabihf/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -356,8 +356,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-riscv64-musl')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-riscv64-musl/package.json').version
+          const binding = require('@wvb/node-linux-riscv64-musl')
+          const bindingPackageVersion = require('@wvb/node-linux-riscv64-musl/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -372,8 +372,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@webview-bundle/node-linux-riscv64-gnu')
-          const bindingPackageVersion = require('@webview-bundle/node-linux-riscv64-gnu/package.json').version
+          const binding = require('@wvb/node-linux-riscv64-gnu')
+          const bindingPackageVersion = require('@wvb/node-linux-riscv64-gnu/package.json').version
           if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -389,8 +389,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-linux-ppc64-gnu')
-        const bindingPackageVersion = require('@webview-bundle/node-linux-ppc64-gnu/package.json').version
+        const binding = require('@wvb/node-linux-ppc64-gnu')
+        const bindingPackageVersion = require('@wvb/node-linux-ppc64-gnu/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -405,8 +405,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-linux-s390x-gnu')
-        const bindingPackageVersion = require('@webview-bundle/node-linux-s390x-gnu/package.json').version
+        const binding = require('@wvb/node-linux-s390x-gnu')
+        const bindingPackageVersion = require('@wvb/node-linux-s390x-gnu/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -425,8 +425,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-openharmony-arm64')
-        const bindingPackageVersion = require('@webview-bundle/node-openharmony-arm64/package.json').version
+        const binding = require('@wvb/node-openharmony-arm64')
+        const bindingPackageVersion = require('@wvb/node-openharmony-arm64/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -441,8 +441,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-openharmony-x64')
-        const bindingPackageVersion = require('@webview-bundle/node-openharmony-x64/package.json').version
+        const binding = require('@wvb/node-openharmony-x64')
+        const bindingPackageVersion = require('@wvb/node-openharmony-x64/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -457,8 +457,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@webview-bundle/node-openharmony-arm')
-        const bindingPackageVersion = require('@webview-bundle/node-openharmony-arm/package.json').version
+        const binding = require('@wvb/node-openharmony-arm')
+        const bindingPackageVersion = require('@wvb/node-openharmony-arm/package.json').version
         if (bindingPackageVersion !== '0.0.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.0.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -486,7 +486,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
   }
   if (!nativeBinding) {
     try {
-      nativeBinding = require('@webview-bundle/node-wasm32-wasi')
+      nativeBinding = require('@wvb/node-wasm32-wasi')
     } catch (err) {
       if (process.env.NAPI_RS_FORCE_WASI) {
         loadErrors.push(err)

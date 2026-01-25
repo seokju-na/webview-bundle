@@ -1,10 +1,10 @@
 {
-  "name": "@webview-bundle/remote-cloudflare-pulumi",
-  "description": "Webview Bundle remote pulumi configuration for Cloudflare",
+  "name": "@wvb/remote-aws-provider-pulumi",
+  "description": "Webview Bundle remote pulumi configuration for AWS",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -14,6 +14,7 @@
   },
   "files": [
     "dist",
+    "lambda",
     "README.md",
     "CHANGELOG.md"
   ],
@@ -21,7 +22,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/remote/cloudflare-pulumi"
+    "directory": "packages/remote/aws-provider-pulumi"
   },
   "bugs": {
     "url": "https://github.com/seokju-na/webview-bundle/issues"
@@ -34,24 +35,25 @@
   "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
-    "build": "yarn build-js && yarn build-worker-script",
-    "build-js": "tsdown",
-    "build-worker-script": "esbuild ./worker-script.ts --minify --bundle --format=esm --platform=neutral --target=node18 --sourcemap=external --outfile=./dist/worker-script.js",
-    "typecheck": "tsc --noEmit"
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test-lambda-codegen": "tsx ./test-lambda-codegen.ts"
   },
   "peerDependencies": {
-    "@pulumi/cloudflare": "*",
+    "@pulumi/aws": "*",
     "@pulumi/pulumi": "*"
   },
   "dependencies": {
-    "@webview-bundle/remote-cloudflare": "workspace:^"
+    "@wvb/remote-aws-provider": "workspace:^",
+    "es-toolkit": "^1.37.1",
+    "rolldown": "1.0.0-beta.42"
   },
   "devDependencies": {
-    "@pulumi/cloudflare": "^6.10.0",
+    "@pulumi/aws": "^7.8.0",
     "@pulumi/pulumi": "^3.201.0",
     "@types/node": "catalog:",
-    "esbuild": "0.25.3",
     "tsdown": "catalog:",
+    "tsx": "^4.20.6",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

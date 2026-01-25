@@ -6,8 +6,8 @@ use crate::source::BundleSource;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::integrity::IntegrityChecker;
-use webview_bundle::updater;
+use wvb::integrity::IntegrityChecker;
+use wvb::updater;
 
 #[napi(object)]
 pub struct BundleUpdateInfo {

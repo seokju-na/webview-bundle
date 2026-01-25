@@ -1,6 +1,6 @@
-import type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@webview-bundle/node';
+import type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@wvb/node';
 
-export type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@webview-bundle/node';
+export type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@wvb/node';
 
 export interface WebviewBundleSourceApi {
   listBundles(): Promise<ListBundleItem[]>;

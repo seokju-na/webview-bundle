@@ -1,9 +1,9 @@
-use webview_bundle::http;
+use wvb::http;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
   #[error(transparent)]
-  Core(#[from] webview_bundle::Error),
+  Core(#[from] wvb::Error),
   #[error(transparent)]
   InvalidHeaderName(#[from] http::header::InvalidHeaderName),
   #[error(transparent)]

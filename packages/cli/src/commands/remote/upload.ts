@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { readBundle, writeBundleIntoBuffer } from '@webview-bundle/node';
+import { readBundle, writeBundleIntoBuffer } from '@wvb/node';
 import { Command, Option } from 'clipanion';
 import { isBoolean } from 'typanion';
 import { defaultOutDir, defaultOutFile, resolveConfig } from '../../config.js';

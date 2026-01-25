@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Config } from '@webview-bundle/config';
+import type { Config } from '@wvb/config';
 import { rolldown } from 'rolldown';
 import { DEFAULT_CONFIG_FILES } from './constants.js';
 import {

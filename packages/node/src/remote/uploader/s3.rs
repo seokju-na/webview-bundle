@@ -4,8 +4,8 @@ use crate::remote::HttpOptions;
 use crate::signature::SignatureSigner;
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::remote::uploader;
-use webview_bundle::remote::uploader::Uploader;
+use wvb::remote::uploader;
+use wvb::remote::uploader::Uploader;
 
 #[derive(Default)]
 #[napi(object, object_to_js = false)]

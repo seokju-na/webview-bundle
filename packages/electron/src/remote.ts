@@ -1,4 +1,4 @@
-import { Remote, type RemoteOptions as RemoteBindingOptions } from '@webview-bundle/node';
+import { Remote, type RemoteOptions as RemoteBindingOptions } from '@wvb/node';
 
 export interface RemoteOptions extends RemoteBindingOptions {}
 

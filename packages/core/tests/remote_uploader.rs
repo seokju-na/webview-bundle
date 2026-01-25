@@ -1,9 +1,9 @@
 #[cfg(feature = "remote-uploader-s3")]
 mod remote_uploader_tests {
   use std::path::PathBuf;
-  use webview_bundle::remote::uploader::S3Uploader;
-  use webview_bundle::remote::uploader::Uploader;
-  use webview_bundle::{Bundle, BundleReader, Reader};
+  use wvb::remote::uploader::S3Uploader;
+  use wvb::remote::uploader::Uploader;
+  use wvb::{Bundle, BundleReader, Reader};
 
   #[tokio::test]
   async fn s3_smoke() {

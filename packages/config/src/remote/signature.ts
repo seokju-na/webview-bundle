@@ -29,7 +29,8 @@ export type SignatureSignConfig =
     }
   | {
       algorithm: 'rsa-pss';
-      saltLength: number;
+      hash: SignatureHash;
+      saltLength?: number;
       key: SignatureSigningKeyConfig;
     }
   | {
@@ -68,7 +69,10 @@ function importKeyAlg(config: SignatureSignConfig): AlgorithmIdentifier | RsaHas
         hash: hashAlg(config.hash),
       };
     case 'rsa-pss':
-      return { name: 'RSA-PSS' };
+      return {
+        name: 'RSA-PSS',
+        hash: hashAlg(config.hash),
+      };
   }
 }
 
@@ -81,14 +85,25 @@ function ecdsaCurveName(curve: SignatureEcdsaCurve): string {
   }
 }
 
-function hashAlg(rasHash: SignatureHash): string {
-  switch (rasHash) {
+function hashAlg(hash: SignatureHash): string {
+  switch (hash) {
     case 'sha256':
       return 'SHA-256';
     case 'sha384':
       return 'SHA-384';
     case 'sha512':
       return 'SHA-512';
+  }
+}
+
+function getDefaultSaltLength(hash: SignatureHash): number {
+  switch (hash) {
+    case 'sha256':
+      return 32;
+    case 'sha384':
+      return 48;
+    case 'sha512':
+      return 64;
   }
 }
 
@@ -106,7 +121,7 @@ function signAlg(config: SignatureSignConfig): AlgorithmIdentifier | RsaPssParam
     case 'rsa-pss':
       return {
         name: 'RSA-PSS',
-        saltLength: config.saltLength,
+        saltLength: config.saltLength ?? getDefaultSaltLength(config.hash),
       };
   }
 }

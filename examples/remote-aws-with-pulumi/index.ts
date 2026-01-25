@@ -1,4 +1,4 @@
-import { WvbRemoteProvider } from '@webview-bundle/remote-aws-pulumi';
+import { WvbRemoteProvider } from '@wvb/remote-aws-provider-pulumi';
 
 const remoteProvider = new WvbRemoteProvider('webview-bundle', {
   bucketForceDestroy: true,

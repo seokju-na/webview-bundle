@@ -5,8 +5,8 @@ use napi::bindgen_prelude::*;
 use napi::Status;
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::remote;
-use webview_bundle::remote::HttpConfig;
+use wvb::remote;
+use wvb::remote::HttpConfig;
 
 #[napi(object, object_to_js = false)]
 pub struct RemoteOptions {

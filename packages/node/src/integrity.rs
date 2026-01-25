@@ -3,7 +3,7 @@ use napi::bindgen_prelude::{Buffer, FromNapiValue, Promise, TypeName, ValidateNa
 use napi::{sys, Either};
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::integrity;
+use wvb::integrity;
 
 #[napi(string_enum = "camelCase")]
 pub enum IntegrityAlgorithm {

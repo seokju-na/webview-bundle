@@ -20,7 +20,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^5.0.2",
-    "@webview-bundle/cli": "workspace:^",
+    "@wvb/cli": "workspace:^",
     "typescript": "catalog:",
     "vite": "^7.1.11"
   }

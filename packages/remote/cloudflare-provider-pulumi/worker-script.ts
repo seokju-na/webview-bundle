@@ -1,4 +1,4 @@
-import { wvbRemote } from '@webview-bundle/remote-cloudflare';
+import { wvbRemote } from '@wvb/remote-cloudflare-provider';
 
 const remote = wvbRemote();
 

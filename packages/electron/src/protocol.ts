@@ -1,11 +1,5 @@
 import { Buffer } from 'node:buffer';
-import {
-  BundleProtocol,
-  type BundleSource,
-  type HttpMethod,
-  type HttpResponse,
-  LocalProtocol,
-} from '@webview-bundle/node';
+import { BundleProtocol, type BundleSource, type HttpMethod, type HttpResponse, LocalProtocol } from '@wvb/node';
 import type { Protocol as ElectronProtocol, Privileges } from 'electron';
 import { app, protocol as electronProtocol } from 'electron';
 import { makeError } from './utils.js';

@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/node-win32-ia32-msvc",
+  "name": "@wvb/node-win32-ia32-msvc",
   "version": "0.0.0",
   "cpu": [
     "ia32"

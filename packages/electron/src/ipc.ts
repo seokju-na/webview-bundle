@@ -1,4 +1,4 @@
-import type { Remote, Updater } from '@webview-bundle/node';
+import type { Remote, Updater } from '@wvb/node';
 import { ipcMain } from 'electron';
 import { IpcChannels, type IpcHandlerSpecsByScope } from './ipc-spec.js';
 import type { WebviewBundle } from './webview-bundle.js';

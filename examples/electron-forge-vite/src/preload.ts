@@ -1,3 +1,3 @@
-import { preload } from '@webview-bundle/electron/preload';
+import { preload } from '@wvb/electron/preload';
 
 preload();

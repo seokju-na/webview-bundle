@@ -3,7 +3,7 @@ use napi::bindgen_prelude::{Buffer, FnArgs, FromNapiValue, Promise, TypeName, Va
 use napi::{sys, Either, ValueType};
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::signature;
+use wvb::signature;
 
 #[napi(string_enum = "camelCase")]
 #[derive(PartialEq, Eq)]

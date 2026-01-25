@@ -1,6 +1,7 @@
-import { S3Client, type S3ClientConfig } from '@aws-sdk/client-s3';
-import { Upload, type Configuration as UploadConfig } from '@aws-sdk/lib-storage';
-import type { BaseRemoteUploader, RemoteUploadParams } from '@webview-bundle/config/remote';
+import type { S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
+import type { Configuration as UploadConfig } from '@aws-sdk/lib-storage';
+import type { BaseRemoteUploader, RemoteUploadParams } from '@wvb/config/remote';
+import { filterS3Metadata, getS3Client } from './utils.js';
 
 export interface AwsS3RemoteUploaderConfig {
   bucket: string;
@@ -8,8 +9,9 @@ export interface AwsS3RemoteUploaderConfig {
   contentType?: string;
   cacheControl?: string;
   contentDisposition?: string;
-  client?: S3Client;
-  clientConfig?: S3ClientConfig;
+  metadata?: Record<string, string | null | undefined>;
+  s3Client?: S3Client;
+  s3ClientConfig?: S3ClientConfig;
   upload?: UploadConfig;
 }
 
@@ -21,14 +23,16 @@ class AwsS3RemoteUploaderImpl implements BaseRemoteUploader {
   async upload(params: RemoteUploadParams): Promise<void> {
     const {
       bucket,
-      upload: uploadConfig,
+      upload: uploaderConfig,
       contentType = 'application/webview-bundle',
       cacheControl,
       contentDisposition,
+      metadata: customMetadata = {},
     } = this.config;
     const { bundleName, version, integrity, signature } = params;
-    const client = buildS3Client(this.config);
-    const metadata: Record<string, string> = {
+    const s3 = await getS3Client(this.config);
+    const metadata: Record<string, string | null | undefined> = {
+      ...customMetadata,
       'webview-bundle-name': bundleName,
       'webview-bundle-version': version,
     };
@@ -38,34 +42,28 @@ class AwsS3RemoteUploaderImpl implements BaseRemoteUploader {
     if (signature != null) {
       metadata['webview-bundle-signature'] = signature;
     }
-    const upload = new Upload({
-      client,
+    const { Upload: Uploader } = await import('@aws-sdk/lib-storage');
+    const uploader = new Uploader({
+      client: s3,
       params: {
         Bucket: bucket,
         Key: buildKey(this.config, params),
         ContentType: contentType,
         CacheControl: cacheControl,
         ContentDisposition: contentDisposition,
-        Metadata: metadata,
+        Metadata: filterS3Metadata(metadata),
       },
-      ...uploadConfig,
+      ...uploaderConfig,
     });
-    upload.on('httpUploadProgress', progress => {
+    uploader.on('httpUploadProgress', progress => {
       this._onUploadProgress?.(progress);
     });
-    await upload.done();
+    await uploader.done();
   }
 }
 
 export function awsS3RemoteUploader(config: AwsS3RemoteUploaderConfig): BaseRemoteUploader {
   return new AwsS3RemoteUploaderImpl(config);
-}
-
-function buildS3Client(config: AwsS3RemoteUploaderConfig): S3Client {
-  if (config?.client != null) {
-    return config.client;
-  }
-  return new S3Client({ ...config.clientConfig });
 }
 
 function buildKey(config: AwsS3RemoteUploaderConfig, params: RemoteUploadParams): string {

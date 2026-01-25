@@ -51,7 +51,7 @@ function api(): WebviewBundleApi {
   const global = window as any;
   if (global.webviewBundle == null) {
     throw new Error(`Cannot access to webview bundle api.
-Make sure to load the preload script before using the api. (via "import { preload } from '@webview-bundle/electron/preload'")`);
+Make sure to load the preload script before using the api. (via "import { preload } from '@wvb/electron/preload'")`);
   }
   return global.webviewBundle as WebviewBundleApi;
 }

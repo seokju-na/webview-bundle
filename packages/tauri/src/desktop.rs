@@ -2,10 +2,10 @@ use crate::{Config, Protocol};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Runtime};
-use webview_bundle::protocol;
-use webview_bundle::remote::Remote;
-use webview_bundle::source::BundleSource;
-use webview_bundle::updater::Updater;
+use wvb::protocol;
+use wvb::remote::Remote;
+use wvb::source::BundleSource;
+use wvb::updater::Updater;
 
 pub fn init<R: Runtime>(
   app: &AppHandle<R>,

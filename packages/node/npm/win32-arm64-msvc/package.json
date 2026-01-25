@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/node-win32-arm64-msvc",
+  "name": "@wvb/node-win32-arm64-msvc",
   "version": "0.0.0",
   "cpu": [
     "arm64"

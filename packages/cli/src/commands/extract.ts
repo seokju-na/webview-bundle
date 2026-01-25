@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readBundle } from '@webview-bundle/node';
+import { readBundle } from '@wvb/node';
 import { Command, Option } from 'clipanion';
 import { isBoolean } from 'typanion';
 import { defaultOutFile, resolveConfig } from '../config.js';

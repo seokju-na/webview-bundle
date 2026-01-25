@@ -1,3 +1,3 @@
-# `@webview-bundle/node-linux-arm64-musl`
+# `@wvb/node-linux-arm64-musl`
 
-This is the **aarch64-unknown-linux-musl** binary for `@webview-bundle/node`
+This is the **aarch64-unknown-linux-musl** binary for `@wvb/node`

@@ -1,5 +1,5 @@
 use tauri::Manager;
-use webview_bundle_tauri::{Config, Protocol, Source};
+use wvb_tauri::{Config, Protocol, Source};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -10,7 +10,7 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
-    .plugin(webview_bundle_tauri::init(
+    .plugin(wvb_tauri::init(
       Config::new()
         .source(Source::new().builtin_dir_fn(|app| {
           let resources_dir = app.path().resource_dir()?;

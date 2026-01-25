@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/electron",
+  "name": "@wvb/electron",
   "description": "Webview Bundle API for Electron",
   "version": "0.0.0",
   "type": "module",
@@ -50,7 +50,7 @@
     "electron": ">= 15"
   },
   "dependencies": {
-    "@webview-bundle/node": "workspace:^"
+    "@wvb/node": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "catalog:",

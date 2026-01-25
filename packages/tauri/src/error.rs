@@ -5,7 +5,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
   #[error("webview bundle error: {0}")]
-  WebviewBundle(#[from] webview_bundle::Error),
+  WebviewBundle(#[from] wvb::Error),
   #[error("fail to resolve directory: {0}")]
   FailToResolveDirectory(String),
   #[error("tauri error: {0}")]

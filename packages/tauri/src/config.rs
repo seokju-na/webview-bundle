@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
-use webview_bundle::remote;
+use wvb::remote;
 
-pub use webview_bundle::remote::HttpConfig as Http;
+pub use wvb::remote::HttpConfig as Http;
 
 type DynamicDirFn<R> = fn(app: &AppHandle<R>) -> Result<PathBuf, Box<dyn std::error::Error>>;
 

@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/cli",
+  "name": "@wvb/cli",
   "version": "0.0.0",
   "type": "module",
   "bin": {
@@ -49,8 +49,8 @@
   "dependencies": {
     "@hono/node-server": "^1.19.2",
     "@logtape/logtape": "1.3.5",
-    "@webview-bundle/config": "workspace:^",
-    "@webview-bundle/node": "workspace:^",
+    "@wvb/config": "workspace:^",
+    "@wvb/node": "workspace:^",
     "ci-info": "^4.2.0",
     "cli-progress": "^3.12.0",
     "clipanion": "4.0.0-rc.4",

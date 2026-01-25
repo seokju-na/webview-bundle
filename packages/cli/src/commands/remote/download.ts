@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Remote, writeBundle } from '@webview-bundle/node';
+import { Remote, writeBundle } from '@wvb/node';
 import { Presets, SingleBar } from 'cli-progress';
 import { Command, Option } from 'clipanion';
 import { isBoolean } from 'typanion';

@@ -1,3 +1,3 @@
-# `@webview-bundle/node-linux-x64-musl`
+# `@wvb/node-linux-x64-musl`
 
-This is the **x86_64-unknown-linux-musl** binary for `@webview-bundle/node`
+This is the **x86_64-unknown-linux-musl** binary for `@wvb/node`

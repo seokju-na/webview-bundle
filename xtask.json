@@ -31,7 +31,11 @@
       "path": "packages/remote/aws",
       "scopes": ["remote"]
     },
-    "remote-aws-pulumi": {
+    "remote-aws-provider": {
+      "path": "packages/remote/aws-provider",
+      "scopes": ["remote"]
+    },
+    "remote-aws-provider-pulumi": {
       "path": "packages/remote/aws-pulumi",
       "scopes": ["remote"]
     },
@@ -39,8 +43,12 @@
       "path": "packages/remote/cloudflare",
       "scopes": ["remote"]
     },
-    "remote-cloudflare-pulumi": {
-      "path": "packages/remote/cloudflare-pulumi",
+    "remote-cloudflare-provider": {
+      "path": "packages/remote/cloudflare-provider",
+      "scopes": ["remote"]
+    },
+    "remote-cloudflare-provider-pulumi": {
+      "path": "packages/remote/cloudflare-provider-pulumi",
       "scopes": ["remote"]
     }
   },

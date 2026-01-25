@@ -13,7 +13,18 @@ export async function makeIntegrity(maker: IntegrityMaker, data: Buffer): Promis
     return maker({ data });
   }
   const alg = maker?.algorithm ?? 'sha256';
-  const hash = await crypto.subtle.digest({ name: alg }, new Uint8Array(data));
+  const hash = await crypto.subtle.digest({ name: hashAlg(alg) }, new Uint8Array(data));
   const hashBuf = Buffer.from(hash);
   return `${alg}:${hashBuf.toString('hex')}`;
+}
+
+function hashAlg(rasHash: IntegrityAlgorithm): string {
+  switch (rasHash) {
+    case 'sha256':
+      return 'SHA-256';
+    case 'sha384':
+      return 'SHA-384';
+    case 'sha512':
+      return 'SHA-512';
+  }
 }
