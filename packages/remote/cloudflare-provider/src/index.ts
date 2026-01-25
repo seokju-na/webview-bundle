@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Context } from './context.js';
 import { getBundleDataResponse } from './operations/getBundleDataResponse.js';
-import { getBundleDeployment } from './operations/getBundleDeployment.js';
+import { getBundleVersion } from './operations/getBundleVersion.js';
 import { listAllBundleDeployments } from './operations/listAllBundleDeployments.js';
 import { getRemoteBundleDeploymentVersion } from './types.js';
 
@@ -23,12 +23,12 @@ export function webviewBundleRemote(options: WebviewBundleRemoteOptions = {}): W
     const channel = c.req.query('channel');
     const deployments = await listAllBundleDeployments(c.env);
     const bundles = deployments
-      .map(x => {
-        const version = getRemoteBundleDeploymentVersion(x, channel);
+      .map(deployment => {
+        const version = getRemoteBundleDeploymentVersion(deployment, channel);
         if (version == null) {
           return null;
         }
-        return { name: x.name, version };
+        return { name: deployment.name, version };
       })
       .filter(x => x != null);
     return c.json(bundles);
@@ -37,9 +37,8 @@ export function webviewBundleRemote(options: WebviewBundleRemoteOptions = {}): W
   app.get('/bundles/:name', async c => {
     const bundleName = c.req.param('name');
     const channel = c.req.query('channel');
-    const deployment = await getBundleDeployment(c.env, bundleName);
-    const version = channel != null ? (deployment?.channels?.[channel] ?? deployment?.version) : deployment?.version;
-    if (deployment == null || version == null) {
+    const version = await getBundleVersion(c.env, bundleName, channel);
+    if (version == null) {
       return c.notFound();
     }
     const resp = await getBundleDataResponse(c.env, bundleName, version);

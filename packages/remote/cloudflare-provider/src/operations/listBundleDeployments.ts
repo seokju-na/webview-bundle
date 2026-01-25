@@ -26,15 +26,37 @@ export async function listBundleDeployments(
   if (keysResult.keys.length === 0) {
     return { deployments: [], nextCursor: undefined };
   }
-  const values = await context.kv.get<RemoteBundleDeployment>(
+  const values = await context.kv.get<string>(
     keysResult.keys.map(x => x.name),
     {
       type: 'json',
       cacheTtl,
     }
   );
+  const deployments = new Map<string, RemoteBundleDeployment>();
+  for (const [versionKey, version] of values.entries()) {
+    const [bundleName, channel] = versionKey.split('/');
+    if (bundleName == null || version == null) {
+      continue;
+    }
+    const current = deployments.get(bundleName) ?? { name: bundleName };
+    const updated =
+      channel != null
+        ? {
+            ...current,
+            channels: {
+              ...(current.channels ?? {}),
+              [channel]: version,
+            },
+          }
+        : {
+            ...current,
+            version,
+          };
+    deployments.set(bundleName, updated);
+  }
   return {
-    deployments: Object.values(values).filter(x => x != null),
+    deployments: [...deployments.values()],
     nextCursor: keysResult.list_complete ? undefined : keysResult.cursor,
   };
 }
