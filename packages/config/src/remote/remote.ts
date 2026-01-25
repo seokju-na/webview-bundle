@@ -5,9 +5,12 @@ export interface RemoteUploadParams {
   version: string;
   bundle: Bundle;
   force: boolean;
+  integrity?: string;
+  signature?: string;
 }
 
 export interface BaseRemoteUploader {
+  _onUploadProgress?: (progress: { loaded?: number; total?: number; part?: number }) => void;
   upload(params: RemoteUploadParams, config: RemoteConfig): Promise<void>;
 }
 

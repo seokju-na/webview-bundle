@@ -3,4 +3,6 @@ export { awsS3RemoteUploader } from './aws.js';
 export type {
   BaseRemoteUploader,
   RemoteConfig,
+  RemoteDeployParams,
+  RemoteUploadParams,
 } from './remote.js';
