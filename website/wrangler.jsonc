@@ -2,6 +2,16 @@
 	"$schema": "../node_modules/wrangler/config-schema.json",
 	"main": ".open-next/worker.js",
 	"name": "wvb-website",
+  "workers_dev": false,
+  "preview_urls": false,
+  "env": {
+    "production": {
+      "route": "wvb.dev"
+    },
+    "preview": {
+      "preview_urls": true
+    }
+  },
 	"compatibility_date": "2026-01-31",
 	"compatibility_flags": [
 		// Enable Node.js API
