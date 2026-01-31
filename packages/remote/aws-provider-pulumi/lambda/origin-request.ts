@@ -1,4 +1,4 @@
-import { originRequest } from '@wvb/remote-aws/origin-request';
+import { originRequest } from '@wvb/remote-aws-provider/origin-request';
 
 declare const __CONFIG__: any;
 
