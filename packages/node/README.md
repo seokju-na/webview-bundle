@@ -1,1 +1,1 @@
-# @webview-bundle/node
+# @wvb/node

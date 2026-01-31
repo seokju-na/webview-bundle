@@ -5,18 +5,18 @@ pub enum Version {
   V1,
 }
 
-impl From<Version> for webview_bundle::Version {
+impl From<Version> for wvb::Version {
   fn from(value: Version) -> Self {
     match value {
-      Version::V1 => webview_bundle::Version::V1,
+      Version::V1 => wvb::Version::V1,
     }
   }
 }
 
-impl From<webview_bundle::Version> for Version {
-  fn from(value: webview_bundle::Version) -> Self {
+impl From<wvb::Version> for Version {
+  fn from(value: wvb::Version) -> Self {
     match value {
-      webview_bundle::Version::V1 => Version::V1,
+      wvb::Version::V1 => Version::V1,
     }
   }
 }

@@ -5,8 +5,8 @@ use napi::bindgen_prelude::*;
 use napi::Status;
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::remote;
-use webview_bundle::remote::HttpConfig;
+use wvb::remote;
+use wvb::remote::HttpConfig;
 
 #[napi(object, object_to_js = false)]
 pub struct RemoteOptions {
@@ -19,6 +19,21 @@ pub struct RemoteOptions {
 pub struct RemoteOnDownloadData {
   pub downloaded_bytes: u32,
   pub total_bytes: u32,
+}
+
+#[napi(object)]
+pub struct ListRemoteBundleInfo {
+  pub name: String,
+  pub version: String,
+}
+
+impl From<remote::ListRemoteBundleInfo> for ListRemoteBundleInfo {
+  fn from(value: remote::ListRemoteBundleInfo) -> Self {
+    Self {
+      name: value.name,
+      version: value.version,
+    }
+  }
 }
 
 #[napi(object)]
@@ -90,14 +105,30 @@ impl Remote {
   }
 
   #[napi]
-  pub async fn list_bundles(&self) -> crate::Result<Vec<String>> {
-    let bundles = self.inner.list_bundles().await?;
+  pub async fn list_bundles(
+    &self,
+    channel: Option<String>,
+  ) -> crate::Result<Vec<ListRemoteBundleInfo>> {
+    let bundles = self
+      .inner
+      .list_bundles(channel.as_ref())
+      .await?
+      .into_iter()
+      .map(ListRemoteBundleInfo::from)
+      .collect::<Vec<_>>();
     Ok(bundles)
   }
 
   #[napi]
-  pub async fn get_info(&self, bundle_name: String) -> crate::Result<RemoteBundleInfo> {
-    let info = self.inner.get_current_info(&bundle_name).await?;
+  pub async fn get_info(
+    &self,
+    bundle_name: String,
+    channel: Option<String>,
+  ) -> crate::Result<RemoteBundleInfo> {
+    let info = self
+      .inner
+      .get_current_info(&bundle_name, channel.as_ref())
+      .await?;
     Ok(info.into())
   }
 
@@ -105,8 +136,9 @@ impl Remote {
   pub async fn download(
     &self,
     bundle_name: String,
+    channel: Option<String>,
   ) -> crate::Result<(RemoteBundleInfo, Bundle, Buffer)> {
-    let (info, inner, data) = self.inner.download(&bundle_name).await?;
+    let (info, inner, data) = self.inner.download(&bundle_name, channel.as_ref()).await?;
     Ok((info.into(), Bundle { inner }, data.into()))
   }
 

@@ -1,6 +1,19 @@
-import type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@webview-bundle/node';
+import type { Buffer } from 'node:buffer';
+import type {
+  BundleSourceVersion,
+  BundleUpdateInfo,
+  ListBundleItem,
+  ListRemoteBundleInfo,
+  RemoteBundleInfo,
+} from '@wvb/node';
 
-export type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from '@webview-bundle/node';
+export type {
+  BundleSourceVersion,
+  BundleUpdateInfo,
+  ListBundleItem,
+  ListRemoteBundleInfo,
+  RemoteBundleInfo,
+} from '@wvb/node';
 
 export interface WebviewBundleSourceApi {
   listBundles(): Promise<ListBundleItem[]>;
@@ -10,14 +23,14 @@ export interface WebviewBundleSourceApi {
 }
 
 export interface WebviewBundleRemoteApi {
-  listBundles(): Promise<string[]>;
-  getInfo(bundleName: string): Promise<RemoteBundleInfo>;
-  download(bundleName: string): Promise<RemoteBundleInfo>;
-  downloadVersion(bundleName: string, version: string): Promise<RemoteBundleInfo>;
+  listBundles(channel?: string): Promise<ListRemoteBundleInfo[]>;
+  getInfo(bundleName: string, channel?: string): Promise<RemoteBundleInfo>;
+  download(bundleName: string, channel?: string): Promise<[info: RemoteBundleInfo, bundle: Buffer]>;
+  downloadVersion(bundleName: string, version: string): Promise<[info: RemoteBundleInfo, bundle: Buffer]>;
 }
 
 export interface WebviewBundleUpdaterApi {
-  listRemotes(): Promise<string[]>;
+  listRemotes(): Promise<ListRemoteBundleInfo[]>;
   getUpdate(bundleName: string): Promise<BundleUpdateInfo>;
   downloadUpdate(bundleName: string, version?: string): Promise<RemoteBundleInfo>;
 }

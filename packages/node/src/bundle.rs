@@ -7,15 +7,15 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use std::ops::Deref;
 use tokio::fs;
-use webview_bundle::http::HeaderMap;
-use webview_bundle::{
+use wvb::http::HeaderMap;
+use wvb::{
   AsyncBundleReader, AsyncBundleWriter, AsyncReader, AsyncWriter, BundleBuilderOptions,
   BundleEntry, BundleReader, BundleWriter, HeaderWriterOptions, IndexWriterOptions, Reader, Writer,
 };
 
 #[napi]
 pub struct Header {
-  pub(crate) inner: SharedReference<BundleDescriptor, &'static webview_bundle::Header>,
+  pub(crate) inner: SharedReference<BundleDescriptor, &'static wvb::Header>,
 }
 
 #[napi]
@@ -46,8 +46,8 @@ pub struct IndexEntry {
   pub headers: HashMap<String, String>,
 }
 
-impl From<&webview_bundle::IndexEntry> for IndexEntry {
-  fn from(value: &webview_bundle::IndexEntry) -> Self {
+impl From<&wvb::IndexEntry> for IndexEntry {
+  fn from(value: &wvb::IndexEntry) -> Self {
     Self {
       offset: value.offset() as u32,
       len: value.len() as u32,
@@ -61,7 +61,7 @@ impl From<&webview_bundle::IndexEntry> for IndexEntry {
 
 #[napi]
 pub struct Index {
-  pub(crate) inner: SharedReference<BundleDescriptor, &'static webview_bundle::Index>,
+  pub(crate) inner: SharedReference<BundleDescriptor, &'static wvb::Index>,
 }
 
 #[napi]
@@ -87,15 +87,15 @@ impl Index {
 }
 
 pub(crate) enum BundleDescriptorInner {
-  Owned(webview_bundle::BundleDescriptor),
-  Bundle(SharedReference<Bundle, &'static webview_bundle::BundleDescriptor>),
+  Owned(wvb::BundleDescriptor),
+  Bundle(SharedReference<Bundle, &'static wvb::BundleDescriptor>),
 }
 
 unsafe impl Send for BundleDescriptorInner {}
 unsafe impl Sync for BundleDescriptorInner {}
 
 impl Deref for BundleDescriptorInner {
-  type Target = webview_bundle::BundleDescriptor;
+  type Target = wvb::BundleDescriptor;
   fn deref(&self) -> &Self::Target {
     match self {
       Self::Owned(x) => x,
@@ -126,7 +126,7 @@ impl BundleDescriptor {
 
 #[napi]
 pub struct Bundle {
-  pub(crate) inner: webview_bundle::Bundle,
+  pub(crate) inner: wvb::Bundle,
 }
 
 #[napi]
@@ -155,7 +155,7 @@ impl Bundle {
 #[napi]
 pub fn read_bundle_from_buffer(buffer: BufferSlice) -> crate::Result<Bundle> {
   let cursor = Cursor::new(buffer.as_ref());
-  let bundle = Reader::<webview_bundle::Bundle>::read(&mut BundleReader::new(cursor))?;
+  let bundle = Reader::<wvb::Bundle>::read(&mut BundleReader::new(cursor))?;
   Ok(Bundle { inner: bundle })
 }
 
@@ -163,9 +163,8 @@ pub fn read_bundle_from_buffer(buffer: BufferSlice) -> crate::Result<Bundle> {
 pub async fn read_bundle(filepath: String) -> crate::Result<Bundle> {
   let mut file = fs::File::open(&filepath)
     .await
-    .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
-  let bundle =
-    AsyncReader::<webview_bundle::Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
+    .map_err(|e| crate::Error::Core(wvb::Error::from(e)))?;
+  let bundle = AsyncReader::<wvb::Bundle>::read(&mut AsyncBundleReader::new(&mut file)).await?;
   Ok(Bundle { inner: bundle })
 }
 
@@ -173,19 +172,17 @@ pub async fn read_bundle(filepath: String) -> crate::Result<Bundle> {
 pub async fn write_bundle(bundle: &Bundle, filepath: String) -> crate::Result<usize> {
   let mut file = fs::File::create(&filepath)
     .await
-    .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
-  let size = AsyncWriter::<webview_bundle::Bundle>::write(
-    &mut AsyncBundleWriter::new(&mut file),
-    &bundle.inner,
-  )
-  .await?;
+    .map_err(|e| crate::Error::Core(wvb::Error::from(e)))?;
+  let size =
+    AsyncWriter::<wvb::Bundle>::write(&mut AsyncBundleWriter::new(&mut file), &bundle.inner)
+      .await?;
   Ok(size)
 }
 
 #[napi]
 pub fn write_bundle_into_buffer(bundle: &Bundle) -> crate::Result<Buffer> {
   let mut buf = vec![];
-  Writer::<webview_bundle::Bundle>::write(&mut BundleWriter::new(&mut buf), &bundle.inner)?;
+  Writer::<wvb::Bundle>::write(&mut BundleWriter::new(&mut buf), &bundle.inner)?;
   Ok(buf.into())
 }
 
@@ -245,7 +242,7 @@ impl From<BuildIndexOptions> for IndexWriterOptions {
 #[napi]
 pub struct BundleBuilder {
   pub(crate) version: Version,
-  pub(crate) inner: webview_bundle::BundleBuilder,
+  pub(crate) inner: wvb::BundleBuilder,
 }
 
 #[napi]
@@ -254,7 +251,7 @@ impl BundleBuilder {
   pub fn new(version: Option<Version>) -> BundleBuilder {
     Self {
       version: version.unwrap_or(Version::V1),
-      inner: webview_bundle::BundleBuilder::new(),
+      inner: wvb::BundleBuilder::new(),
     }
   }
 

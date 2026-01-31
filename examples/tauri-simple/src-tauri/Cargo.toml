@@ -19,7 +19,7 @@ name       = "tauri_lib"
 tauri-build = { workspace = true, features = [] }
 
 [dependencies]
-serde                = { workspace = true, features = ["derive"] }
-serde_json           = { workspace = true }
-tauri                = { workspace = true, features = [] }
-webview-bundle-tauri = { workspace = true }
+serde      = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tauri      = { workspace = true, features = [] }
+wvb-tauri  = { workspace = true }

@@ -125,7 +125,7 @@ export async function configureLogger(options?: ConfigureLoggerOptions) {
     },
     loggers: [
       {
-        category: ['webview-bundle'],
+        category: ['wvb'],
         sinks: ['console'],
         lowestLevel: level,
       },
@@ -141,5 +141,5 @@ export async function configureLogger(options?: ConfigureLoggerOptions) {
 export type Logger = LoggerType;
 
 export function getLogger(...categories: string[]): Logger {
-  return getLoggerApi(['webview-bundle', ...categories]);
+  return getLoggerApi(['wvb', ...categories]);
 }

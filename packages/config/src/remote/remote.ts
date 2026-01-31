@@ -1,23 +1,19 @@
-import { type Bundle, S3Uploader, type S3UploaderOptions } from '@webview-bundle/node';
-
-export interface BaseRemoteUploader {
-  upload(bundleName: string, version: string, bundle: Bundle): Promise<void>;
-}
-
-export interface AwsS3RemoteUploaderConfig extends S3UploaderOptions {
-  bucket: string;
-}
-
-export function awsS3RemoteUploader(config: AwsS3RemoteUploaderConfig): BaseRemoteUploader {
-  return {
-    upload: async (bundleName, version, bundle) => {
-      const { bucket, ...options } = config;
-      const uploader = new S3Uploader(bucket, options);
-      await uploader.uploadBundle(bundleName, version, bundle);
-    },
-  };
-}
+import type { BaseRemoteDeployer } from './deployer.js';
+import type { IntegrityMakeConfig } from './integrity.js';
+import type { SignatureSignConfig } from './signature.js';
+import type { BaseRemoteUploader } from './uploader.js';
 
 export interface RemoteConfig {
+  /**
+   * Endpoint to remote server.
+   */
+  endpoint?: string;
+  /**
+   * Name of the bundle to be used in remote.
+   */
+  bundleName?: string;
   uploader?: BaseRemoteUploader;
+  deployer?: BaseRemoteDeployer;
+  integrity?: boolean | IntegrityMakeConfig;
+  signature?: SignatureSignConfig;
 }

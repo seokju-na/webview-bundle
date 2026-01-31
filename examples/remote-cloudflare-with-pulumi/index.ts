@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { WvbRemoteProvider } from '@webview-bundle/remote-cloudflare-pulumi';
+import { WvbRemoteProvider } from '@wvb/remote-cloudflare-provider-pulumi';
 
 const config = new pulumi.Config();
 

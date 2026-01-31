@@ -1,33 +1,59 @@
 use crate::remote::HttpConfig;
 use crate::{Bundle, BundleReader, Reader};
 use futures_util::StreamExt;
-use http::{header, StatusCode};
+use http::{header, uri::Uri, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
+use std::str::FromStr;
 use std::sync::Arc;
 
+/// Representation of bundle list info from the remote server.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListRemoteBundleInfo {
+  /// Bundle name
+  pub name: String,
+  /// Version of the bundle
+  pub version: String,
+}
+
+/// Representation of bundle info from the remote server.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RemoteBundleInfo {
+  /// Bundle name
   pub name: String,
+  /// Version of the bundle
   pub version: String,
+  /// ETag from the remote server. Can be used to check if the bundle has been updated.
   pub etag: Option<String>,
+  /// Integrity hash of the bundle.
   pub integrity: Option<String>,
+  /// Signature of the bundle.
   pub signature: Option<String>,
+  /// Last modified date from the remote server.
   pub last_modified: Option<String>,
 }
 
+/// Error string representation for remote operations.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RemoteError {
+  /// Error message.
   pub message: Option<String>,
 }
 
 type OnDownload = dyn Fn(u64, u64) + Send + Sync + 'static;
 
+/// Configuration for remote operations.
 #[derive(Default, Clone)]
 #[non_exhaustive]
 pub struct RemoteConfig {
+  /// Base URL of the remote server where bundles are hosted.
+  ///
+  /// This URL is used as the prefix for all API endpoints. The client automatically
+  /// appends API paths to construct full URLs for each operation.
   pub endpoint: String,
+  /// Download progress callback.
   pub on_download: Option<Arc<OnDownload>>,
+  /// Optional HTTP client configuration.
   pub http: Option<HttpConfig>,
 }
 
@@ -37,16 +63,20 @@ pub struct RemoteBuilder {
 }
 
 impl RemoteBuilder {
+  #[must_use]
+  /// Set the base url of the remote server where bundles are hosted.
   pub fn endpoint(mut self, endpoint: impl Into<String>) -> Self {
     self.config.endpoint = endpoint.into();
     self
   }
 
+  /// Set HTTP client configuration.
   pub fn http(mut self, http: HttpConfig) -> Self {
     self.config.http = Some(http);
     self
   }
 
+  /// Set download progress callback.
   pub fn on_download<F>(mut self, on_download: F) -> Self
   where
     F: Fn(u64, u64) + Send + Sync + 'static,
@@ -55,6 +85,7 @@ impl RemoteBuilder {
     self
   }
 
+  /// Build the remote client with configuration.
   pub fn build(self) -> crate::Result<Remote> {
     if self.config.endpoint.is_empty() {
       return Err(crate::Error::invalid_remote_config("endpoint is empty"));
@@ -71,6 +102,7 @@ impl RemoteBuilder {
   }
 }
 
+/// Remote client for using with remote bundles.
 #[derive(Clone)]
 pub struct Remote {
   config: RemoteConfig,
@@ -83,21 +115,29 @@ impl Remote {
   }
 
   /// GET /bundles
-  pub async fn list_bundles(&self) -> crate::Result<Vec<String>> {
-    let resp = self.client.get(self.api_url("/bundles")).send().await?;
+  pub async fn list_bundles(
+    &self,
+    channel: Option<&String>,
+  ) -> crate::Result<Vec<ListRemoteBundleInfo>> {
+    let endpoint = self.endpoint("/bundles", channel.map(|x| vec![("channel", x)]))?;
+    let resp = self.client.get(endpoint).send().await?;
     match resp.status().is_success() {
-      true => Ok(resp.json::<Vec<String>>().await?),
+      true => Ok(resp.json::<Vec<ListRemoteBundleInfo>>().await?),
       false => Err(self.parse_err(resp).await),
     }
   }
 
   /// HEAD /bundles/:name
-  pub async fn get_current_info(&self, bundle_name: &str) -> crate::Result<RemoteBundleInfo> {
-    let resp = self
-      .client
-      .head(self.api_url(format!("/bundles/{bundle_name}")))
-      .send()
-      .await?;
+  pub async fn get_current_info(
+    &self,
+    bundle_name: &str,
+    channel: Option<&String>,
+  ) -> crate::Result<RemoteBundleInfo> {
+    let endpoint = self.endpoint(
+      format!("/bundles/{bundle_name}"),
+      channel.map(|x| vec![("channel", x)]),
+    )?;
+    let resp = self.client.head(endpoint).send().await?;
     match resp.status().is_success() {
       true => Ok(self.parse_info(&resp)?),
       false => Err(self.parse_err(resp).await),
@@ -108,8 +148,11 @@ impl Remote {
   pub async fn download(
     &self,
     bundle_name: &str,
+    channel: Option<&String>,
   ) -> crate::Result<(RemoteBundleInfo, Bundle, Vec<u8>)> {
-    self.download_inner(format!("/bundles/{bundle_name}")).await
+    self
+      .download_inner(format!("/bundles/{bundle_name}"), channel)
+      .await
   }
 
   /// GET /bundles/:name/:version
@@ -119,18 +162,39 @@ impl Remote {
     version: &str,
   ) -> crate::Result<(RemoteBundleInfo, Bundle, Vec<u8>)> {
     self
-      .download_inner(format!("/bundles/{bundle_name}/{version}"))
+      .download_inner(format!("/bundles/{bundle_name}/{version}"), None)
       .await
   }
 
-  fn api_url(&self, path: impl Into<String>) -> String {
+  fn endpoint(
+    &self,
+    path: impl Into<String>,
+    query: Option<Vec<(impl Into<String>, impl Into<String>)>>,
+  ) -> crate::Result<String> {
     let endpoint = self
       .config
       .endpoint
       .strip_suffix('/')
       .unwrap_or(&self.config.endpoint);
-    let p = path.into();
-    format!("{}/{}", endpoint, p.strip_prefix('/').unwrap_or(&p))
+    let p = path.into().trim_matches('/').to_string();
+    let q = query
+      .map(|x| {
+        x.into_iter()
+          .map(|(k, v)| {
+            format!(
+              "{}={}",
+              urlencoding::encode(&k.into()),
+              urlencoding::encode(&v.into())
+            )
+          })
+          .collect::<Vec<_>>()
+          .join("&")
+      })
+      .map(|qs| format!("?{}", qs))
+      .unwrap_or_default();
+    let input = format!("{}/{}{}", endpoint, p, q);
+    let uri = Uri::from_str(&input).map_err(crate::Error::InvalidRemoteUrl)?;
+    Ok(uri.to_string())
   }
 
   fn parse_info(&self, resp: &reqwest::Response) -> crate::Result<RemoteBundleInfo> {
@@ -173,8 +237,10 @@ impl Remote {
   async fn download_inner(
     &self,
     path: String,
+    channel: Option<&String>,
   ) -> crate::Result<(RemoteBundleInfo, Bundle, Vec<u8>)> {
-    let resp = self.client.get(self.api_url(path)).send().await?;
+    let endpoint = self.endpoint(path, channel.map(|x| vec![("channel", x)]))?;
+    let resp = self.client.get(endpoint).send().await?;
     if !resp.status().is_success() {
       return Err(self.parse_err(resp).await);
     }

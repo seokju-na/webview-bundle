@@ -72,7 +72,7 @@ export async function prepareCli(name: string): Promise<void> {
     return;
   }
   const require = createRequire(getFixtureDir(name));
-  const cliPath = path.dirname(require.resolve('@webview-bundle/cli/package.json'));
+  const cliPath = path.dirname(require.resolve('@wvb/cli/package.json'));
   await execa('yarn', ['build'], { cwd: cliPath });
   cliPrepared = true;
 }

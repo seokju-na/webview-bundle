@@ -1,13 +1,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { HeadersConfig, IgnoreConfig } from '@webview-bundle/config';
-import { BundleBuilder, writeBundle } from '@webview-bundle/node';
+import type { HeadersConfig, IgnoreConfig } from '@wvb/config';
+import { BundleBuilder, writeBundle } from '@wvb/node';
 import { Command, Option } from 'clipanion';
 import { filterAsync } from 'es-toolkit';
 import pm from 'picomatch';
 import { glob } from 'tinyglobby';
 import { isBoolean } from 'typanion';
-import { resolveConfig } from '../config.js';
+import { defaultOutDir, defaultOutFile, resolveConfig } from '../config.js';
 import { c } from '../console.js';
 import { formatByteLength } from '../format.js';
 import { pathExists, toAbsolutePath, withWVBExtension } from '../fs.js';
@@ -29,11 +29,9 @@ export class CreateCommand extends BaseCommand {
 
   readonly dir = Option.String({ name: 'DIR', required: false });
   readonly outFile = Option.String('--outfile,-O', {
-    description: `Outfile path to create webview bundle archive.
-If not provided, will create file with directory name.
-If extension not set, will automatically add extension (\`.wvb\`)
-[Default: out.wvb]
-`,
+    description: `Outfile name to create Webview Bundle archive.
+If not provided, default to name field in "package.json" with normalized.
+If extension not set, will automatically add extension (\`.wvb\`)`,
     required: false,
   });
   readonly ignores = Option.Array('--ignore', {
@@ -42,9 +40,11 @@ If extension not set, will automatically add extension (\`.wvb\`)
   readonly overwrite = Option.String('--overwrite', {
     validator: isBoolean(),
     tolerateBoolean: true,
-    description: 'Truncate outfile if file is already exists. [Default: true]',
+    description: 'Overwrite outfile if file is already exists. [Default: true]',
   });
-  readonly dryRun = Option.Boolean('--dry-run', {
+  readonly dryRun = Option.String('--dry-run', {
+    tolerateBoolean: true,
+    validator: isBoolean(),
     description: "Don't create webview bundle file on disk, instead just simulate packing files. [Default: false]",
   });
   readonly headers = Option.Array('--header,-H', {
@@ -53,10 +53,10 @@ If extension not set, will automatically add extension (\`.wvb\`)
     arity: 3,
   });
   readonly configFile = Option.String('--config,-C', {
-    description: 'Config file path',
+    description: 'Path to the config file.',
   });
   readonly cwd = Option.String('--cwd', {
-    description: 'Current working directory.',
+    description: 'Set the working directory for resolving paths. [Default: process.cwd()]',
   });
 
   async run() {
@@ -64,11 +64,10 @@ If extension not set, will automatically add extension (\`.wvb\`)
       root: this.cwd,
       configFile: this.configFile,
     });
-    const dirInput = this.dir ?? config.create?.srcDir;
+    const dirInput = this.dir ?? config.srcDir;
     if (dirInput == null) {
       this.logger.error(
-        'Source directory is not specified. Set "create.srcDir" in the config file ' +
-          'or pass [DIR] as a CLI argument.'
+        'Source directory is not specified. Set "srcDir" in the config file or pass [DIR] as a CLI argument.'
       );
       return 1;
     }
@@ -109,7 +108,14 @@ If extension not set, will automatically add extension (\`.wvb\`)
 
       builder.insertEntry(`/${file}`, data, undefined, headers);
     }
-    const outFile = withWVBExtension(this.outFile ?? config.create?.outFile ?? 'out.wvb');
+    const outFileInput = this.outFile ?? defaultOutFile(config);
+    if (outFileInput == null) {
+      this.logger.error(
+        'Out file is not specified. Set "outFile" in the config file or pass "--outfile,-O" as a CLI argument.'
+      );
+      return 1;
+    }
+    const outFile = path.join(defaultOutDir(config), withWVBExtension(outFileInput));
     const outFilePath = toAbsolutePath(outFile, config.root);
     const bundle = builder.build();
     const dryRun = this.dryRun ?? config.create?.dryRun ?? false;

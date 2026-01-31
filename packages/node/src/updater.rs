@@ -1,13 +1,13 @@
 use crate::integrity::IntegrityPolicy;
 use crate::js::{JsCallback, JsCallbackExt};
-use crate::remote::{Remote, RemoteBundleInfo};
+use crate::remote::{ListRemoteBundleInfo, Remote, RemoteBundleInfo};
 use crate::signature::SignatureVerifier;
 use crate::source::BundleSource;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::integrity::IntegrityChecker;
-use webview_bundle::updater;
+use wvb::integrity::IntegrityChecker;
+use wvb::updater;
 
 #[napi(object)]
 pub struct BundleUpdateInfo {
@@ -55,6 +55,7 @@ pub(crate) type UpdateIntegrityChecker = JsCallback<FnArgs<(Buffer, String)>, Pr
 
 #[napi(object, object_to_js = false)]
 pub struct UpdaterOptions {
+  pub channel: Option<String>,
   pub integrity_policy: Option<IntegrityPolicy>,
   #[napi(ts_type = "(data: Uint8Array, integrity: string) => Promise<boolean>")]
   pub integrity_checker: Option<UpdateIntegrityChecker>,
@@ -67,6 +68,9 @@ pub struct UpdaterOptions {
 impl From<UpdaterOptions> for updater::UpdaterConfig {
   fn from(value: UpdaterOptions) -> Self {
     let mut config = updater::UpdaterConfig::default();
+    if let Some(channel) = value.channel {
+      config = config.channel(channel);
+    }
     if let Some(policy) = value.integrity_policy {
       config = config.integrity_policy(policy.into());
     }
@@ -114,8 +118,14 @@ impl Updater {
   }
 
   #[napi]
-  pub async fn list_remotes(&self) -> crate::Result<Vec<String>> {
-    let remotes = self.inner.list_remotes().await?;
+  pub async fn list_remotes(&self) -> crate::Result<Vec<ListRemoteBundleInfo>> {
+    let remotes = self
+      .inner
+      .list_remotes()
+      .await?
+      .into_iter()
+      .map(ListRemoteBundleInfo::from)
+      .collect::<Vec<_>>();
     Ok(remotes)
   }
 

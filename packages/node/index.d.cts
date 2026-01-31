@@ -56,20 +56,15 @@ export declare class LocalProtocol {
 
 export declare class Remote {
   constructor(endpoint: string, options?: RemoteOptions | undefined | null)
-  listBundles(): Promise<Array<string>>
-  getInfo(bundleName: string): Promise<RemoteBundleInfo>
-  download(bundleName: string): Promise<[RemoteBundleInfo, Bundle, Buffer]>
+  listBundles(channel?: string | undefined | null): Promise<Array<ListRemoteBundleInfo>>
+  getInfo(bundleName: string, channel?: string | undefined | null): Promise<RemoteBundleInfo>
+  download(bundleName: string, channel?: string | undefined | null): Promise<[RemoteBundleInfo, Bundle, Buffer]>
   downloadVersion(bundleName: string, version: string): Promise<[RemoteBundleInfo, Bundle, Buffer]>
-}
-
-export declare class S3Uploader {
-  constructor(bucket: string, options?: S3UploaderOptions | undefined | null)
-  uploadBundle(bundleName: string, version: string, bundle: Bundle): Promise<void>
 }
 
 export declare class Updater {
   constructor(source: BundleSource, remote: Remote, options?: UpdaterOptions | undefined | null)
-  listRemotes(): Promise<Array<string>>
+  listRemotes(): Promise<Array<ListRemoteBundleInfo>>
   getUpdate(bundleName: string): Promise<BundleUpdateInfo>
   downloadUpdate(bundleName: string, version?: string | undefined | null): Promise<RemoteBundleInfo>
 }
@@ -163,10 +158,6 @@ export type IntegrityAlgorithm =  'sha256'|
 'sha384'|
 'sha512';
 
-export interface IntegrityMakerOptions {
-  algorithm?: IntegrityAlgorithm
-}
-
 export type IntegrityPolicy =  'strict'|
 'optional'|
 'none';
@@ -177,6 +168,11 @@ export interface ListBundleItem {
   version: string
   current: boolean
   metadata: BundleManifestMetadata
+}
+
+export interface ListRemoteBundleInfo {
+  name: string
+  version: string
 }
 
 export declare function readBundle(filepath: string): Promise<Bundle>
@@ -202,38 +198,11 @@ export interface RemoteOptions {
   onDownload?: (data: RemoteOnDownloadData) => void
 }
 
-export interface S3UploaderOptions {
-  accessKeyId?: string
-  secretAccessKey?: string
-  sessionToken?: string
-  region?: string
-  endpoint?: string
-  roleArn?: string
-  roleSessionName?: string
-  externalId?: string
-  integrityMaker?: IntegrityMakerOptions | ((data: Uint8Array) => Promise<string>)
-  signatureSigner?: SignatureSignerOptions | ((data: Uint8Array) => Promise<string>)
-  writeConcurrent?: number
-  writeChunk?: number
-  cacheControl?: string
-  http?: HttpOptions
-}
-
 export type SignatureAlgorithm =  'ecdsaSecp256R1'|
 'ecdsaSecp384R1'|
 'ed25519'|
 'rsaPkcs1V15'|
 'rsaPss';
-
-export interface SignatureSignerOptions {
-  algorithm: SignatureAlgorithm
-  key: SignatureSigningKeyOptions
-}
-
-export interface SignatureSigningKeyOptions {
-  format: SigningKeyFormat
-  data: string | Uint8Array
-}
 
 export interface SignatureVerifierOptions {
   algorithm: SignatureAlgorithm
@@ -254,6 +223,7 @@ export type SigningKeyFormat =  'sec1Der'|
 'raw';
 
 export interface UpdaterOptions {
+  channel?: string
   integrityPolicy?: IntegrityPolicy
   integrityChecker?: (data: Uint8Array, integrity: string) => Promise<boolean>
   signatureVerifier?: SignatureVerifierOptions | ((data: Uint8Array, signature: string) => Promise<boolean>)

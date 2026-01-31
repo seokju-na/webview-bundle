@@ -3,8 +3,8 @@ use napi_derive::napi;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
-use webview_bundle::http;
-use webview_bundle::http::HeaderMap;
+use wvb::http;
+use wvb::http::HeaderMap;
 
 #[napi(string_enum = "lowercase")]
 pub enum HttpMethod {
@@ -112,6 +112,6 @@ pub(crate) fn request(
   }
   let req = req
     .body(vec![])
-    .map_err(|e| crate::Error::Core(webview_bundle::Error::from(e)))?;
+    .map_err(|e| crate::Error::Core(wvb::Error::from(e)))?;
   Ok(req)
 }

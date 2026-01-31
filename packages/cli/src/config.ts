@@ -2,10 +2,15 @@ import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Config } from '@webview-bundle/config';
-import { rolldown } from 'rolldown';
+import type { Config } from '@wvb/config';
 import { DEFAULT_CONFIG_FILES } from './constants.js';
-import { findNearestPackageJsonFilePath, isEsmFile, pathExists } from './fs.js';
+import {
+  findNearestPackageJson,
+  findNearestPackageJsonFilePath,
+  isEsmFile,
+  type PackageJson,
+  pathExists,
+} from './fs.js';
 import { isNodeBuiltin } from './module.js';
 
 interface NodeModuleWithCompile extends NodeJS.Module {
@@ -102,6 +107,7 @@ async function bundleConfigFile(
 }> {
   const dirname = path.dirname(absoluteFilepath);
   const filename = absoluteFilepath;
+  const { rolldown } = await import('rolldown');
   const bundle = await rolldown({
     input: absoluteFilepath,
     platform: 'node',
@@ -155,6 +161,7 @@ export interface ResolvedConfig
       configFile: string | undefined;
       configFileDependencies: string[] | undefined;
       inlineConfig: InlineConfig;
+      packageJson: PackageJson | null;
     }
   > {}
 
@@ -171,12 +178,29 @@ export async function resolveConfig(inlineConfig: InlineConfig): Promise<Resolve
     }
   }
   const root = config.root ?? process.cwd();
+  const packageJson = await findNearestPackageJson(root);
   const resolved: ResolvedConfig = {
     ...config,
     root,
     configFile: configFile || undefined,
     configFileDependencies,
     inlineConfig,
+    packageJson,
   };
   return resolved;
+}
+
+export function defaultOutFile(config: ResolvedConfig): string | undefined {
+  if (config.outFile != null) {
+    return config.outFile;
+  }
+  const pkgName = config.packageJson?.name;
+  if (pkgName != null) {
+    return pkgName.replace(/^@/, '').replace(/\//g, '-');
+  }
+  return undefined;
+}
+
+export function defaultOutDir(config: ResolvedConfig): string {
+  return config.outDir ?? '.wvb';
 }

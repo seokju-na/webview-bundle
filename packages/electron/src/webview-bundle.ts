@@ -1,4 +1,4 @@
-import { type BundleSource, type Remote, Updater, type UpdaterOptions } from '@webview-bundle/node';
+import { type BundleSource, type Remote, Updater, type UpdaterOptions } from '@wvb/node';
 import { registerIpc } from './ipc.js';
 import { type Protocol, registerProtocol } from './protocol.js';
 import { type RemoteOptions, remote } from './remote.js';

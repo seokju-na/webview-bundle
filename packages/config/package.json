@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/config",
+  "name": "@wvb/config",
   "description": "Configuration for webview bundle",
   "version": "0.0.0",
   "type": "module",
@@ -13,10 +13,6 @@
     "./remote": {
       "import": "./dist/remote/index.mjs",
       "require": "./dist/remote/index.cjs"
-    },
-    "./signature": {
-      "import": "./dist/signature/index.mjs",
-      "require": "./dist/signature/index.cjs"
     },
     "./package.json": "./package.json"
   },
@@ -44,10 +40,6 @@
     "prepack": "yarn build",
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@aws-sdk/client-kms": "^3.932.0",
-    "@webview-bundle/node": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "catalog:",

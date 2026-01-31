@@ -27,7 +27,7 @@ const workspaces = result
   .filter(x => x != null);
 
 for (const [name, version] of Object.entries(dependencies)) {
-  if (!name.startsWith('@webview-bundle/')) {
+  if (!name.startsWith('@wvb/')) {
     continue;
   }
   const expectFileName = `wvb-${name.split('/')[1]}.tgz`;

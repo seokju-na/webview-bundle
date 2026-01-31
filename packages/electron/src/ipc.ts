@@ -1,4 +1,4 @@
-import type { Remote, Updater } from '@webview-bundle/node';
+import type { Remote, Updater } from '@wvb/node';
 import { ipcMain } from 'electron';
 import { IpcChannels, type IpcHandlerSpecsByScope } from './ipc-spec.js';
 import type { WebviewBundle } from './webview-bundle.js';
@@ -30,15 +30,15 @@ function registerRemoteIpc(wvb: WebviewBundle): void {
     return wvb.remote;
   }
   const handlers = {
-    [IpcChannels.Remote.ListBundles]: async () => remote().listBundles(),
-    [IpcChannels.Remote.GetInfo]: async (_, bundleName) => remote().getInfo(bundleName),
-    [IpcChannels.Remote.Download]: async (_, bundleName) => {
-      const [info] = await remote().download(bundleName);
-      return info;
+    [IpcChannels.Remote.ListBundles]: async (_, channel) => remote().listBundles(channel),
+    [IpcChannels.Remote.GetInfo]: async (_, bundleName, channel) => remote().getInfo(bundleName, channel),
+    [IpcChannels.Remote.Download]: async (_, bundleName, channel) => {
+      const [info, __, bundle] = await remote().download(bundleName, channel);
+      return [info, bundle];
     },
     [IpcChannels.Remote.DownloadVersion]: async (_, bundleName, version) => {
-      const [info] = await remote().downloadVersion(bundleName, version);
-      return info;
+      const [info, __, bundle] = await remote().downloadVersion(bundleName, version);
+      return [info, bundle];
     },
   } satisfies IpcHandlerSpecsByScope<'remote'>;
 

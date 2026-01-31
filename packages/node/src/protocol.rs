@@ -6,8 +6,8 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
 use std::sync::Arc;
-use webview_bundle::protocol;
-use webview_bundle::protocol::Protocol;
+use wvb::protocol;
+use wvb::protocol::Protocol;
 
 #[napi]
 pub struct BundleProtocol {

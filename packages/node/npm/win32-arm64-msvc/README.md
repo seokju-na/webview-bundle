@@ -1,3 +1,3 @@
-# `@webview-bundle/node-win32-arm64-msvc`
+# `@wvb/node-win32-arm64-msvc`
 
-This is the **aarch64-pc-windows-msvc** binary for `@webview-bundle/node`
+This is the **aarch64-pc-windows-msvc** binary for `@wvb/node`

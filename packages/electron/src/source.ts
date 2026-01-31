@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { BundleSource, type BundleSourceConfig } from '@webview-bundle/node';
+import { BundleSource, type BundleSourceConfig } from '@wvb/node';
 import { app } from 'electron';
 
 export interface SourceOptions extends Omit<BundleSourceConfig, 'builtinDir' | 'remoteDir'> {

@@ -1,3 +1,3 @@
-# `@webview-bundle/node-win32-ia32-msvc`
+# `@wvb/node-win32-ia32-msvc`
 
-This is the **i686-pc-windows-msvc** binary for `@webview-bundle/node`
+This is the **i686-pc-windows-msvc** binary for `@wvb/node`

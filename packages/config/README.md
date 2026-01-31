@@ -1,1 +1,1 @@
-# @webview-bundle/config
+# @wvb/config

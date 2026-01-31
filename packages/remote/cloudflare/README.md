@@ -1,1 +1,1 @@
-# @webview-bundle/remote-cloudflare
+# @wvb/remote-cloudflare

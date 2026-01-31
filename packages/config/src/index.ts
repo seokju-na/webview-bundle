@@ -1,4 +1,3 @@
-export { writeBundleIntoBuffer } from '@webview-bundle/node';
 export type {
   Config,
   ConfigInput,

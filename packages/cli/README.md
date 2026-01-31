@@ -1,1 +1,1 @@
-# @webview-bundle/cli
+# @wvb/cli

@@ -11,8 +11,8 @@
     "publish": "electron-forge publish"
   },
   "dependencies": {
-    "@webview-bundle/electron": "file:./wvb-electron.tgz",
-    "@webview-bundle/node": "file:./wvb-node.tgz"
+    "@wvb/electron": "file:./wvb-electron.tgz",
+    "@wvb/node": "file:./wvb-node.tgz"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",

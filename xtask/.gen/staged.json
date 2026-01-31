@@ -58,7 +58,7 @@
       "type": "minor"
     }
   },
-  "remote-aws": {
+  "remote-aws-provider": {
     "commits": [
       "bb46b1e716c81d9babc5018c04ab148ba453c067",
       "2acd5983ed054d1fadfbb4f67e6c70138b4d3465",
@@ -70,7 +70,7 @@
       "type": "minor"
     }
   },
-  "remote-aws-pulumi": {
+  "remote-aws-provider-pulumi": {
     "commits": [
       "bb46b1e716c81d9babc5018c04ab148ba453c067",
       "2acd5983ed054d1fadfbb4f67e6c70138b4d3465",
@@ -82,7 +82,7 @@
       "type": "minor"
     }
   },
-  "remote-cloudflare": {
+  "remote-cloudflare-provider": {
     "commits": [
       "2acd5983ed054d1fadfbb4f67e6c70138b4d3465",
       "aa7da405351a37fca51e1085129269414b71fd64",
@@ -93,7 +93,7 @@
       "type": "minor"
     }
   },
-  "remote-cloudflare-pulumi": {
+  "remote-cloudflare-provider-pulumi": {
     "commits": [
       "2acd5983ed054d1fadfbb4f67e6c70138b4d3465",
       "aa7da405351a37fca51e1085129269414b71fd64",

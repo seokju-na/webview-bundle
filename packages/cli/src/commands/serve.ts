@@ -1,9 +1,9 @@
-import { readBundle } from '@webview-bundle/node';
+import { readBundle } from '@wvb/node';
 import { Command, Option } from 'clipanion';
-import { cascade, isInExclusiveRange, isInteger, isNumber } from 'typanion';
-import { resolveConfig } from '../config.js';
+import { cascade, isBoolean, isInExclusiveRange, isInteger, isNumber } from 'typanion';
+import { defaultOutFile, resolveConfig } from '../config.js';
 import { c, isColorEnabled } from '../console.js';
-import { pathExists, toAbsolutePath } from '../fs.js';
+import { pathExists, toAbsolutePath, withWVBExtension } from '../fs.js';
 import { BaseCommand } from './base.js';
 
 export class ServeCommand extends BaseCommand {
@@ -26,14 +26,16 @@ export class ServeCommand extends BaseCommand {
     validator: cascade(isNumber(), [isInteger(), isInExclusiveRange(1, 65535)]),
     env: 'PORT',
   });
-  readonly silent = Option.Boolean('--silent', {
+  readonly silent = Option.String('--silent', {
+    tolerateBoolean: true,
+    validator: isBoolean(),
     description: 'Disable log output.',
   });
   readonly configFile = Option.String('--config,-C', {
-    description: 'Config file path',
+    description: 'Path to the config file.',
   });
   readonly cwd = Option.String('--cwd', {
-    description: 'Current working directory.',
+    description: 'Set the working directory for resolving paths. [Default: process.cwd()]',
   });
 
   async run() {
@@ -44,7 +46,7 @@ export class ServeCommand extends BaseCommand {
       root: this.cwd,
       configFile: this.configFile,
     });
-    const file = this.file ?? config.serve?.file;
+    const file = this.file ?? config.serve?.file ?? defaultOutFile(config);
     if (file == null) {
       this.logger.error(
         'Webview Bundle file is not specified. Set "serve.file" in the config file ' +
@@ -52,7 +54,7 @@ export class ServeCommand extends BaseCommand {
       );
       return 1;
     }
-    const filepath = toAbsolutePath(file, config.root);
+    const filepath = toAbsolutePath(withWVBExtension(file), config.root);
     if (!(await pathExists(filepath))) {
       this.logger.error(`File not found: ${filepath}`);
       return 1;

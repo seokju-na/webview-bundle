@@ -1,1 +1,1 @@
-# @webview-bundle/remote-aws
+# @wvb/remote-aws

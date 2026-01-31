@@ -1,13 +1,13 @@
 {
-  "name": "@webview-bundle/remote-cloudflare",
-  "description": "Webview Bundle remote for Cloudflare",
+  "name": "@wvb/remote-cloudflare",
+  "description": "Webview Bundle remote configuration for Cloudflare",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./package.json": "./package.json"
@@ -38,7 +38,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4"
+    "@wvb/config": "workspace:^",
+    "@wvb/remote-aws": "workspace:^",
+    "cloudflare": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

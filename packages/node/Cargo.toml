@@ -3,7 +3,7 @@ authors      = ["Seokju Na <seokju.me@gmail.com>"]
 description  = "TBD"
 edition      = "2021"
 license      = "MIT"
-name         = "webview-bundle-node"
+name         = "wvb-node"
 publish      = false
 repository   = "https://github.com/seokju-na/webview-bundle"
 rust-version = "1.85.0"
@@ -15,12 +15,12 @@ crate-type = ["cdylib"]
 doctest    = false
 
 [dependencies]
-infer          = { workspace = true }
-napi           = { workspace = true, features = ["napi8", "async"] }
-napi-derive    = { workspace = true }
-thiserror      = { workspace = true }
-tokio          = { workspace = true, features = ["fs", "io-util"] }
-webview-bundle = { workspace = true, features = ["full"] }
+infer       = { workspace = true }
+napi        = { workspace = true, features = ["napi8", "async"] }
+napi-derive = { workspace = true }
+thiserror   = { workspace = true }
+tokio       = { workspace = true, features = ["fs", "io-util"] }
+wvb         = { workspace = true, features = ["full"] }
 
 [build-dependencies]
 napi-build = { workspace = true }

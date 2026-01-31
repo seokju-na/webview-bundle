@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/node-darwin-arm64",
+  "name": "@wvb/node-darwin-arm64",
   "version": "0.0.0",
   "cpu": [
     "arm64"

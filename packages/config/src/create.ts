@@ -9,22 +9,6 @@ export type HeadersConfig =
  */
 export interface CreateConfig {
   /**
-   * Path to the source directory.
-   *
-   * All files under this directory will be included in the Webview Bundle.
-   * Use `ignore` to exclude files you don't want to pack.
-   */
-  srcDir?: string;
-  /**
-   * Out-file path to create webview bundle archive.
-   *
-   * If not provided, will create file with directory name.
-   * If extension is not set, will automatically use `.wvb` extension.
-   *
-   * @default out.wvb
-   */
-  outFile?: string;
-  /**
    * Overwrite outfile if file is already exists
    * @default true
    */

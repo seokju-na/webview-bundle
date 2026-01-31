@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { bundleProtocol, localProtocol, wvb } from '@webview-bundle/electron';
+import { bundleProtocol, localProtocol, wvb } from '@wvb/electron';
 import { app, BrowserWindow } from 'electron';
 
 wvb({

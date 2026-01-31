@@ -1,1 +1,1 @@
-# @webview-bundle/electron
+# @wvb/electron

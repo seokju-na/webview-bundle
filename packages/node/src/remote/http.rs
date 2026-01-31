@@ -1,7 +1,7 @@
 use napi_derive::napi;
 use std::collections::HashMap;
-use webview_bundle::http::{HeaderMap, HeaderName, HeaderValue};
-use webview_bundle::remote::HttpConfig;
+use wvb::http::{HeaderMap, HeaderName, HeaderValue};
+use wvb::remote::HttpConfig;
 
 #[derive(Default)]
 #[napi(object)]

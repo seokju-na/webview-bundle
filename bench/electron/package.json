@@ -6,7 +6,7 @@
     "bench": "vitest bench --run"
   },
   "dependencies": {
-    "@webview-bundle/electron": "workspace:^",
+    "@wvb/electron": "workspace:^",
     "electron-serve": "2.1.1"
   },
   "devDependencies": {

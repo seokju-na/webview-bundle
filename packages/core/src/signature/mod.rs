@@ -12,7 +12,6 @@ mod ed25519;
 mod rsa_pkcs1_v1_5;
 #[cfg(feature = "signature-rsa_pss")]
 mod rsa_pss;
-
 #[cfg(feature = "signature-ecdsa_secp256r1")]
 pub use ecdsa_secp256r1::*;
 #[cfg(feature = "signature-ecdsa_secp384r1")]
@@ -23,60 +22,6 @@ pub use ed25519::*;
 pub use rsa_pkcs1_v1_5::*;
 #[cfg(feature = "signature-rsa_pss")]
 pub use rsa_pss::*;
-
-pub type CustomSign = dyn Fn(
-    &Bundle,
-    &[u8],
-  ) -> Pin<
-    Box<
-      dyn std::future::Future<
-          Output = Result<String, Box<dyn std::error::Error + Send + Sync + 'static>>,
-        > + Send
-        + 'static,
-    >,
-  > + Send
-  + Sync;
-
-#[non_exhaustive]
-pub enum SignatureSigner {
-  #[cfg(feature = "signature-ecdsa_secp256r1")]
-  EcdsaSecp256r1(Arc<EcdsaSecp256r1Signer>),
-  #[cfg(feature = "signature-ecdsa_secp384r1")]
-  EcdsaSecp384r1(Arc<EcdsaSecp384r1Signer>),
-  #[cfg(feature = "signature-edd25519")]
-  Ed25519(Arc<Ed25519Signer>),
-  #[cfg(feature = "signature-rsa_pkcs1_v1_5")]
-  RsaPkcs1V15(Arc<RsaPkcs1V15Signer>),
-  #[cfg(feature = "signature-rsa_pss")]
-  RsaPss(Arc<RsaPssSigner>),
-  Custom(Arc<CustomSign>),
-}
-
-impl SignatureSigner {
-  pub async fn sign(&self, bundle: &Bundle, message: &[u8]) -> crate::Result<String> {
-    match self {
-      Self::Custom(sign) => sign(bundle, message).await.map_err(crate::Error::generic),
-      #[cfg(feature = "signature-ecdsa_secp256r1")]
-      Self::EcdsaSecp256r1(signer) => signer.sign(bundle, message).await,
-      #[cfg(feature = "signature-ecdsa_secp384r1")]
-      Self::EcdsaSecp384r1(signer) => signer.sign(bundle, message).await,
-      #[cfg(feature = "signature-edd25519")]
-      Self::Ed25519(signer) => signer.sign(bundle, message).await,
-      #[cfg(feature = "signature-rsa_pkcs1_v1_5")]
-      Self::RsaPkcs1V15(signer) => signer.sign(bundle, message).await,
-      #[cfg(feature = "signature-rsa_pss")]
-      Self::RsaPss(signer) => signer.sign(bundle, message).await,
-    }
-  }
-}
-
-pub trait Signer: Send + Sync + 'static {
-  fn sign(
-    &self,
-    bundle: &Bundle,
-    message: &[u8],
-  ) -> impl std::future::Future<Output = crate::Result<String>>;
-}
 
 pub type CustomVerify = dyn Fn(
     &Bundle,

@@ -3,7 +3,7 @@ use crate::bundle::BundleDescriptor;
 use crate::bundle::BundleDescriptorInner;
 use napi_derive::napi;
 use std::sync::Arc;
-use webview_bundle::source;
+use wvb::source;
 
 #[napi(string_enum = "lowercase")]
 pub enum BundleSourceKind {

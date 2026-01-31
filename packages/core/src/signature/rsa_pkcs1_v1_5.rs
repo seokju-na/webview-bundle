@@ -1,65 +1,17 @@
-use crate::signature::{Signer as SignatureSigner, Verifier as SignatureVerifier};
+use crate::signature::Verifier as SignatureVerifier;
 use crate::Bundle;
-use base64ct::{Base64, Encoding};
-use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1::DecodeRsaPublicKey;
-use rsa::pkcs1v15::{Signature, SigningKey, VerifyingKey};
-use rsa::pkcs8::{DecodePrivateKey, DecodePublicKey};
+use rsa::pkcs1v15::{Signature, VerifyingKey};
+use rsa::pkcs8::DecodePublicKey;
 use rsa::sha2::Sha256;
-use rsa::signature::{Keypair, SignatureEncoding, Signer, Verifier};
-use rsa::{RsaPrivateKey, RsaPublicKey};
-
-pub struct RsaPkcs1V15Signer {
-  key: SigningKey<Sha256>,
-}
-
-impl RsaPkcs1V15Signer {
-  pub fn from_pkcs1_der(bytes: &[u8]) -> crate::Result<Self> {
-    let key = RsaPrivateKey::from_pkcs1_der(bytes).map_err(crate::Error::invalid_signing_key)?;
-    let key = SigningKey::<Sha256>::new(key);
-    Ok(Self { key })
-  }
-
-  pub fn from_pkcs1_pem(pem: &str) -> crate::Result<Self> {
-    let key = RsaPrivateKey::from_pkcs1_pem(pem).map_err(crate::Error::invalid_signing_key)?;
-    let key = SigningKey::<Sha256>::new(key);
-    Ok(Self { key })
-  }
-
-  pub fn from_pkcs8_der(bytes: &[u8]) -> crate::Result<Self> {
-    let key = RsaPrivateKey::from_pkcs8_der(bytes).map_err(crate::Error::invalid_signing_key)?;
-    let key = SigningKey::<Sha256>::new(key);
-    Ok(Self { key })
-  }
-
-  pub fn from_pkcs8_pem(pem: &str) -> crate::Result<Self> {
-    let key = RsaPrivateKey::from_pkcs8_pem(pem).map_err(crate::Error::invalid_signing_key)?;
-    let key = SigningKey::<Sha256>::new(key);
-    Ok(Self { key })
-  }
-}
-
-impl SignatureSigner for RsaPkcs1V15Signer {
-  async fn sign(&self, _bundle: &Bundle, data: &[u8]) -> crate::Result<String> {
-    let signature = self
-      .key
-      .try_sign(data)
-      .map_err(crate::Error::signature_sign_failed)?;
-    let encoded = Base64::encode_string(&signature.to_vec());
-    Ok(encoded)
-  }
-}
+use rsa::signature::Verifier;
+use rsa::RsaPublicKey;
 
 pub struct RsaPkcs1V15Verifier {
   key: VerifyingKey<Sha256>,
 }
 
 impl RsaPkcs1V15Verifier {
-  pub fn from_signer(signer: &RsaPkcs1V15Signer) -> Self {
-    let key = signer.key.verifying_key();
-    Self { key }
-  }
-
   pub fn from_public_key_der(bytes: &[u8]) -> crate::Result<Self> {
     let public_key =
       RsaPublicKey::from_public_key_der(bytes).map_err(crate::Error::invalid_verifying_key)?;

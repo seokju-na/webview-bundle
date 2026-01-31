@@ -1,5 +1,5 @@
 {
-  "name": "@webview-bundle/node",
+  "name": "@wvb/node",
   "description": "Webview bundle API for Node.js",
   "version": "0.0.0",
   "type": "module",
