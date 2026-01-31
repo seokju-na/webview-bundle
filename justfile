@@ -80,6 +80,11 @@ build-js:
 benchmark: build
     yarn workspaces foreach -A --include='@benchmark/*' run bench
 
+# Start website dev server
+website:
+    yarn workspace wvb-website run typegen
+    yarn workspace wvb-website run dev
+
 # Run xtask
 xtask *ARGS:
     ./xtask/cli.ts {{ ARGS }}
