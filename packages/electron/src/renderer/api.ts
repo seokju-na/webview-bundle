@@ -21,10 +21,12 @@ export const source: WebviewBundleSourceApi = {
   filepath: sourceFilepath,
 };
 
-const remoteListBundles: IpcInvoke<'webview-bundle:updater:list-remotes'> = async () => api().remote.listBundles();
-const remoteGetInfo: IpcInvoke<'webview-bundle:remote:get-info'> = async bundleName => api().remote.getInfo(bundleName);
-const remoteDownload: IpcInvoke<'webview-bundle:remote:download'> = async bundleName =>
-  api().remote.download(bundleName);
+const remoteListBundles: IpcInvoke<'webview-bundle:remote:list-bundles'> = async channel =>
+  api().remote.listBundles(channel);
+const remoteGetInfo: IpcInvoke<'webview-bundle:remote:get-info'> = async (bundleName, channel) =>
+  api().remote.getInfo(bundleName, channel);
+const remoteDownload: IpcInvoke<'webview-bundle:remote:download'> = async (bundleName, channel) =>
+  api().remote.download(bundleName, channel);
 const remoteDownloadVersion: IpcInvoke<'webview-bundle:remote:download-version'> = async (bundleName, version) =>
   api().remote.downloadVersion(bundleName, version);
 

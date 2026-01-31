@@ -17,18 +17,6 @@ pub enum SignatureAlgorithm {
 
 #[napi(string_enum = "camelCase")]
 #[derive(PartialEq, Eq)]
-pub enum SigningKeyFormat {
-  Sec1Der,
-  Sec1Pem,
-  Pkcs1Der,
-  Pkcs1Pem,
-  Pkcs8Der,
-  Pkcs8Pem,
-  Raw,
-}
-
-#[napi(string_enum = "camelCase")]
-#[derive(PartialEq, Eq)]
 pub enum VerifyingKeyFormat {
   SpkiDer,
   SpkiPem,

@@ -1,5 +1,12 @@
+import type { Buffer } from 'node:buffer';
 import type { IpcMainInvokeEvent } from 'electron';
-import type { BundleSourceVersion, BundleUpdateInfo, ListBundleItem, RemoteBundleInfo } from './api.js';
+import type {
+  BundleSourceVersion,
+  BundleUpdateInfo,
+  ListBundleItem,
+  ListRemoteBundleInfo,
+  RemoteBundleInfo,
+} from './api.js';
 
 export const IpcChannels = {
   Source: {
@@ -38,12 +45,18 @@ export type IpcHandlerSpecs = {
   'webview-bundle:source:update-version': IpcHandler<void, [bundleName: string, version: string]>;
   'webview-bundle:source:filepath': IpcHandler<string, [bundleName: string]>;
   // remote
-  'webview-bundle:remote:list-bundles': IpcHandler<string[]>;
-  'webview-bundle:remote:get-info': IpcHandler<RemoteBundleInfo, [bundleName: string]>;
-  'webview-bundle:remote:download': IpcHandler<RemoteBundleInfo, [bundleName: string]>;
-  'webview-bundle:remote:download-version': IpcHandler<RemoteBundleInfo, [bundleName: string, version: string]>;
+  'webview-bundle:remote:list-bundles': IpcHandler<ListRemoteBundleInfo[], [channel?: string | undefined]>;
+  'webview-bundle:remote:get-info': IpcHandler<RemoteBundleInfo, [bundleName: string, channel?: string | undefined]>;
+  'webview-bundle:remote:download': IpcHandler<
+    [info: RemoteBundleInfo, bundle: Buffer],
+    [bundleName: string, channel?: string | undefined]
+  >;
+  'webview-bundle:remote:download-version': IpcHandler<
+    [info: RemoteBundleInfo, bundle: Buffer],
+    [bundleName: string, version: string]
+  >;
   // updater
-  'webview-bundle:updater:list-remotes': IpcHandler<string[]>;
+  'webview-bundle:updater:list-remotes': IpcHandler<ListRemoteBundleInfo[]>;
   'webview-bundle:updater:get-update': IpcHandler<BundleUpdateInfo, [bundleName: string]>;
   'webview-bundle:updater:download-update': IpcHandler<
     RemoteBundleInfo,
