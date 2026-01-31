@@ -1,6 +1,6 @@
 #[cfg(feature = "integrity")]
 use crate::integrity::{IntegrityChecker, IntegrityPolicy};
-use crate::remote::{Remote, RemoteBundleInfo};
+use crate::remote::{ListRemoteBundleInfo, Remote, RemoteBundleInfo};
 #[cfg(feature = "signature")]
 use crate::signature::SignatureVerifier;
 use crate::source::{BundleManifestMetadata, BundleSource};
@@ -47,6 +47,7 @@ impl From<&RemoteBundleInfo> for BundleManifestMetadata {
 #[derive(Default)]
 #[non_exhaustive]
 pub struct UpdaterConfig {
+  pub(crate) channel: Option<String>,
   #[cfg(feature = "integrity")]
   pub(crate) integrity_checker: IntegrityChecker,
   #[cfg(feature = "integrity")]
@@ -58,6 +59,11 @@ pub struct UpdaterConfig {
 impl UpdaterConfig {
   pub fn new() -> Self {
     Self::default()
+  }
+
+  pub fn channel(mut self, channel: impl Into<String>) -> Self {
+    self.channel = Some(channel.into());
+    self
   }
 
   #[cfg(feature = "integrity")]
@@ -98,15 +104,18 @@ impl Updater {
     }
   }
 
-  pub async fn list_remotes(&self) -> crate::Result<Vec<String>> {
-    self.remote.list_bundles().await
+  pub async fn list_remotes(&self) -> crate::Result<Vec<ListRemoteBundleInfo>> {
+    self.remote.list_bundles(self.config.channel.as_ref()).await
   }
 
   pub async fn get_update(
     &self,
     bundle_name: impl Into<String>,
   ) -> crate::Result<BundleUpdateInfo> {
-    let remote_info = self.remote.get_current_info(&bundle_name.into()).await?;
+    let remote_info = self
+      .remote
+      .get_current_info(&bundle_name.into(), self.config.channel.as_ref())
+      .await?;
     let info = self.to_update_info(remote_info).await?;
     Ok(info)
   }
@@ -123,7 +132,12 @@ impl Updater {
           .download_version(&bundle_name.into(), &ver.into())
           .await
       }
-      None => self.remote.download(&bundle_name.into()).await,
+      None => {
+        self
+          .remote
+          .download(&bundle_name.into(), self.config.channel.as_ref())
+          .await
+      }
     }?;
     #[cfg(feature = "integrity")]
     {

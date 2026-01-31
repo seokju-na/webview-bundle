@@ -517,7 +517,6 @@ module.exports.Header = nativeBinding.Header
 module.exports.Index = nativeBinding.Index
 module.exports.LocalProtocol = nativeBinding.LocalProtocol
 module.exports.Remote = nativeBinding.Remote
-module.exports.S3Uploader = nativeBinding.S3Uploader
 module.exports.Updater = nativeBinding.Updater
 module.exports.BundleSourceKind = nativeBinding.BundleSourceKind
 module.exports.HttpMethod = nativeBinding.HttpMethod

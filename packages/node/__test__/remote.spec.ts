@@ -26,7 +26,14 @@ beforeAll(async () => {
   }
 
   // GET /bundles
-  app.get('/bundles', c => c.json(['bundle1']));
+  app.get('/bundles', c =>
+    c.json([
+      {
+        name: 'bundle1',
+        version: '1.0.0',
+      },
+    ])
+  );
   // GET /bundles/{name}
   app.get('/bundles/:name', async c => {
     const bundleName = c.req.param('name');
@@ -64,15 +71,14 @@ afterAll(() => {
 describe('remote', () => {
   it('list bundles', async () => {
     const remote = new Remote(`http://localhost:${port}`);
-    await expect(remote.listBundles()).resolves.toEqual(['bundle1']);
+    const resp = await remote.listBundles();
+    expect(resp).toEqual([{ name: 'bundle1', version: '1.0.0' }]);
   });
 
   it('get bundle info', async () => {
     const remote = new Remote(`http://localhost:${port}`);
-    await expect(remote.getInfo('bundle1')).resolves.toEqual({
-      name: 'bundle1',
-      version: '1.0.0',
-    });
+    const resp = await remote.getInfo('bundle1');
+    expect(resp).toEqual({ name: 'bundle1', version: '1.0.0' });
   });
 
   it('download bundle', async () => {

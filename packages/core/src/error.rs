@@ -55,6 +55,9 @@ pub enum Error {
   #[error("reqwest error: {0}")]
   Reqwest(#[from] reqwest::Error),
   #[cfg(feature = "remote")]
+  #[error("invalid remote url: {0}")]
+  InvalidRemoteUrl(#[from] http::uri::InvalidUri),
+  #[cfg(feature = "remote")]
   #[error("invalid remote bundle: {0}")]
   InvalidRemoteBundle(String),
   #[cfg(feature = "remote")]
@@ -72,9 +75,6 @@ pub enum Error {
   #[cfg(feature = "remote")]
   #[error("invalid remote config: {0}")]
   InvalidRemoteConfig(String),
-  #[cfg(feature = "_opendal")]
-  #[error("opendal error: {0}")]
-  Opendal(#[from] opendal::Error),
   #[cfg(feature = "integrity")]
   #[error("invalid integrity: {0}")]
   InvalidIntegrity(String),
@@ -155,26 +155,13 @@ impl Error {
   }
 
   #[cfg(feature = "signature")]
-  pub(crate) fn invalid_signing_key(
-    error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
-  ) -> Self {
-    Self::InvalidSigningKey(error.into())
-  }
-
-  #[cfg(feature = "signature")]
-  pub(crate) fn signature_sign_failed(
-    error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
-  ) -> Self {
-    Self::SignatureSignFailed(error.into())
-  }
-
-  #[cfg(feature = "signature")]
   pub(crate) fn invalid_verifying_key(
     error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
   ) -> Self {
     Self::InvalidVerifyingKey(error.into())
   }
 
+  #[allow(dead_code)]
   pub(crate) fn generic(
     error: impl Into<Box<dyn std::error::Error + Send + Sync + 'static>>,
   ) -> Self {
