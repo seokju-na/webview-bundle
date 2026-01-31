@@ -18,7 +18,7 @@
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "web-website"
+			"service": "wvb-website"
 		}
 	],
   "r2_buckets": [
@@ -31,5 +31,15 @@
 		// Enable image optimization
 		// see https://opennext.js.org/cloudflare/howtos/image
 		"binding": "IMAGES"
-	}
+	},
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 0.5
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.05
+    }
+  }
 }
