@@ -29,7 +29,7 @@ class AwsS3RemoteUploaderImpl implements BaseRemoteUploader {
       contentDisposition,
       metadata: customMetadata = {},
     } = this.config;
-    const { bundleName, version, integrity, signature } = params;
+    const { bundle, bundleName, version, integrity, signature } = params;
     const s3 = await getS3Client(this.config);
     const metadata: Record<string, string | null | undefined> = {
       ...customMetadata,
@@ -48,6 +48,7 @@ class AwsS3RemoteUploaderImpl implements BaseRemoteUploader {
       params: {
         Bucket: bucket,
         Key: buildKey(this.config, params),
+        Body: bundle,
         ContentType: contentType,
         CacheControl: cacheControl,
         ContentDisposition: contentDisposition,

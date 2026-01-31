@@ -32,10 +32,10 @@ export class ServeCommand extends BaseCommand {
     description: 'Disable log output.',
   });
   readonly configFile = Option.String('--config,-C', {
-    description: 'Config file path',
+    description: 'Path to the config file.',
   });
   readonly cwd = Option.String('--cwd', {
-    description: 'Current working directory.',
+    description: 'Set the working directory for resolving paths. [Default: process.cwd()]',
   });
 
   async run() {

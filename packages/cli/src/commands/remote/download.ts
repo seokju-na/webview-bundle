@@ -16,18 +16,40 @@ export class RemoteDownloadCommand extends BaseCommand {
   static paths = [['remote', 'download']];
   static usage = Command.Usage({
     description: 'Download Webview Bundle from remote server.',
-    examples: [['A basic usage', '$0 remote download my-bundle --endpoint https://my-remote-server.com']],
+    details: `
+      This command downloads a Webview Bundle from a remote server
+      and optionally saves it to disk.
+
+      **Version Resolution:**
+        - If \`VERSION\` argument is provided, that specific version is downloaded
+        - Otherwise, downloads the currently deployed (latest active) version
+
+      **Output Path:**
+        - If \`--out\` is provided, the bundle is saved to that path
+        - Otherwise, saves as \`<bundle-name>.wvb\` in the current directory
+        - Use \`--skip-write\` to only fetch and display info without saving
+
+      **Progress:**
+        A progress bar is displayed during download for large bundles.
+    `,
+    examples: [
+      ['Download latest deployed version', '$0 remote download my-app --endpoint https://cdn.example.com'],
+      ['Download a specific version', '$0 remote download my-app 1.2.0 --endpoint https://cdn.example.com'],
+      ['Download and save to a custom path', '$0 remote download my-app --out ./bundles/my-app.wvb'],
+      ['Overwrite existing file', '$0 remote download my-app --out ./my-bundle.wvb --overwrite'],
+      ['Fetch info only without saving', '$0 remote download my-app --skip-write'],
+    ],
   });
 
   readonly bundleName = Option.String({
     name: 'BUNDLE',
     required: false,
   });
+  readonly version = Option.String({
+    name: 'VERSION',
+  });
   readonly out = Option.String('--out,-O', {
     description: 'Output file path.',
-  });
-  readonly version = Option.String('--version,-V', {
-    description: 'Specify a version of Webview Bundle to download.',
   });
   readonly endpoint = Option.String('--endpoint,-E', {
     description: 'Endpoint of remote server.',
@@ -43,10 +65,10 @@ export class RemoteDownloadCommand extends BaseCommand {
     description: 'Overwrite outfile if file is already exists. [Default: false]',
   });
   readonly configFile = Option.String('--config,-C', {
-    description: 'Config file path',
+    description: 'Path to the config file.',
   });
   readonly cwd = Option.String('--cwd', {
-    description: 'Current working directory.',
+    description: 'Set the working directory for resolving paths. [Default: process.cwd()]',
   });
 
   async run() {
@@ -73,7 +95,6 @@ export class RemoteDownloadCommand extends BaseCommand {
       Presets.shades_classic
     );
     const remote = new Remote(endpoint, {
-      http: config.remote?.http,
       onDownload: data => {
         if (!progress.isActive) {
           progress.start(data.totalBytes, data.downloadedBytes);

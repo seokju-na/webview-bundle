@@ -1,5 +1,3 @@
-import type { RemoteConfig } from './remote.js';
-
 export interface RemoteDeployParams {
   bundleName: string;
   version: string;
@@ -7,5 +5,5 @@ export interface RemoteDeployParams {
 }
 
 export interface BaseRemoteDeployer {
-  deploy(params: RemoteDeployParams, config: RemoteConfig): Promise<void>;
+  deploy(params: RemoteDeployParams): Promise<void>;
 }

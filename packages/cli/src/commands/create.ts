@@ -53,10 +53,10 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
     arity: 3,
   });
   readonly configFile = Option.String('--config,-C', {
-    description: 'Config file path',
+    description: 'Path to the config file.',
   });
   readonly cwd = Option.String('--cwd', {
-    description: 'Current working directory.',
+    description: 'Set the working directory for resolving paths. [Default: process.cwd()]',
   });
 
   async run() {

@@ -10,7 +10,31 @@ export class RemoteCurrentCommand extends BaseCommand {
   static paths = [['remote', 'current']];
   static usage = Command.Usage({
     description: 'Show current Webview Bundle information from remote server.',
-    examples: [['A basic usage', '$0 remote current --name my-bundle --endpoint https://my-remote-server.com']],
+    details: `
+      This command fetches and displays metadata about the currently deployed
+      Webview Bundle version from a remote server.
+
+      **Use Cases:**
+        - Verify which version is currently active in production
+        - Check bundle integrity and signature before client rollout
+        - Debug deployment issues by inspecting remote state
+        - Validate that a deployment completed successfully
+
+      **Displayed Information:**
+        - \`Version\`: The currently deployed semantic version
+        - \`ETag\`: Server-side identifier for cache validation
+        - \`Integrity\`: Content hash for verification (e.g., sha384-...)
+        - \`Signature\`: Cryptographic signature for authenticity
+        - \`Last-Modified\`: Timestamp of the last deployment
+
+      This command only fetches metadata and does not download the bundle content.
+      Use \`remote download\` if you need the actual bundle file.
+    `,
+    examples: [
+      ['Check current version with explicit endpoint', '$0 remote current my-app --endpoint https://cdn.example.com'],
+      ['Use bundle name and endpoint from config', '$0 remote current'],
+      ['Verify deployment in CI pipeline', '$0 remote current my-app -E https://cdn.example.com'],
+    ],
   });
 
   readonly bundleName = Option.String({
@@ -21,10 +45,10 @@ export class RemoteCurrentCommand extends BaseCommand {
     description: 'Endpoint of remote server.',
   });
   readonly configFile = Option.String('--config,-C', {
-    description: 'Config file path',
+    description: 'Path to the config file.',
   });
   readonly cwd = Option.String('--cwd', {
-    description: 'Current working directory.',
+    description: 'Set the working directory for resolving paths. [Default: process.cwd()]',
   });
 
   async run() {
@@ -42,9 +66,7 @@ export class RemoteCurrentCommand extends BaseCommand {
       this.logger.error('"bundleName" is required for remote operations.');
       return 1;
     }
-    const remote = new Remote(endpoint, {
-      http: config.remote?.http,
-    });
+    const remote = new Remote(endpoint);
     const info = await remote.getInfo(bundleName);
     this.logger.info(`Remote Webview Bundle info for ${c.info(bundleName)}`);
     this.logger.info(`  Version: ${c.bold(c.info(info.version))}`);

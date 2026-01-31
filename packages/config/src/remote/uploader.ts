@@ -1,4 +1,7 @@
+import type { Buffer } from 'node:buffer';
+
 export interface RemoteUploadParams {
+  bundle: Buffer;
   bundleName: string;
   version: string;
   force: boolean;

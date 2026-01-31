@@ -3,7 +3,6 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Config } from '@wvb/config';
-import { rolldown } from 'rolldown';
 import { DEFAULT_CONFIG_FILES } from './constants.js';
 import {
   findNearestPackageJson,
@@ -108,6 +107,7 @@ async function bundleConfigFile(
 }> {
   const dirname = path.dirname(absoluteFilepath);
   const filename = absoluteFilepath;
+  const { rolldown } = await import('rolldown');
   const bundle = await rolldown({
     input: absoluteFilepath,
     platform: 'node',

@@ -15,5 +15,5 @@ export interface RemoteConfig {
   uploader?: BaseRemoteUploader;
   deployer?: BaseRemoteDeployer;
   integrity?: boolean | IntegrityMakeConfig;
-  signature?: boolean | SignatureSignConfig;
+  signature?: SignatureSignConfig;
 }

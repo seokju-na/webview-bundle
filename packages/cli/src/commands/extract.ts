@@ -40,10 +40,10 @@ If not provided, will use webview bundle file name as directory.`,
     description: 'Clean up extracted files if out directory already exists. [Default: false]',
   });
   readonly configFile = Option.String('--config,-C', {
-    description: 'Config file path',
+    description: 'Path to the config file.',
   });
   readonly cwd = Option.String('--cwd', {
-    description: 'Current working directory.',
+    description: 'Set the working directory for resolving paths. [Default: process.cwd()]',
   });
 
   async run() {
