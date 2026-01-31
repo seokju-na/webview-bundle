@@ -7,9 +7,8 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "deploy:preview": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env=preview",
+    "deploy:prod": "opennextjs-cloudflare build && opennextjs-cloudflare upload --env=production",
     "typegen": "yarn typegen:next && yarn typegen:cloudflare",
     "typegen:next": "fumadocs-mdx && next typegen",
     "typegen:cloudflare": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
