@@ -66,7 +66,7 @@ build: build-rs build-napi build-js
 
 # Build NAPI modules
 build-napi:
-    yarn workspaces foreach -Ap run build-napi
+    yarn workspaces foreach -Apt --include='@wvb/*' run build-napi
 
 # Build Rust workspaces
 build-rs:
@@ -74,11 +74,11 @@ build-rs:
 
 # Build JS packages
 build-js:
-    yarn workspaces foreach -Apt run build
+    yarn workspaces foreach -Apt --include='@wvb/*' run build
 
 # Run benchmarks
 benchmark: build
-    yarn workspaces foreach -A --include='@benchmark/*' run bench
+    yarn workspaces foreach -Apt --include='@benchmark/*' run bench
 
 # Start website dev server
 website:
