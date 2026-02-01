@@ -2,8 +2,31 @@
 	"$schema": "../node_modules/wrangler/config-schema.json",
 	"main": ".open-next/worker.js",
 	"name": "wvb-website",
-  "workers_dev": true,
+  "workers_dev": false,
+  "preview_urls": false,
   "route": "wvb.dev/*",
+  "env": {
+    "dev": {
+      "workers_dev": true,
+      "preview_urls": true,
+      "route": "dev.wvb.dev/*",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "wvb-website"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "bucket_name": "wvb-webiste-next-inc-cache",
+          "binding": "NEXT_INC_CACHE_R2_BUCKET"
+        }
+      ],
+      "images": {
+        "binding": "IMAGES"
+      }
+    }
+  },
 	"compatibility_date": "2026-01-31",
 	"compatibility_flags": [
 		// Enable Node.js API
@@ -25,6 +48,9 @@
       "binding": "NEXT_INC_CACHE_R2_BUCKET"
     }
   ],
+  "images": {
+    "binding": "IMAGES"
+  },
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
