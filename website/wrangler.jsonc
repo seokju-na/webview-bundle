@@ -4,15 +4,16 @@
 	"name": "wvb-website",
   "workers_dev": false,
   "preview_urls": false,
-  "route": "wvb.dev/*",
+  "route": "dev.wvb.dev/*",
   "env": {
-    "preview": {
+    "production": {
       "workers_dev": false,
-      "preview_urls": true,
+      "preview_urls": false,
+      "route": "wvb.dev/*",
       "services": [
         {
           "binding": "WORKER_SELF_REFERENCE",
-          "service": "wvb-website-preview"
+          "service": "wvb-website-production"
         }
       ],
       "r2_buckets": [
