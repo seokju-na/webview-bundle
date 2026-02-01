@@ -13,7 +13,7 @@
       "services": [
         {
           "binding": "WORKER_SELF_REFERENCE",
-          "service": "wvb-website-production"
+          "service": "wvb-website"
         }
       ],
       "r2_buckets": [
