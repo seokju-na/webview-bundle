@@ -6,10 +6,44 @@
   "preview_urls": false,
   "env": {
     "production": {
-      "route": "wvb.dev"
+      "route": "wvb.dev",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "wvb-website"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "bucket_name": "wvb-webiste-next-inc-cache",
+          "binding": "NEXT_INC_CACHE_R2_BUCKET"
+        }
+      ],
+      "images": {
+        // Enable image optimization
+        // see https://opennext.js.org/cloudflare/howtos/image
+        "binding": "IMAGES"
+      }
     },
     "preview": {
-      "preview_urls": true
+      "preview_urls": true,
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "wvb-website"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "bucket_name": "wvb-webiste-next-inc-cache",
+          "binding": "NEXT_INC_CACHE_R2_BUCKET"
+        }
+      ],
+      "images": {
+        // Enable image optimization
+        // see https://opennext.js.org/cloudflare/howtos/image
+        "binding": "IMAGES"
+      }
     }
   },
 	"compatibility_date": "2026-01-31",
@@ -24,23 +58,6 @@
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
-	},
-	"services": [
-		{
-			"binding": "WORKER_SELF_REFERENCE",
-			"service": "wvb-website"
-		}
-	],
-  "r2_buckets": [
-    {
-      "bucket_name": "wvb-webiste-next-inc-cache",
-      "binding": "NEXT_INC_CACHE_R2_BUCKET"
-    }
-  ],
-	"images": {
-		// Enable image optimization
-		// see https://opennext.js.org/cloudflare/howtos/image
-		"binding": "IMAGES"
 	},
   "observability": {
     "logs": {
