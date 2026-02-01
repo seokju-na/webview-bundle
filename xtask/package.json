@@ -17,7 +17,7 @@
     "@taplo/lib": "^0.5.0",
     "ci-info": "^4.2.0",
     "clipanion": "^4.0.0-rc.4",
-    "diff": "^7.0.0",
+    "diff": "^8.0.3",
     "es-git": "^0.3.0",
     "es-toolkit": "^1.37.1",
     "execa": "^9",
