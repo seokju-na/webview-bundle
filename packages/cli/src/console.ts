@@ -1,3 +1,4 @@
+import util from 'node:util';
 import CI from 'ci-info';
 import { Option } from 'clipanion';
 import kleur from 'kleur';
@@ -40,3 +41,7 @@ export const colors = {
   underline: (msg: string | number) => kleur.underline(msg),
 };
 export const c = colors;
+
+export function stripColor(message: string): string {
+  return util.stripVTControlCharacters(message);
+}

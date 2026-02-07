@@ -2,6 +2,7 @@ use crate::bundle::Bundle;
 use crate::bundle::BundleDescriptor;
 use crate::bundle::BundleDescriptorInner;
 use napi_derive::napi;
+use std::collections::HashMap;
 use std::sync::Arc;
 use wvb::source;
 
@@ -64,6 +65,24 @@ impl From<BundleManifestMetadata> for source::BundleManifestMetadata {
       last_modified: value.last_modified,
     }
   }
+}
+
+#[napi]
+pub enum BundleManifestVersion {
+  V1 = 1,
+}
+
+#[napi(object)]
+pub struct BundleManifestEntry {
+  pub versions: HashMap<String, BundleManifestMetadata>,
+  pub current_version: String,
+}
+
+#[napi(object)]
+pub struct BundleManifestData {
+  #[napi(ts_type = "1")]
+  pub manifest_version: BundleManifestVersion,
+  pub entries: HashMap<String, BundleManifestEntry>,
 }
 
 #[napi(object)]

@@ -48,7 +48,7 @@ export class RemoteDeployCommand extends BaseCommand {
     name: 'VERSION',
   });
   readonly channel = Option.String('--channel,-C', {
-    description: '',
+    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',

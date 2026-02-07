@@ -4,7 +4,7 @@ export interface RemoteUploadParams {
   bundle: Buffer;
   bundleName: string;
   version: string;
-  force: boolean;
+  force?: boolean;
   integrity?: string;
   signature?: string;
 }

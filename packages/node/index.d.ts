@@ -83,11 +83,25 @@ export interface BuildOptions {
   dataChecksumSeed?: number
 }
 
+export interface BundleManifestData {
+  manifestVersion: 1
+  entries: Record<string, BundleManifestEntry>
+}
+
+export interface BundleManifestEntry {
+  versions: Record<string, BundleManifestMetadata>
+  currentVersion: string
+}
+
 export interface BundleManifestMetadata {
   etag?: string
   integrity?: string
   signature?: string
   lastModified?: string
+}
+
+export declare enum BundleManifestVersion {
+  V1 = 1
 }
 
 export interface BundleSourceConfig {
@@ -213,14 +227,6 @@ export interface SignatureVerifyingKeyOptions {
   format: VerifyingKeyFormat
   data: string | Uint8Array
 }
-
-export type SigningKeyFormat =  'sec1Der'|
-'sec1Pem'|
-'pkcs1Der'|
-'pkcs1Pem'|
-'pkcs8Der'|
-'pkcs8Pem'|
-'raw';
 
 export interface UpdaterOptions {
   channel?: string

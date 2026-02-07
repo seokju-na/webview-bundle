@@ -44,6 +44,9 @@ export class RemoteCurrentCommand extends BaseCommand {
   readonly endpoint = Option.String('--endpoint,-E', {
     description: 'Endpoint of remote server.',
   });
+  readonly channel = Option.String('--channel,-C', {
+    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+  });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',
   });
@@ -67,7 +70,7 @@ export class RemoteCurrentCommand extends BaseCommand {
       return 1;
     }
     const remote = new Remote(endpoint);
-    const info = await remote.getInfo(bundleName);
+    const info = await remote.getInfo(bundleName, this.channel);
     this.logger.info(`Remote Webview Bundle info for ${c.info(bundleName)}`);
     this.logger.info(`  Version: ${c.bold(c.info(info.version))}`);
     this.logger.info(`  ETag: ${c.bold(c.info(info.etag ?? '(none)'))}`);

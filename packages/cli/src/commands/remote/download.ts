@@ -54,6 +54,9 @@ export class RemoteDownloadCommand extends BaseCommand {
   readonly endpoint = Option.String('--endpoint,-E', {
     description: 'Endpoint of remote server.',
   });
+  readonly channel = Option.String('--channel,-C', {
+    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+  });
   readonly skipWrite = Option.String('--skip-write', {
     tolerateBoolean: true,
     validator: isBoolean(),
@@ -104,7 +107,9 @@ export class RemoteDownloadCommand extends BaseCommand {
       },
     });
     const [info, bundle, buf] =
-      this.version != null ? await remote.downloadVersion(bundleName, this.version) : await remote.download(bundleName);
+      this.version != null
+        ? await remote.downloadVersion(bundleName, this.version)
+        : await remote.download(bundleName, this.channel);
     this.logger.info(
       `Remote Webview Bundle download: ${c.info(bundleName)} ${c.bytes(formatByteLength(buf.byteLength))}`
     );
