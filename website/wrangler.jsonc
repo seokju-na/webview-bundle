@@ -4,12 +4,12 @@
 	"name": "wvb-website",
   "workers_dev": false,
   "preview_urls": false,
-  "route": "wvb.dev/*",
+  "route": "wvb.dev",
   "env": {
     "dev": {
       "workers_dev": true,
       "preview_urls": true,
-      "route": "dev.wvb.dev/*",
+      "route": "dev.wvb.dev",
       "services": [
         {
           "binding": "WORKER_SELF_REFERENCE",
