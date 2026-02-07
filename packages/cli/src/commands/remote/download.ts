@@ -8,6 +8,7 @@ import { resolveConfig } from '../../config.js';
 import { c } from '../../console.js';
 import { formatByteLength } from '../../format.js';
 import { pathExists, toAbsolutePath, withWVBExtension } from '../../fs.js';
+import { logRemoteBundleInfo } from '../../operations/remote/logging.js';
 import { BaseCommand } from '../base.js';
 
 export class RemoteDownloadCommand extends BaseCommand {
@@ -54,15 +55,25 @@ export class RemoteDownloadCommand extends BaseCommand {
   readonly endpoint = Option.String('--endpoint,-E', {
     description: 'Endpoint of remote server.',
   });
-  readonly skipWrite = Option.String('--skip-write', {
+  readonly channel = Option.String('--channel', {
+    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+  });
+  readonly write = Option.String('--write', true, {
     tolerateBoolean: true,
     validator: isBoolean(),
-    description: 'Skip writing files on disk. [Default: false]',
+    description: `Writing files on disk.
+Set this to \`false\` (or pass "--no-write") just for simulating operation.
+[Default: true]`,
   });
   readonly overwrite = Option.String('--overwrite', {
     tolerateBoolean: true,
     validator: isBoolean(),
     description: 'Overwrite outfile if file is already exists. [Default: false]',
+  });
+  readonly progress = Option.String('--progress', true, {
+    tolerateBoolean: true,
+    validator: isBoolean(),
+    description: 'Show download progress bar. [Default: true]',
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',
@@ -86,36 +97,34 @@ export class RemoteDownloadCommand extends BaseCommand {
       this.logger.error('"bundleName" is required for remote operations.');
       return 1;
     }
-    const progress = new SingleBar(
-      {
-        clearOnComplete: true,
-        hideCursor: true,
-        gracefulExit: true,
-      },
-      Presets.shades_classic
-    );
+    const progress = this.progress
+      ? new SingleBar(
+          {
+            format: `{bundleName} ${c.progress('{bar}')} {percentage}% ({value}/{total})`,
+            clearOnComplete: false,
+            // https://github.com/npkgz/cli-progress/issues/126
+            gracefulExit: false,
+          },
+          Presets.shades_classic
+        )
+      : null;
     const remote = new Remote(endpoint, {
       onDownload: data => {
-        if (!progress.isActive) {
-          progress.start(data.totalBytes, data.downloadedBytes);
+        if (!progress?.isActive) {
+          progress?.start(data.totalBytes, data.downloadedBytes);
         } else {
-          progress.update(data.downloadedBytes);
+          progress?.update(data.downloadedBytes);
         }
       },
     });
     const [info, bundle, buf] =
-      this.version != null ? await remote.downloadVersion(bundleName, this.version) : await remote.download(bundleName);
-    this.logger.info(
-      `Remote Webview Bundle download: ${c.info(bundleName)} ${c.bytes(formatByteLength(buf.byteLength))}`
-    );
-    this.logger.info(`  Version: ${c.bold(c.info(info.version))}`);
-    this.logger.info(`  ETag: ${c.bold(c.info(info.etag ?? '(none)'))}`);
-    this.logger.info(`  Integrity: ${c.bold(c.info(info.integrity ?? '(none)'))}`);
-    this.logger.info(`  Signature: ${c.bold(c.info(info.signature ?? '(none)'))}`);
-    this.logger.info(`  Last-Modified: ${c.bold(c.info(info.lastModified ?? '(none)'))}`);
+      this.version != null
+        ? await remote.downloadVersion(bundleName, this.version)
+        : await remote.download(bundleName, this.channel);
+    logRemoteBundleInfo(this.logger, info, buf.byteLength);
 
-    const skipWrite = this.skipWrite ?? false;
-    if (skipWrite) {
+    const write = this.write ?? true;
+    if (!write) {
       return 0;
     }
 

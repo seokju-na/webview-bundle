@@ -1,3 +1,4 @@
+import type { BuiltinConfig } from './builtin.js';
 import type { CreateConfig } from './create.js';
 import type { ExtractConfig } from './extract.js';
 import type { RemoteConfig } from './remote/index.js';
@@ -47,4 +48,5 @@ export interface Config {
   extract?: ExtractConfig;
   remote?: RemoteConfig;
   serve?: ServeConfig;
+  builtin?: BuiltinConfig;
 }

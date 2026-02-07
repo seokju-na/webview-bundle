@@ -1,0 +1,26 @@
+name: "free-disk-space"
+description: "Free up disk space by removing unnecessary tools and packages"
+runs:
+  using: "composite"
+  steps:
+    - name: Free disk space
+      shell: bash
+      run: |
+        # disk space before cleanup
+        df -h
+        # remove .NET
+        sudo rm -rf /usr/share/dotnet
+        # remove azure cli
+        sudo rm -rf /opt/az
+        # remove google cloud SDK
+        sudo rm -rf /usr/lib/google-cloud-sdk
+        # remove large packages
+        sudo apt-get remove -y '^aspnetcore-.*' || true
+        sudo apt-get remove -y '^dotnet-.*' --fix-missing || true
+        sudo apt-get remove -y 'php.*' --fix-missing || true
+        sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing || true
+        # cleanup apt cache
+        sudo apt-get autoremove -y
+        sudo apt-get clean
+        # disk space after cleanup
+        df -h
