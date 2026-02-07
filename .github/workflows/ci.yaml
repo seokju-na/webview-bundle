@@ -47,22 +47,22 @@ jobs:
             target: x86_64-apple-darwin
             build: |-
               yarn workspaces foreach -At run build-napi --target x86_64-apple-darwin &&
-              yarn workspaces foreach -Apt run build
+              yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |-
               yarn workspaces foreach -At run build-napi --target aarch64-apple-darwin &&
-              yarn workspaces foreach -Apt run build
+              yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: windows-latest
             target: x86_64-pc-windows-msvc
             build: |-
               yarn workspaces foreach -At run build-napi --target x86_64-pc-windows-msvc &&
-              yarn workspaces foreach -Apt run build
+              yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: |-
               yarn workspaces foreach -At run build-napi --target aarch64-pc-windows-msvc &&
-              yarn workspaces foreach -Apt run build
+              yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian
@@ -70,7 +70,7 @@ jobs:
               rustup toolchain install 1.91.0 &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-gnu &&
-              yarn workspaces foreach -Apt run build &&
+              yarn workspaces foreach -Apt --include='@wvb/*' run build &&
               yarn vitest run
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
@@ -79,7 +79,7 @@ jobs:
               rustup toolchain install 1.91.0 &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-musl &&
-              yarn workspaces foreach -Apt run build &&
+              yarn workspaces foreach -Apt --include='@wvb/*' run build &&
               yarn vitest run
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
@@ -89,7 +89,7 @@ jobs:
               rustup target add aarch64-unknown-linux-gnu &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-gnu &&
-              yarn workspaces foreach -Apt run build
+              yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
@@ -99,7 +99,7 @@ jobs:
               rustup target add aarch64-unknown-linux-musl &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-musl &&
-              yarn workspaces foreach -Apt run build
+              yarn workspaces foreach -Apt --include='@wvb/*' run build
     runs-on: ${{ matrix.settings.host }}
     env:
       DEBUG: 'napi:*'
