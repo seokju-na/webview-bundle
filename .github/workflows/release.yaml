@@ -81,6 +81,9 @@ jobs:
         with:
           targets: ${{ matrix.settings.target }}
       - run: yarn install
+      - name: Free disk space
+        if: ${{ matrix.settings.docker }}
+        uses: ./.github/actions/free-disk-space
       - name: Run build (Docker)
         uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # 3.0.0
         if: ${{ matrix.settings.docker }}
