@@ -9,15 +9,10 @@ export type HeadersConfig =
  */
 export interface CreateConfig {
   /**
-   * Overwrite outfile if file is already exists
+   * Overwrite out-file if file is already exists
    * @default true
    */
   overwrite?: boolean;
-  /**
-   * Don't create webview bundle file on disk, instead just simulate packing files.
-   * @default false
-   */
-  dryRun?: boolean;
   /**
    * Ignore patterns which exclude files from the bundle.
    */

@@ -23,11 +23,12 @@ export class ExtractCommand extends BaseCommand {
     description: `Outdir path to extract webview bundle files.
 If not provided, will use webview bundle file name as directory.`,
   });
-  readonly dryRun = Option.String('--dry-run', {
+  readonly write = Option.String('--write', true, {
     tolerateBoolean: true,
     validator: isBoolean(),
-    description:
-      "Don't create extract files on disk, instead just look what inside on the webview bundle file. [Default: false]",
+    description: `Writing files on disk.
+Set this to \`false\` (or pass "--no-write") just for simulating operation.
+[Default: true]`,
   });
   readonly clean = Option.String('--clean', {
     tolerateBoolean: true,
@@ -54,14 +55,13 @@ If not provided, will use webview bundle file name as directory.`,
       );
       return 1;
     }
-    const dryRun = this.dryRun ?? config.extract?.dryRun ?? false;
     const outDir = this.outDir ?? config.extract?.outDir;
     const clean = this.clean ?? config.extract?.clean ?? false;
     await extract({
       file,
       outDir,
       cwd: config.root,
-      write: !dryRun,
+      write: this.write,
       clean,
       logger: this.logger,
     });

@@ -24,25 +24,26 @@ export class CreateCommand extends BaseCommand {
     description: `Outfile name to create Webview Bundle archive.
 If not provided, default to name field in "package.json" with normalized.
 If extension not set, will automatically add extension (\`.wvb\`)`,
-    required: false,
   });
   readonly ignores = Option.Array('--ignore', {
     description: 'Ignore patterns.',
+  });
+  readonly headers = Option.Array('--header,-H', {
+    description: `Headers to set for each file.
+For example, \`--header '*.html' 'cache-control' 'max-age=3600'\` will set \`cache-control: max-age=3600\` for all files with extension \`.html\`.`,
+    arity: 3,
+  });
+  readonly write = Option.String('--write', true, {
+    tolerateBoolean: true,
+    validator: isBoolean(),
+    description: `Writing files on disk.
+Set this to \`false\` (or pass "--no-write") just for simulating operation.
+[Default: true]`,
   });
   readonly overwrite = Option.String('--overwrite', {
     validator: isBoolean(),
     tolerateBoolean: true,
     description: 'Overwrite outfile if file is already exists. [Default: true]',
-  });
-  readonly dryRun = Option.String('--dry-run', {
-    tolerateBoolean: true,
-    validator: isBoolean(),
-    description: "Don't create webview bundle file on disk, instead just simulate packing files. [Default: false]",
-  });
-  readonly headers = Option.Array('--header,-H', {
-    description:
-      "Headers to set for each file. For example, `--header '*.html' 'cache-control' 'max-age=3600'` will set `cache-control: max-age=3600` for all files with extension `.html`.",
-    arity: 3,
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',
@@ -70,7 +71,6 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
       );
       return 1;
     }
-    const dryRun = this.dryRun ?? config.create?.dryRun ?? false;
     const overwrite = this.overwrite ?? config.create?.overwrite ?? true;
     await create({
       dir,
@@ -80,7 +80,7 @@ If extension not set, will automatically add extension (\`.wvb\`)`,
       headers: [config.create?.headers, this.headers != null ? this.intoHeaderConfig(this.headers) : undefined].filter(
         isNotNil
       ),
-      write: !dryRun,
+      write: this.write,
       overwrite,
       cwd: config.root,
       logLevel: this.logLevel,

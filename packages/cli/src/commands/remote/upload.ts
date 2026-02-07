@@ -56,17 +56,17 @@ to bypass these steps when needed.
   readonly file = Option.String('--file,-F', {
     description: 'Path to the Webview Bundle file (.wvb) to upload.',
   });
-  readonly force = Option.String('--force', {
+  readonly force = Option.String('--force', false, {
     tolerateBoolean: true,
     validator: isBoolean(),
     description: 'Overwrite if the same version already exists on remote.',
   });
-  readonly skipIntegrity = Option.String('--skip-integrity', {
+  readonly skipIntegrity = Option.String('--skip-integrity', false, {
     tolerateBoolean: true,
     validator: isBoolean(),
     description: 'Skip computing integrity hash for the bundle.',
   });
-  readonly skipSignature = Option.String('--skip-signature', {
+  readonly skipSignature = Option.String('--skip-signature', false, {
     tolerateBoolean: true,
     validator: isBoolean(),
     description: 'Skip signing the bundle with a cryptographic signature.',
@@ -104,18 +104,15 @@ to bypass these steps when needed.
       return 1;
     }
     const bundleName = this.bundleName ?? config.remote?.bundleName;
-    const skipIntegrity = this.skipIntegrity ?? false;
-    const skipSignature = this.skipSignature ?? false;
-    const force = this.force ?? false;
 
     await remoteUpload({
       file,
       bundleName,
       version,
       uploader: config.remote.uploader,
-      force,
-      integrity: skipIntegrity ? false : config.remote?.integrity,
-      signature: skipSignature ? undefined : config.remote?.signature,
+      force: this.force,
+      integrity: this.skipIntegrity ? false : config.remote?.integrity,
+      signature: this.skipSignature ? undefined : config.remote?.signature,
       cwd: config.root,
       logger: this.logger,
     });

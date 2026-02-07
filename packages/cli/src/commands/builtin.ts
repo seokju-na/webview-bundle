@@ -1,23 +1,55 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type BundleManifestData, Remote } from '@wvb/node';
 import { Command, Option } from 'clipanion';
-import { isBoolean } from 'typanion';
+import { isNotNil } from 'es-toolkit';
+import { cascade, isBoolean, isInteger, isNumber } from 'typanion';
 import { resolveConfig } from '../config.js';
+import { builtin } from '../operations/builtin.js';
 import { BaseCommand } from './base.js';
 
 export class BuiltinCommand extends BaseCommand {
   readonly name = 'builtin';
 
   static paths = [['builtin']];
-  static usage = Command.Usage({});
+  static usage = Command.Usage({
+    description: 'Install builtin webview bundles from remote.',
+    examples: [['A basic usage', '$0 builtin']],
+  });
 
+  readonly out = Option.String('--out,-O', {
+    description: 'Output directory path.',
+  });
   readonly endpoint = Option.String('--endpoint,-E', {
     description: 'Endpoint of remote server.',
   });
-  readonly clean = Option.String('--clean', true, {
+  readonly channel = Option.String('--channel', {
+    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+  });
+  readonly include = Option.Array('--include', {
+    description: 'Patterns to which bundles should be included from remote bundles.',
+  });
+  readonly exclude = Option.Array('--exclude', {
+    description: 'Patterns to which bundles should be excluded from remote bundles.',
+  });
+  readonly write = Option.String('--write', true, {
     tolerateBoolean: true,
     validator: isBoolean(),
+    description: `Writing files on disk.
+Set this to \`false\` (or pass "--no-write") just for simulating operation.
+[Default: true]`,
+  });
+  readonly clean = Option.String('--clean', {
+    tolerateBoolean: true,
+    validator: isBoolean(),
+    description: 'Clean up builtin directory before the operation. [Default: true]',
+  });
+  readonly concurrency = Option.String('--concurrency', {
+    validator: cascade(isNumber(), [isInteger()]),
+    description: 'Concurrency of the download bundles.',
+  });
+  readonly progress = Option.String('--progress', true, {
+    tolerateBoolean: true,
+    validator: isBoolean(),
+    description: 'Show download progress bar. [Default: true]',
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',
@@ -31,32 +63,27 @@ export class BuiltinCommand extends BaseCommand {
       root: this.cwd,
       configFile: this.configFile,
     });
-    const manifest: BundleManifestData = {
-      manifestVersion: 1,
-      entries: {},
-    };
-    if (this.clean) {
-      await fs.rm('bundles', { recursive: true });
+    const endpoint = this.endpoint ?? config.remote?.endpoint;
+    if (endpoint == null) {
+      this.logger.error('"endpoint" is required for remote operations.');
+      return 1;
     }
-    const remote = new Remote('');
-    const remoteBundles = await remote.listBundles();
-    for (const remoteBundle of remoteBundles) {
-      const [info, , buffer] = await remote.download(remoteBundle.name);
-      manifest.entries[info.name] = {
-        versions: {
-          [info.version]: {
-            etag: info.etag,
-            integrity: info.integrity,
-            signature: info.signature,
-            lastModified: info.lastModified,
-          },
-        },
-        currentVersion: info.version,
-      };
-      const filename = `${info.name}_${info.version}.wvb`;
-      const filepath = path.join('bundles', info.name, filename);
-      await fs.mkdir(path.dirname(filepath), { recursive: true });
-      await fs.writeFile(filepath, buffer);
-    }
+    const dir = this.out ?? config.builtin?.outDir ?? path.join(config.outDir ?? '.wvb', 'builtin');
+    const include = [this.include, config.builtin?.include].filter(isNotNil);
+    const exclude = [this.exclude, config.builtin?.exclude].filter(isNotNil);
+    const clean = this.clean ?? config.builtin?.clean ?? true;
+    await builtin({
+      remoteEndpoint: endpoint,
+      dir,
+      include,
+      exclude,
+      channel: this.channel,
+      clean,
+      write: this.write,
+      cwd: config.root,
+      logger: this.logger,
+      concurrency: this.concurrency,
+      progress: this.progress,
+    });
   }
 }

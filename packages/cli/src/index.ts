@@ -1,5 +1,7 @@
 export type { InlineConfig, ResolvedConfig } from './config.js';
 export { defaultOutDir, defaultOutFile, loadConfigFile, resolveConfig } from './config.js';
+export type { BuiltinParams } from './operations/builtin.js';
+export { builtin } from './operations/builtin.js';
 export type { CreateParams } from './operations/create.js';
 export { create } from './operations/create.js';
 export type { ExtractParams } from './operations/extract.js';

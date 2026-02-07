@@ -6,7 +6,7 @@ import { filterAsync, isNotNil } from 'es-toolkit';
 import { isRegExp } from 'es-toolkit/predicate';
 import pm from 'picomatch';
 import { glob } from 'tinyglobby';
-import { c, stripColor } from '../console.js';
+import { c } from '../console.js';
 import { formatByteLength } from '../format.js';
 import { pathExists, toAbsolutePath, withWVBExtension } from '../fs.js';
 import { isLogLevelAtLeast, type Logger, type LogLevel } from '../log.js';
@@ -84,7 +84,7 @@ export async function create(params: CreateParams): Promise<Bundle> {
     if (await pathExists(outFilepath)) {
       const message = `Outfile already exists: ${c.bold(c.error(outFile))}`;
       logger?.error(message);
-      throw new OperationError(stripColor(message));
+      throw new OperationError(message);
     }
   }
   await fs.mkdir(path.dirname(outFilepath), { recursive: true });

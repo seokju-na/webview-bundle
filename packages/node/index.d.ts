@@ -205,6 +205,7 @@ export interface RemoteBundleInfo {
 export interface RemoteOnDownloadData {
   downloadedBytes: number
   totalBytes: number
+  endpoint: string
 }
 
 export interface RemoteOptions {

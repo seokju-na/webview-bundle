@@ -10,11 +10,6 @@ export interface ExtractConfig {
    */
   outDir?: string;
   /**
-   * Don't create extract files on disk, instead just look what inside on the webview bundle file.
-   * @default false
-   */
-  dryRun?: boolean;
-  /**
    * Clean up extracted files if out directory already exists.
    * @default false
    */

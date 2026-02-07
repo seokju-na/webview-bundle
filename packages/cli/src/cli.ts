@@ -1,5 +1,6 @@
 import { Cli } from 'clipanion';
 import pkg from '../package.json' with { type: 'json' };
+import { BuiltinCommand } from './commands/builtin.js';
 import { CreateCommand } from './commands/create.js';
 import { ExtractCommand } from './commands/extract.js';
 import { RemoteCurrentCommand } from './commands/remote/current.js';
@@ -25,4 +26,5 @@ cli.register(RemoteListCommand);
 cli.register(RemoteUploadCommand);
 cli.register(RemoteDeployCommand);
 cli.register(RemoteDownloadCommand);
+cli.register(BuiltinCommand);
 cli.runExit(args);
