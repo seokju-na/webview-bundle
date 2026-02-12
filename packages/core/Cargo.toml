@@ -1,6 +1,6 @@
 [package]
 authors      = ["Seokju Na <seokju.me@gmail.com>"]
-description  = "TBD"
+description  = "Offline-first web resources delivery system for webview mounted frameworks/platforms"
 edition      = "2021"
 license      = "MIT"
 name         = "wvb"

@@ -6,12 +6,105 @@ use http_range::HttpRange;
 use std::sync::Arc;
 use tokio::io::AsyncWriteExt;
 
+/// Protocol handler for serving files from bundle sources.
+///
+/// `BundleProtocol` implements the `Protocol` trait to serve web resources from
+/// `.wvb` bundle files stored in a `BundleSource`. It supports:
+///
+/// - GET and HEAD HTTP methods
+/// - HTTP Range requests for streaming large files (video, audio)
+/// - Content-Type and custom HTTP headers from bundle index
+/// - Custom URI resolution for flexible URL-to-bundle mapping
+///
+/// # URI Format
+///
+/// By default, URIs are expected in the format:
+///
+/// ```text
+/// scheme://bundle_name/path/to/file
+/// ```
+///
+/// For example:
+/// - `bundle://app/index.html` → bundle "app", file "/index.html"
+/// - `app://myapp/assets/logo.png` → bundle "myapp", file "/assets/logo.png"
+///
+/// # Example
+///
+/// ```no_run
+/// # #[cfg(feature = "protocol")]
+/// # async {
+/// use wvb::protocol::{BundleProtocol, Protocol};
+/// use wvb::source::BundleSource;
+/// use std::sync::Arc;
+///
+/// let source = BundleSource::builder()
+///     .builtin_dir("./bundles")
+///     .remote_dir("./remote")
+///     .build();
+///
+/// let protocol = BundleProtocol::new(Arc::new(source));
+///
+/// // Serve index.html from "app" bundle
+/// let request = http::Request::builder()
+///     .uri("bundle://app/index.html")
+///     .method("GET")
+///     .body(vec![])
+///     .unwrap();
+///
+/// let response = protocol.handle(request).await.unwrap();
+/// # };
+/// ```
+///
+/// # Range Requests
+///
+/// Supports HTTP Range headers for streaming:
+///
+/// ```no_run
+/// # #[cfg(feature = "protocol")]
+/// # async {
+/// # use wvb::protocol::{BundleProtocol, Protocol};
+/// # use wvb::source::BundleSource;
+/// # use std::sync::Arc;
+/// # let source = Arc::new(BundleSource::builder().build());
+/// # let protocol = BundleProtocol::new(source);
+/// let request = http::Request::builder()
+///     .uri("bundle://app/video.mp4")
+///     .header("Range", "bytes=0-1023")
+///     .body(vec![])
+///     .unwrap();
+///
+/// let response = protocol.handle(request).await.unwrap();
+/// assert_eq!(response.status(), 206); // Partial Content
+/// # };
+/// ```
 pub struct BundleProtocol {
   source: Arc<BundleSource>,
   uri_resolver: Box<dyn UriResolver + 'static>,
 }
 
 impl BundleProtocol {
+  /// Creates a new `BundleProtocol` with the default URI resolver.
+  ///
+  /// # Arguments
+  ///
+  /// * `source` - Bundle source to serve files from
+  ///
+  /// # Example
+  ///
+  /// ```no_run
+  /// # #[cfg(feature = "protocol")]
+  /// # {
+  /// use wvb::protocol::BundleProtocol;
+  /// use wvb::source::BundleSource;
+  /// use std::sync::Arc;
+  ///
+  /// let source = BundleSource::builder()
+  ///     .builtin_dir("./bundles")
+  ///     .build();
+  ///
+  /// let protocol = BundleProtocol::new(Arc::new(source));
+  /// # }
+  /// ```
   pub fn new(source: Arc<BundleSource>) -> Self {
     Self {
       source,
