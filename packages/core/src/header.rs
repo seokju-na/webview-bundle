@@ -11,6 +11,27 @@ use crate::writer::AsyncWriter;
 #[cfg(feature = "async")]
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 
+/// Bundle header containing format metadata.
+///
+/// The header is the first 17 bytes of a `.wvb` file:
+///
+/// | Magic (8) | Version (1) | Index Size (4) | Checksum (4) |
+/// |-----------|-------------|----------------|--------------|
+///
+/// - **Magic Number**: `0xf09f8c90f09f8e81` (🌐🎁 in UTF-8)
+/// - **Version**: Bundle format version (currently 0x01)
+/// - **Index Size**: Size of the index section in bytes (u32, big-endian)
+/// - **Checksum**: xxHash-32 checksum of the header data
+///
+/// # Example
+///
+/// ```
+/// use wvb::{Header, Version};
+///
+/// let header = Header::new(Version::V1, 1024);
+/// assert_eq!(header.version(), Version::V1);
+/// assert_eq!(header.index_size(), 1024);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Header {
   version: Version,
@@ -18,19 +39,43 @@ pub struct Header {
 }
 
 impl Header {
+  /// Length of the magic number in bytes (8 bytes for "🌐🎁")
   pub const MAGIC_LEN: usize = 8;
+
+  /// Magic number bytes: 0xf09f8c90f09f8e81 ("🌐🎁")
   pub const MAGIC: [u8; Header::MAGIC_LEN] = [0xf0, 0x9f, 0x8c, 0x90, 0xf0, 0x9f, 0x8e, 0x81];
+
+  /// Offset of the magic number in the file
   pub const MAGIC_OFFSET: u64 = 0;
+
+  /// Offset of the version byte
   pub const VERSION_OFFSET: u64 = Header::MAGIC_LEN as u64;
+
+  /// Offset of the index size field
   pub const INDEX_SIZE_OFFSET: u64 = Self::VERSION_OFFSET + VERSION_LEN as u64;
+
+  /// Length of the index size field in bytes
   pub const INDEX_SIZE_BYTES_LEN: usize = 4;
+
+  /// Offset of the header checksum
   pub const CHECKSUM_OFFSET: u64 = Self::INDEX_SIZE_OFFSET + Self::INDEX_SIZE_BYTES_LEN as u64;
+
+  /// Total size of the header in bytes (17 bytes)
   pub const END_OFFSET: u64 = Self::CHECKSUM_OFFSET + CHECKSUM_LEN as u64;
 
+  /// Calculates the byte offset where the index section ends.
+  ///
+  /// This is the starting point of the data section.
   pub fn index_end_offset(&self) -> u64 {
     Self::END_OFFSET + self.index_size as u64 + CHECKSUM_LEN as u64
   }
 
+  /// Creates a new header.
+  ///
+  /// # Arguments
+  ///
+  /// * `version` - Bundle format version
+  /// * `index_size` - Size of the index section in bytes
   pub fn new(version: Version, index_size: u32) -> Self {
     Self {
       version,
@@ -38,10 +83,12 @@ impl Header {
     }
   }
 
+  /// Returns the bundle format version.
   pub fn version(&self) -> Version {
     self.version
   }
 
+  /// Returns the size of the index section in bytes.
   pub fn index_size(&self) -> u32 {
     self.index_size
   }

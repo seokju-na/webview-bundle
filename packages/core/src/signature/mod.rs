@@ -1,3 +1,66 @@
+//! Digital signature verification for bundles.
+//!
+//! The signature module provides cryptographic signature verification to ensure
+//! bundles are authentic and haven't been tampered with. Multiple signature
+//! algorithms are supported:
+//!
+//! - **ECDSA** (secp256r1, secp384r1) - Elliptic curve signatures
+//! - **Ed25519** - Edwards curve signatures
+//! - **RSA** (PKCS#1 v1.5, PSS) - RSA signatures
+//!
+//! ## Features
+//!
+//! Enable specific signature algorithms via cargo features:
+//!
+//! - `signature-ecdsa_secp256r1` - ECDSA with P-256 curve
+//! - `signature-ecdsa_secp384r1` - ECDSA with P-384 curve
+//! - `signature-edd25519` - Ed25519 signatures
+//! - `signature-rsa_pkcs1_v1_5` - RSA PKCS#1 v1.5
+//! - `signature-rsa_pss` - RSA-PSS
+//!
+//! ## Example
+//!
+//! ```no_run
+//! # #[cfg(feature = "signature-edd25519")]
+//! # async {
+//! use wvb::signature::{Ed25519Verifier, SignatureVerifier};
+//! use wvb::Bundle;
+//! use std::sync::Arc;
+//!
+//! // Create verifier with public key PEM
+//! let public_key_pem = "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----";
+//! let verifier = Ed25519Verifier::from_pem(public_key_pem).unwrap();
+//! let signature_verifier = SignatureVerifier::Ed25519(Arc::new(verifier));
+//!
+//! // Verify bundle signature
+//! let bundle = /* ... */
+//! # Bundle::new();
+//! let message = b"bundle-data-to-verify";
+//! let signature = "base64-encoded-signature";
+//!
+//! let is_valid = signature_verifier.verify(&bundle, message, signature).await.unwrap();
+//! assert!(is_valid);
+//! # };
+//! ```
+//!
+//! ## Custom Verifiers
+//!
+//! Implement custom verification logic:
+//!
+//! ```no_run
+//! # use wvb::signature::SignatureVerifier;
+//! # use wvb::Bundle;
+//! # use std::sync::Arc;
+//! let custom_verify = |bundle: &Bundle, message: &[u8], signature: &str| {
+//!     Box::pin(async move {
+//!         // Custom verification logic
+//!         Ok(true)
+//!     })
+//! };
+//!
+//! let verifier = SignatureVerifier::Custom(Arc::new(custom_verify));
+//! ```
+
 use crate::Bundle;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -23,6 +86,10 @@ pub use rsa_pkcs1_v1_5::*;
 #[cfg(feature = "signature-rsa_pss")]
 pub use rsa_pss::*;
 
+/// Type alias for custom verification functions.
+///
+/// Custom verifiers receive the bundle, message, and signature, and return
+/// a future that resolves to the verification result.
 pub type CustomVerify = dyn Fn(
     &Bundle,
     &[u8],
@@ -37,6 +104,10 @@ pub type CustomVerify = dyn Fn(
   > + Send
   + Sync;
 
+/// Signature verifier supporting multiple algorithms.
+///
+/// This enum wraps different signature verification implementations,
+/// allowing you to use the appropriate algorithm for your needs.
 #[non_exhaustive]
 pub enum SignatureVerifier {
   #[cfg(feature = "signature-ecdsa_secp256r1")]
@@ -53,6 +124,18 @@ pub enum SignatureVerifier {
 }
 
 impl SignatureVerifier {
+  /// Verifies a signature against a message using the configured algorithm.
+  ///
+  /// # Arguments
+  ///
+  /// * `bundle` - The bundle being verified
+  /// * `message` - The message that was signed (typically bundle data)
+  /// * `signature` - The signature string (base64-encoded)
+  ///
+  /// # Returns
+  ///
+  /// Returns `Ok(true)` if the signature is valid, `Ok(false)` if invalid,
+  /// or an error if verification failed.
   pub async fn verify(
     &self,
     bundle: &Bundle,
@@ -77,7 +160,18 @@ impl SignatureVerifier {
   }
 }
 
+/// Trait for implementing signature verification algorithms.
+///
+/// Implement this trait to create custom signature verifiers that can be
+/// used with the `SignatureVerifier::Custom` variant.
 pub trait Verifier: Send + Sync + 'static {
+  /// Verifies a signature.
+  ///
+  /// # Arguments
+  ///
+  /// * `bundle` - The bundle being verified
+  /// * `message` - The signed message data
+  /// * `signature` - The signature string to verify
   fn verify(
     &self,
     bundle: &Bundle,

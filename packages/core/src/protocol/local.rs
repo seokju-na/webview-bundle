@@ -5,11 +5,33 @@ use http::Uri;
 use std::borrow::Cow;
 use std::collections::HashMap;
 
+/// Trait for resolving custom URIs to localhost URLs.
+///
+/// Implement this trait to customize how protocol URIs are mapped to
+/// localhost development servers.
 pub trait LocalUriResolver: Send + Sync {
-  /// Resolve localhost uri from original request uri.
+  /// Resolves a custom URI host to a localhost URL.
+  ///
+  /// # Arguments
+  ///
+  /// * `uri` - The original request URI
+  ///
+  /// # Returns
+  ///
+  /// The localhost URL (e.g., "http://localhost:3000") or None if not resolvable.
   fn resolve_localhost(&self, uri: &Uri) -> Option<String>;
 
-  /// Get proxied localhost uri from original request uri.
+  /// Gets the complete proxied localhost URI including path and query.
+  ///
+  /// This method combines the localhost URL from `resolve_localhost` with
+  /// the path and query from the original URI.
+  ///
+  /// # Example
+  ///
+  /// ```text
+  /// Input:  app://myapp/api/data?foo=bar
+  /// Output: http://localhost:3000/api/data?foo=bar
+  /// ```
   fn get_localhost_uri(&self, uri: &Uri) -> Option<String> {
     if let Some(localhost) = self.resolve_localhost(uri) {
       let decoded_path = percent_encoding::percent_decode(uri.path().as_bytes())
@@ -31,12 +53,32 @@ pub trait LocalUriResolver: Send + Sync {
   }
 }
 
+/// URI resolver using a static host-to-localhost mapping.
+///
+/// Maps custom protocol hosts to localhost URLs using a HashMap.
+///
+/// # Example
+///
+/// ```
+/// # #[cfg(feature = "protocol-local")]
+/// # {
+/// use wvb::protocol::MappingLocalUriResolver;
+/// use std::collections::HashMap;
+///
+/// let mut hosts = HashMap::new();
+/// hosts.insert("myapp".to_string(), "http://localhost:3000".to_string());
+/// hosts.insert("api".to_string(), "http://localhost:8080".to_string());
+///
+/// let resolver = MappingLocalUriResolver::new(hosts);
+/// # }
+/// ```
 #[derive(Default)]
 pub struct MappingLocalUriResolver {
   mapping: HashMap<String, String>,
 }
 
 impl MappingLocalUriResolver {
+  /// Creates a new resolver with the given host mapping.
   pub fn new<T: Into<HashMap<String, String>>>(mapping: T) -> Self {
     Self {
       mapping: mapping.into(),
@@ -60,12 +102,90 @@ struct CachedResponse {
   body: bytes::Bytes,
 }
 
+/// Protocol handler that proxies requests to localhost servers.
+///
+/// `LocalProtocol` forwards requests to local development servers, making it
+/// easy to develop webview applications with hot-reloading. Features:
+///
+/// - **Host mapping**: Map custom protocol hosts to localhost URLs
+/// - **Response caching**: Cache responses and respect 304 Not Modified
+/// - **Development mode**: Perfect for local development workflows
+///
+/// # Example
+///
+/// ```no_run
+/// # #[cfg(feature = "protocol-local")]
+/// # async {
+/// use wvb::protocol::{LocalProtocol, Protocol};
+/// use std::collections::HashMap;
+///
+/// let mut hosts = HashMap::new();
+/// hosts.insert("myapp".to_string(), "http://localhost:3000".to_string());
+///
+/// let protocol = LocalProtocol::new(hosts);
+///
+/// // This proxies to http://localhost:3000/index.html
+/// let request = http::Request::builder()
+///     .uri("app://myapp/index.html")
+///     .body(vec![])
+///     .unwrap();
+///
+/// let response = protocol.handle(request).await.unwrap();
+/// # };
+/// ```
+///
+/// # Caching
+///
+/// The protocol caches responses and supports HTTP 304 Not Modified:
+///
+/// ```no_run
+/// # #[cfg(feature = "protocol-local")]
+/// # async {
+/// # use wvb::protocol::{LocalProtocol, Protocol};
+/// # use std::collections::HashMap;
+/// # let protocol = LocalProtocol::new(HashMap::new());
+/// // First request - fetches from server
+/// let request1 = http::Request::builder()
+///     .uri("app://myapp/bundle.js")
+///     .body(vec![])
+///     .unwrap();
+/// let response1 = protocol.handle(request1).await.unwrap();
+///
+/// // Second request with same URL - may use cached response
+/// let request2 = http::Request::builder()
+///     .uri("app://myapp/bundle.js")
+///     .body(vec![])
+///     .unwrap();
+/// let response2 = protocol.handle(request2).await.unwrap();
+/// # };
+/// ```
 pub struct LocalProtocol {
   uri_resolver: Box<dyn LocalUriResolver + 'static>,
   cache: DashMap<String, CachedResponse>,
 }
 
 impl LocalProtocol {
+  /// Creates a new `LocalProtocol` with host-to-localhost mapping.
+  ///
+  /// # Arguments
+  ///
+  /// * `hosts` - HashMap mapping custom hosts to localhost URLs
+  ///
+  /// # Example
+  ///
+  /// ```
+  /// # #[cfg(feature = "protocol-local")]
+  /// # {
+  /// use wvb::protocol::LocalProtocol;
+  /// use std::collections::HashMap;
+  ///
+  /// let mut hosts = HashMap::new();
+  /// hosts.insert("myapp".to_string(), "http://localhost:3000".to_string());
+  /// hosts.insert("api".to_string(), "http://localhost:8080".to_string());
+  ///
+  /// let protocol = LocalProtocol::new(hosts);
+  /// # }
+  /// ```
   pub fn new<T: Into<HashMap<String, String>>>(hosts: T) -> Self {
     Self {
       uri_resolver: Box::new(MappingLocalUriResolver::new(hosts)),

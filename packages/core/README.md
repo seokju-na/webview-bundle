@@ -1,7 +1,9 @@
 # webview-bundle
 
-Webview Bundle is offline-first web resources delivery system for webview mounted frameworks/platforms. (
-e.g. [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app/), Android and iOS are planned)
+Webview Bundle is offline-first web resources delivery system for webview mounted
+frameworks/platforms. (
+e.g. [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app/), Android and iOS are
+planned)
 
 > [!NOTE]
 > This project is under development.
@@ -52,27 +54,93 @@ e.g. [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app/), Andro
   - Indicates the size of the Index field to be read next.
 - **Header checksum (4 bytes)**
   - Checksum verifies that the full header data has been decoded correctly.
-  - The checksum is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the header data as input.
+  - The checksum is the result
+    of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md)
+    digesting the header data as input.
 
 ### Index
 
 - **Index**
-  - This field has dynamic bytes size which is determined by the value of the Index Size field, and value is a big endian format.
+  - This field has dynamic bytes size which is determined by the value of the Index Size field, and
+    value is a big endian format.
   - Format of index should be `HashMap` formatted with binary encoded:
     - Key is a path for this file.
     - Value contains offset, length for reading contents from the data field.
     - Value can contain http headers which will be included in the response.
 - **Index checksum (4 bytes)**
   - Checksum verifies that the full index data has been decoded correctly.
-  - The checksum is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the encoded index data as input.
+  - The checksum is the result
+    of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md)
+    digesting the encoded
+    index data as input.
 
 ### Data
 
 - **Data**
-  - This field has dynamic bytes size which can be determined each file offset and length from Index.
-  - The content of data is compressed with [lz4 block format](https://github.com/lz4/lz4/blob/dev/doc/lz4_Block_format.md).
-  - The last 4 bytes are the checksum which is the result of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md) digesting the compressed data as input.
+  - This field has dynamic bytes size which can be determined each file offset and length from
+    Index.
+  - The content of data is compressed
+    with [lz4 block format](https://github.com/lz4/lz4/blob/dev/doc/lz4_Block_format.md).
+  - The last 4 bytes are the checksum which is the result
+    of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md)
+    digesting the
+    compressed data as input.
 
+## Source
+
+A Source is a structure that stores multiple webview bundles locally, composed of a combination of
+directories and a
+`manifest.json` file.
+
+The directory structure is as follows:
+
+```
+{dir}
+|- {bundle_name}
+|  |- {bundle_name}_{version}.wvb
+|- app
+|  |- app_1.0.0.wvb
+|  |- app_1.1.0.wvb
+|- manifest.json
+```
+
+The `manifest.json` records version information and other metadata for the bundles located in the
+directory, as well as the current version of each bundle.
+
+Below is the manifest v1 schema:
+
+```json
+{
+  "manifestVersion": 1,
+  "entries": {
+    "<bundle_name>": {
+      "versions": {
+        "<version>": {
+          "etag": "(optional)",
+          "integrity": "(optional)",
+          "signature": "(optional)",
+          "last_modified": "(optional)"
+        },
+        "currentVersion": "<version>"
+      }
+    },
+    "app": {
+      "versions": {
+        "1.0.0": {}
+      },
+      "currentVersion": "1.0.0"
+    }
+  }
+}
+```
+
+Directories can be separated into two types within the application:
+
+- **`builtin`**: A bundle Source that is shipped together with the application distribution.
+  It is used as a fallback when the latest bundles cannot be downloaded from the remote, such as
+  during the application's first launch. It is generally treated as **read-only**.
+- **`remote`**: Contains the latest bundles downloaded from the remote. If a bundle with
+  the same name exists in both `builtin` and `remote`, the **`remote` version takes priority**.
 
 ## Remote HTTP Spec
 
@@ -80,7 +148,8 @@ e.g. [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app/), Andro
 
 This returns a list of bundles.
 
-Remote bundles must be version-specified. Therefore, bundles with un-deployed versions should be excluded from the response.
+Remote bundles must be version-specified. Therefore, bundles with un-deployed versions should be
+excluded from the response.
 
 ```http request
 GET /bundles
@@ -102,8 +171,10 @@ Bundle metadata includes the following metadata in response headers:
 
 - `webview-bundle-name` : The name of this bundle.
 - `webview-bundle-version` : Currently deployed version of this bundle.
-- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for verification.
-- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for verification.
+- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for
+  verification.
+- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for
+  verification.
 
 ```http request
 HEAD /bundles/{name}
@@ -120,7 +191,8 @@ Webview-Bundle-Signature: ...
 
 #### Exceptions
 
-If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found response.
+If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found
+response.
 
 ```http request
 HEAD /bundles/{name}
@@ -138,8 +210,10 @@ Bundle metadata includes the following metadata in response headers:
 
 - `webview-bundle-name` : The name of this bundle.
 - `webview-bundle-version` : Currently deployed version of this bundle.
-- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for verification.
-- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for verification.
+- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for
+  verification.
+- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for
+  verification.
 
 ```http request
 GET /bundles/{name}
@@ -158,7 +232,8 @@ Webview-Bundle-Signature: ...
 
 #### Exceptions
 
-If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found response.
+If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found
+response.
 
 ```http request
 HEAD /bundles/{name}
@@ -172,7 +247,9 @@ HTTP 404 Not Found
 
 Get a specific version of the bundle with the specified name and version.
 
-In the enterprise cases, you may want to prevent downloading specific versions. You can enable this feature by using the `allowOtherVersions` option.
+In the enterprise cases, you may want to prevent downloading specific versions. You can enable this
+feature by using the
+`allowOtherVersions` option.
 
 ```http request
 GET /bundles/{name}/{version}
@@ -189,7 +266,8 @@ Webview-Bundle-Signature: ...
 
 #### Exceptions
 
-If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found response.
+If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found
+response.
 
 ```http request
 GET /bundles/{name}/{version}

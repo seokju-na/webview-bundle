@@ -5,37 +5,134 @@ use napi_derive::napi;
 use std::sync::Arc;
 use wvb::signature;
 
+/// Digital signature algorithm for bundle verification.
+///
+/// Supports multiple signature schemes for cryptographic verification of bundle authenticity.
+///
+/// @example
+/// ```typescript
+/// import { Updater, SignatureAlgorithm, VerifyingKeyFormat } from "@wvb/node";
+///
+/// const updater = new Updater(source, remote, {
+///   signatureVerifier: {
+///     algorithm: SignatureAlgorithm.Ed25519,
+///     key: {
+///       format: VerifyingKeyFormat.SpkiPem,
+///       data: "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+///     }
+///   }
+/// });
+/// ```
 #[napi(string_enum = "camelCase")]
 #[derive(PartialEq, Eq)]
 pub enum SignatureAlgorithm {
+  /// ECDSA with P-256 curve (secp256r1)
   EcdsaSecp256r1,
+  /// ECDSA with P-384 curve (secp384r1)
   EcdsaSecp384r1,
+  /// Ed25519 (EdDSA, recommended for modern applications)
   Ed25519,
+  /// RSA PKCS#1 v1.5 signature scheme
   RsaPkcs1V1_5,
+  /// RSA-PSS (Probabilistic Signature Scheme)
   RsaPss,
 }
 
+/// Format of the public key used for signature verification.
+///
+/// Different algorithms support different key formats.
+///
+/// @example
+/// ```typescript
+/// import { VerifyingKeyFormat } from "@wvb/node";
+/// import fs from "fs";
+///
+/// // PEM format (text)
+/// const pemKey = fs.readFileSync("./public-key.pem", "utf8");
+/// const config1 = {
+///   format: VerifyingKeyFormat.SpkiPem,
+///   data: pemKey
+/// };
+///
+/// // DER format (binary)
+/// const derKey = fs.readFileSync("./public-key.der");
+/// const config2 = {
+///   format: VerifyingKeyFormat.SpkiDer,
+///   data: derKey
+/// };
+///
+/// // Raw bytes (Ed25519 only)
+/// const rawKey = new Uint8Array(32);
+/// const config3 = {
+///   format: VerifyingKeyFormat.Raw,
+///   data: rawKey
+/// };
+/// ```
 #[napi(string_enum = "camelCase")]
 #[derive(PartialEq, Eq)]
 pub enum VerifyingKeyFormat {
+  /// SubjectPublicKeyInfo DER format (binary)
   SpkiDer,
+  /// SubjectPublicKeyInfo PEM format (text)
   SpkiPem,
+  /// PKCS#1 DER format (RSA only, binary)
   Pkcs1Der,
+  /// PKCS#1 PEM format (RSA only, text)
   Pkcs1Pem,
+  /// SEC1 format (ECDSA only, binary)
   Sec1,
+  /// Raw key bytes (Ed25519 only, 32 bytes)
   Raw,
 }
 
+/// Signature verifier for bundle authenticity verification.
+///
+/// This type is used internally and can be created from either a configuration object
+/// or a custom verification function.
 pub struct SignatureVerifier {
   pub(crate) inner: signature::SignatureVerifier,
 }
 
+/// Configuration for signature verification.
+///
+/// @property {SignatureAlgorithm} algorithm - The signature algorithm to use
+/// @property {SignatureVerifyingKeyOptions} key - The public key configuration
+///
+/// @example
+/// ```typescript
+/// const verifierOptions = {
+///   algorithm: SignatureAlgorithm.Ed25519,
+///   key: {
+///     format: VerifyingKeyFormat.SpkiPem,
+///     data: "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+///   }
+/// };
+/// ```
 #[napi(object, object_to_js = false)]
 pub struct SignatureVerifierOptions {
   pub algorithm: SignatureAlgorithm,
   pub key: SignatureVerifyingKeyOptions,
 }
 
+/// Public key configuration for signature verification.
+///
+/// @property {VerifyingKeyFormat} format - The format of the public key
+/// @property {string | Uint8Array} data - The key data (string for PEM, Uint8Array for DER/Raw)
+///
+/// @example
+/// ```typescript
+/// // PEM format (string)
+/// const pemKey = {
+///   format: VerifyingKeyFormat.SpkiPem,
+///   data: "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+/// };
+///
+/// // DER format (binary)
+/// const derKey = {
+///   format: VerifyingKeyFormat.SpkiDer,
+///   data: new Uint8Array([...])
+/// };
+/// ```
 #[napi(object, object_to_js = false)]
 pub struct SignatureVerifyingKeyOptions {
   pub format: VerifyingKeyFormat,

@@ -15,6 +15,31 @@ use crate::{
 #[cfg(feature = "async")]
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 
+/// Bundle metadata including header and index information.
+///
+/// A `BundleDescriptor` contains the header and index of a bundle without loading
+/// the full file data. This is useful for:
+///
+/// - Reading bundle metadata without loading all files
+/// - Lazy-loading files on demand from a reader
+/// - Inspecting bundle contents efficiently
+///
+/// # Example
+///
+/// ```no_run
+/// # use wvb::{AsyncBundleReader, AsyncReader, BundleDescriptor};
+/// # async {
+/// # use tokio::fs::File;
+/// let mut file = File::open("app.wvb").await.unwrap();
+/// let descriptor: BundleDescriptor = AsyncBundleReader::new(&mut file).read().await.unwrap();
+///
+/// // Check if file exists
+/// if descriptor.index().contains_path("/index.html") {
+///     // Load file on demand
+///     let data = descriptor.async_get_data(&mut file, "/index.html").await.unwrap();
+/// }
+/// # };
+/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct BundleDescriptor {
   pub(crate) header: Header,
@@ -22,14 +47,24 @@ pub struct BundleDescriptor {
 }
 
 impl BundleDescriptor {
+  /// Returns a reference to the bundle header.
   pub fn header(&self) -> &Header {
     &self.header
   }
 
+  /// Returns a reference to the bundle index.
   pub fn index(&self) -> &Index {
     &self.index
   }
 
+  /// Reads file data from the bundle using the provided reader.
+  ///
+  /// Returns `None` if the path doesn't exist in the bundle.
+  ///
+  /// # Arguments
+  ///
+  /// * `reader` - A reader positioned at the start of the bundle file
+  /// * `path` - File path in the bundle (e.g., "/index.html")
   pub fn get_data<R: Read + Seek>(&self, reader: R, path: &str) -> crate::Result<Option<Vec<u8>>> {
     if !self.index.contains_path(path) {
       return Ok(None);
@@ -40,6 +75,9 @@ impl BundleDescriptor {
     Ok(Some(data))
   }
 
+  /// Reads the checksum of file data from the bundle.
+  ///
+  /// Returns `None` if the path doesn't exist in the bundle.
   pub fn get_data_checksum<R: Read + Seek>(
     &self,
     reader: R,
@@ -54,6 +92,9 @@ impl BundleDescriptor {
     Ok(Some(checksum))
   }
 
+  /// Asynchronously reads file data from the bundle.
+  ///
+  /// Returns `None` if the path doesn't exist in the bundle.
   #[cfg(feature = "async")]
   pub async fn async_get_data<R: AsyncRead + AsyncSeek + Unpin>(
     &self,
@@ -69,6 +110,9 @@ impl BundleDescriptor {
     Ok(Some(data))
   }
 
+  /// Asynchronously reads the checksum of file data from the bundle.
+  ///
+  /// Returns `None` if the path doesn't exist in the bundle.
   #[cfg(feature = "async")]
   pub async fn async_get_data_checksum<R: AsyncRead + AsyncSeek + Unpin>(
     &self,
@@ -85,6 +129,32 @@ impl BundleDescriptor {
   }
 }
 
+/// A complete bundle including metadata and file data.
+///
+/// A `Bundle` contains all the data from a `.wvb` file in memory. Use this when:
+///
+/// - You need to access multiple files frequently
+/// - The bundle is small enough to fit in memory
+/// - You're building a new bundle to write to disk
+///
+/// For large bundles or when you only need a few files, consider using
+/// `BundleDescriptor` instead to load files on demand.
+///
+/// # Example
+///
+/// ```no_run
+/// # use wvb::{AsyncBundleReader, AsyncReader, Bundle};
+/// # async {
+/// # use tokio::fs::File;
+/// // Read entire bundle into memory
+/// let mut file = File::open("app.wvb").await.unwrap();
+/// let bundle: Bundle = AsyncBundleReader::new(&mut file).read().await.unwrap();
+///
+/// // Access files directly
+/// let html = bundle.get_data("/index.html").unwrap().unwrap();
+/// let css = bundle.get_data("/style.css").unwrap().unwrap();
+/// # };
+/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct Bundle {
   pub(crate) descriptor: BundleDescriptor,
@@ -92,18 +162,48 @@ pub struct Bundle {
 }
 
 impl Bundle {
+  /// Creates a new bundle builder.
+  ///
+  /// # Example
+  ///
+  /// ```
+  /// use wvb::Bundle;
+  ///
+  /// let mut builder = Bundle::builder();
+  /// builder.add_file("/index.html", b"<html></html>", None);
+  /// let bundle = builder.build();
+  /// ```
   pub fn builder() -> BundleBuilder {
     BundleBuilder::new()
   }
 
+  /// Creates a new bundle builder with pre-allocated capacity.
+  ///
+  /// Use this when you know approximately how many files you'll add.
   pub fn builder_with_capacity(capacity: usize) -> BundleBuilder {
     BundleBuilder::new_with_capacity(capacity)
   }
 
+  /// Returns a reference to the bundle descriptor (header and index).
   pub fn descriptor(&self) -> &BundleDescriptor {
     &self.descriptor
   }
 
+  /// Retrieves file data by path.
+  ///
+  /// Returns `None` if the path doesn't exist in the bundle.
+  ///
+  /// # Example
+  ///
+  /// ```
+  /// # use wvb::Bundle;
+  /// let bundle = Bundle::builder()
+  ///     .add_file("/test.txt", b"hello", None)
+  ///     .build();
+  ///
+  /// let data = bundle.get_data("/test.txt").unwrap().unwrap();
+  /// assert_eq!(data, b"hello");
+  /// ```
   pub fn get_data(&self, path: &str) -> crate::Result<Option<Vec<u8>>> {
     if !self.descriptor.index.contains_path(path) {
       return Ok(None);
@@ -114,6 +214,9 @@ impl Bundle {
     Ok(Some(data))
   }
 
+  /// Retrieves the checksum of file data by path.
+  ///
+  /// Returns `None` if the path doesn't exist in the bundle.
   pub fn get_data_checksum(&self, path: &str) -> crate::Result<Option<u32>> {
     if !self.descriptor.index.contains_path(path) {
       return Ok(None);
