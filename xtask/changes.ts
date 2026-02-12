@@ -71,7 +71,7 @@ export class Changes {
     this.changes = changes;
   }
 
-  getBumpRule(): BumpRule | null {
+  getBumpRule(): Extract<BumpRule, { type: 'major' | 'minor' | 'patch' }> | null {
     if (this.changes.length === 0) {
       return null;
     }

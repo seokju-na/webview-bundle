@@ -61,7 +61,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
       - name: Install latest libc++-dev for cross build
-        uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # 3.0.0
+        uses: seokju-na/docker-run-action@stable
         with:
           image: node:lts-slim
           options: '--platform linux/arm64 --user 0:0 -e GITHUB_TOKEN -v ${{ github.workspace }}/lib/llvm-18:/usr/lib/llvm-18'
