@@ -66,7 +66,7 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian
-            build: |-
+            build: >-
               rustup toolchain install 1.91.0 &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-gnu &&
@@ -75,7 +75,7 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
-            build: |-
+            build: >-
               rustup toolchain install 1.91.0 &&
               yarn &&
               yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-musl &&
@@ -84,7 +84,7 @@ jobs:
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian-aarch64
-            build: |-
+            build: >-
               rustup toolchain install 1.91.0 &&
               rustup target add aarch64-unknown-linux-gnu &&
               yarn &&
@@ -93,8 +93,7 @@ jobs:
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             docker: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
-            build: |-
-              set -e &&
+            build: >-
               rustup toolchain install 1.91.0 &&
               rustup target add aarch64-unknown-linux-musl &&
               yarn &&
@@ -124,7 +123,7 @@ jobs:
         if: ${{ matrix.settings.docker }}
         uses: ./.github/actions/free-disk-space
       - name: Run build & vitest
-        uses: maus007/docker-run-action-fork@5ddaad0f7eedd03f64e412b1931852bd3031b273 # 1.0.0
+        uses: ./.github/actions/run-docker
         if: ${{ matrix.settings.docker }}
         with:
           image: ${{ matrix.settings.docker }}
