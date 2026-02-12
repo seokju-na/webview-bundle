@@ -84,7 +84,7 @@ jobs:
         if: ${{ matrix.settings.docker }}
         uses: ./.github/actions/free-disk-space
       - name: Run build (Docker)
-        uses: ./.github/actions/run-docker
+        uses: seokju-na/docker-run-action@stable
         if: ${{ matrix.settings.docker }}
         with:
           image: ${{ matrix.settings.docker }}
