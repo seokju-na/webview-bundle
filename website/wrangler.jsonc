@@ -4,12 +4,12 @@
 	"name": "wvb-website",
   "workers_dev": false,
   "preview_urls": false,
-  "route": "dev.wvb.dev/*",
+  "route": "wvb.dev",
   "env": {
-    "production": {
-      "workers_dev": false,
-      "preview_urls": false,
-      "route": "wvb.dev/*",
+    "dev": {
+      "workers_dev": true,
+      "preview_urls": true,
+      "route": "dev.wvb.dev",
       "services": [
         {
           "binding": "WORKER_SELF_REFERENCE",
@@ -48,6 +48,9 @@
       "binding": "NEXT_INC_CACHE_R2_BUCKET"
     }
   ],
+  "images": {
+    "binding": "IMAGES"
+  },
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
