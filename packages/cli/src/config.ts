@@ -191,7 +191,7 @@ export async function resolveConfig(inlineConfig: InlineConfig): Promise<Resolve
   const resolved: ResolvedConfig = {
     ...config,
     root,
-    configFile: configFile != null && configFile !== false ? configfile : undefined,
+    configFile: configFile != null && configFile !== false ? configFile : undefined,
     configFileDependencies,
     inlineConfig,
     packageJson,
