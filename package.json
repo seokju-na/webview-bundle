@@ -12,6 +12,7 @@
   "type": "module",
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
+    "@taplo/cli": "0.7.0",
     "lefthook": "1.13.6",
     "oxfmt": "0.32.0",
     "oxlint": "1.47.0",

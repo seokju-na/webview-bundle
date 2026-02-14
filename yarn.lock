@@ -8497,6 +8497,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@taplo/cli@npm:0.7.0":
+  version: 0.7.0
+  resolution: "@taplo/cli@npm:0.7.0"
+  bin:
+    taplo: dist/cli.js
+  checksum: 10c0/c5a9a34502335731e405547fe24ba1a2f867fccdf8abe4d13e261e30fad6c18a2773a961981206166fde0c85b19accef40381c189c8c6ed4952c5b082c1d4996
+  languageName: node
+  linkType: hard
+
 "@taplo/core@npm:^0.2.0":
   version: 0.2.0
   resolution: "@taplo/core@npm:0.2.0"
@@ -17950,6 +17959,7 @@ __metadata:
   resolution: "webview-bundle-workspace@workspace:."
   dependencies:
     "@arethetypeswrong/cli": "npm:0.18.2"
+    "@taplo/cli": "npm:0.7.0"
     lefthook: "npm:1.13.6"
     oxfmt: "npm:0.32.0"
     oxlint: "npm:1.47.0"
