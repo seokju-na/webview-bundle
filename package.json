@@ -1,7 +1,6 @@
 {
   "name": "webview-bundle-workspace",
   "private": true,
-  "type": "module",
   "workspaces": [
     "packages/**/*",
     "examples/*",
@@ -10,13 +9,14 @@
     "xtask",
     "website"
   ],
-  "packageManager": "yarn@4.12.0",
+  "type": "module",
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
-    "@biomejs/biome": "2.1.2",
-    "@taplo/cli": "0.7.0",
-    "lefthook": "1.7.15",
+    "lefthook": "1.13.6",
+    "oxfmt": "0.32.0",
+    "oxlint": "1.47.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  }
+  },
+  "packageManager": "yarn@4.12.0"
 }

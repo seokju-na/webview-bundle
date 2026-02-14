@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    ".yarn",
+    "*.json",
+    "!**/package.json",
+    "!**/tsconfig.json",
+    "!**/xtask.json",
+    "*.yaml",
+    "*.yml",
+    "**/index.cjs",
+    "**/index.js",
+    "**/*.d.ts",
+    "**/*.d.cts"
+  ],
+  "printWidth": 100,
+  "singleQuote": true,
+  "semi": true,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "arrowParens": "avoid",
+  "experimentalSortImports": {
+    "newlinesBetween": false
+  }
+}
