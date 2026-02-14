@@ -8,6 +8,7 @@
     "!**/xtask.json",
     "*.yaml",
     "*.yml",
+    "*.toml",
     "**/index.cjs",
     "**/index.js",
     "**/*.d.ts",
