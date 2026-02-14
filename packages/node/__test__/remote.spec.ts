@@ -1,7 +1,7 @@
-import { Buffer } from 'node:buffer';
 import { type ServerType, serve } from '@hono/node-server';
 import getPort from 'get-port';
 import { Hono } from 'hono';
+import { Buffer } from 'node:buffer';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { BundleBuilder, Remote, writeBundleIntoBuffer } from '../index.js';
 
@@ -63,7 +63,11 @@ afterAll(() => {
       return;
     }
     server.close(e => {
-      e != null ? reject(e) : resolve();
+      if (e != null) {
+        reject(e);
+      } else {
+        resolve();
+      }
     });
   });
 });
@@ -95,7 +99,9 @@ describe('remote', () => {
     expect(bundle.getData('/index.html')).toEqual(Buffer.from('<h1>Hello World</h1>', 'utf8'));
 
     allowOnlyLatest = true;
-    await expect(remote.downloadVersion('bundle1', '1.0.0')).rejects.toThrowError(/remote forbidden/);
+    await expect(remote.downloadVersion('bundle1', '1.0.0')).rejects.toThrowError(
+      /remote forbidden/
+    );
   });
 
   it('bundle not found', async () => {

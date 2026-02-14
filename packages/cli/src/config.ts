@@ -1,8 +1,8 @@
+import type { Config } from '@wvb/config';
 import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Config } from '@wvb/config';
 import { DEFAULT_CONFIG_FILES } from './constants.js';
 import {
   findNearestPackageJson,
@@ -46,7 +46,9 @@ export async function loadConfigFile(
   if (isEsm) {
     const pkgJsonFilePath = await findNearestPackageJsonFilePath(cwd);
     let tmpDir: string | null =
-      pkgJsonFilePath != null ? path.join(path.dirname(pkgJsonFilePath), '.wvb') : path.join(cwd, '.wvb');
+      pkgJsonFilePath != null
+        ? path.join(path.dirname(pkgJsonFilePath), '.wvb')
+        : path.join(cwd, '.wvb');
     try {
       await fs.mkdir(tmpDir, { recursive: true });
     } catch (e: any) {
@@ -59,7 +61,9 @@ export async function loadConfigFile(
     const fileName = path.basename(resolvedFilePath);
     const hash = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const tmpFilePath =
-      tmpDir != null ? path.join(tmpDir, `${fileName}.${hash}.mjs`) : `${resolvedFilePath}.${hash}.mjs`;
+      tmpDir != null
+        ? path.join(tmpDir, `${fileName}.${hash}.mjs`)
+        : `${resolvedFilePath}.${hash}.mjs`;
     await fs.writeFile(tmpFilePath, bundle.code);
     try {
       const imported = await import(pathToFileURL(tmpFilePath).href);
@@ -89,7 +93,7 @@ export async function loadConfigFile(
   const raw = _require(resolvedFilePath);
   _require.extensions[loaderExt] = defaultLoader;
 
-  const config = raw.__esModule ? raw.default : raw;
+  const config = (raw.__esModule as boolean) ? raw.default : raw;
   return {
     config,
     configFile: resolvedFilePath,
@@ -112,7 +116,13 @@ async function bundleConfigFile(
     input: absoluteFilepath,
     platform: 'node',
     external: id => {
-      if (!id || id.startsWith('\0') || id.startsWith('.') || id.startsWith('#') || path.isAbsolute(id)) {
+      if (
+        !id ||
+        id.startsWith('\0') ||
+        id.startsWith('.') ||
+        id.startsWith('#') ||
+        path.isAbsolute(id)
+      ) {
         return false;
       }
       if (isNodeBuiltin(id) || id.startsWith('npm:')) {
@@ -154,16 +164,15 @@ export interface InlineConfig extends Config {
   configFile?: string | false;
 }
 
-export interface ResolvedConfig
-  extends Readonly<
-    Omit<Config, 'root'> & {
-      root: string;
-      configFile: string | undefined;
-      configFileDependencies: string[] | undefined;
-      inlineConfig: InlineConfig;
-      packageJson: PackageJson | null;
-    }
-  > {}
+export interface ResolvedConfig extends Readonly<
+  Omit<Config, 'root'> & {
+    root: string;
+    configFile: string | undefined;
+    configFileDependencies: string[] | undefined;
+    inlineConfig: InlineConfig;
+    packageJson: PackageJson | null;
+  }
+> {}
 
 export async function resolveConfig(inlineConfig: InlineConfig): Promise<ResolvedConfig> {
   let config = inlineConfig;
@@ -182,7 +191,7 @@ export async function resolveConfig(inlineConfig: InlineConfig): Promise<Resolve
   const resolved: ResolvedConfig = {
     ...config,
     root,
-    configFile: configFile || undefined,
+    configFile: configFile != null && configFile !== false ? configfile : undefined,
     configFileDependencies,
     inlineConfig,
     packageJson,

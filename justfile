@@ -47,7 +47,7 @@ lint: lint-rs lint-js
 
 # Lint JS files via oxlint
 lint-js:
-    yarn oxlint
+    yarn oxlint --type-aware
 
 # Lint Rust files via Clippy
 lint-rs:

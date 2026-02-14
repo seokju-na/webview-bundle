@@ -25,7 +25,7 @@ export async function listBundleDeployments(
   );
   const bundleNames =
     output.CommonPrefixes?.map(x => {
-      const path = x.Prefix || '';
+      const path = x.Prefix != null && x.Prefix.length > 0 ? x.Prefix : '';
       const bundle = path.replace('bundles/', '').replace('/', '');
       return bundle;
     }).filter(x => x.length > 0) ?? [];

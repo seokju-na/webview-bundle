@@ -10,5 +10,5 @@ pre-commit:
       run: cargo clippy --workspace
     oxc:
       glob: '*.{js,ts,jsx,tsx,cjs,mjs,cts,mts,json}'
-      run: yarn oxlint {staged_files} --fix && yarn oxfmt {staged_files}
+      run: yarn oxlint {staged_files} --type-aware --fix && yarn oxfmt {staged_files}
       stage_fixed: true
