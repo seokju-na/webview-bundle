@@ -69,9 +69,6 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # 6.0.1
-      - name: Setup Node.js
-        uses: ./.github/actions/node-setup
-        if: ${{ !matrix.settings.docker }}
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
         if: ${{ !matrix.settings.docker }}
@@ -94,6 +91,8 @@ jobs:
         if: ${{ !matrix.settings.docker }}
         shell: bash
       - uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff # 3.0.0
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
       - name: Merge artifacts
         run: just xtask artifacts merge
       - name: Upload artifacts
