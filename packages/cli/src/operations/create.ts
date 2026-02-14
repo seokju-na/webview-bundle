@@ -1,9 +1,9 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import type { HeadersConfig, IgnoreConfig } from '@wvb/config';
 import { type Bundle, BundleBuilder, writeBundle } from '@wvb/node';
 import { filterAsync, isNotNil } from 'es-toolkit';
 import { isRegExp } from 'es-toolkit/predicate';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import pm from 'picomatch';
 import { glob } from 'tinyglobby';
 import { c } from '../console.js';
@@ -118,7 +118,10 @@ async function isFileIgnored(file: string, ignoreInputs: IgnoreConfig[]): Promis
   return false;
 }
 
-async function getHeaders(file: string, headerInputs: HeadersConfig[]): Promise<Record<string, string> | undefined> {
+async function getHeaders(
+  file: string,
+  headerInputs: HeadersConfig[]
+): Promise<Record<string, string> | undefined> {
   if (headerInputs.length === 0) {
     return undefined;
   }

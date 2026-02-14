@@ -1,4 +1,3 @@
-import type { Buffer } from 'node:buffer';
 import type {
   BundleSourceVersion,
   BundleUpdateInfo,
@@ -6,6 +5,7 @@ import type {
   ListRemoteBundleInfo,
   RemoteBundleInfo,
 } from '@wvb/node';
+import type { Buffer } from 'node:buffer';
 
 export type {
   BundleSourceVersion,
@@ -26,7 +26,10 @@ export interface WebviewBundleRemoteApi {
   listBundles(channel?: string): Promise<ListRemoteBundleInfo[]>;
   getInfo(bundleName: string, channel?: string): Promise<RemoteBundleInfo>;
   download(bundleName: string, channel?: string): Promise<[info: RemoteBundleInfo, bundle: Buffer]>;
-  downloadVersion(bundleName: string, version: string): Promise<[info: RemoteBundleInfo, bundle: Buffer]>;
+  downloadVersion(
+    bundleName: string,
+    version: string
+  ): Promise<[info: RemoteBundleInfo, bundle: Buffer]>;
 }
 
 export interface WebviewBundleUpdaterApi {

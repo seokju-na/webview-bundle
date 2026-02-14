@@ -8,9 +8,9 @@ export interface CloudflareClientConfigLike {
   cloudflareConfig?: ClientOptions;
 }
 
-export async function getCloudflareClient<T extends CloudflareClientConfigLike = CloudflareClientConfigLike>(
-  config: T
-): Promise<Cloudflare> {
+export async function getCloudflareClient<
+  T extends CloudflareClientConfigLike = CloudflareClientConfigLike,
+>(config: T): Promise<Cloudflare> {
   if (config.cloudflare != null) {
     return config.cloudflare;
   }

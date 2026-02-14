@@ -1,33 +1,33 @@
 {
   "name": "@wvb/node-freebsd-x64",
   "version": "0.0.0",
-  "cpu": [
-    "x64"
-  ],
-  "main": "binding.freebsd-x64.node",
-  "files": [
-    "binding.freebsd-x64.node"
-  ],
   "description": "Webview bundle API for Node.js",
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "license": "MIT",
   "author": {
     "name": "Seokju Na",
     "email": "seokju.me@gmail.com",
     "url": "https://github.com/seokju-na"
-  },
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "license": "MIT",
-  "engines": {
-    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/seokju-na/webview-bundle",
     "directory": "packages/node"
   },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
+  "files": [
+    "binding.freebsd-x64.node"
+  ],
   "os": [
     "freebsd"
-  ]
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "binding.freebsd-x64.node",
+  "engines": {
+    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
+  }
 }

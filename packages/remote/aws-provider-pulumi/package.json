@@ -1,7 +1,28 @@
 {
   "name": "@wvb/remote-aws-provider-pulumi",
-  "description": "Webview Bundle remote pulumi configuration for AWS",
   "version": "0.0.0",
+  "description": "Webview Bundle remote pulumi configuration for AWS",
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/remote/aws-provider-pulumi"
+  },
+  "files": [
+    "dist",
+    "lambda",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
@@ -12,36 +33,11 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist",
-    "lambda",
-    "README.md",
-    "CHANGELOG.md"
-  ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/remote/aws-provider-pulumi"
-  },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
-  "author": {
-    "name": "Seokju Na",
-    "email": "seokju.me@gmail.com",
-    "url": "https://github.com/seokju-na"
-  },
-  "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test-lambda-codegen": "tsx ./test-lambda-codegen.ts"
-  },
-  "peerDependencies": {
-    "@pulumi/aws": "*",
-    "@pulumi/pulumi": "*"
   },
   "dependencies": {
     "@wvb/remote-aws-provider": "workspace:^",
@@ -56,5 +52,9 @@
     "tsx": "^4.20.6",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@pulumi/aws": "*",
+    "@pulumi/pulumi": "*"
   }
 }

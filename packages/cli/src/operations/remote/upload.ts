@@ -1,5 +1,3 @@
-import { Buffer } from 'node:buffer';
-import path from 'node:path';
 import {
   type BaseRemoteUploader,
   type IntegrityMakeConfig,
@@ -8,10 +6,12 @@ import {
   signSignature,
 } from '@wvb/config/remote';
 import { type Bundle, readBundle, writeBundleIntoBuffer } from '@wvb/node';
+import { Buffer } from 'node:buffer';
+import path from 'node:path';
+import type { Logger } from '../../log.js';
 import { c } from '../../console.js';
 import { formatByteLength } from '../../format.js';
 import { pathExists, toAbsolutePath } from '../../fs.js';
-import type { Logger } from '../../log.js';
 import { OperationError } from '../error.js';
 
 export interface RemoteUploadParams {
@@ -51,13 +51,16 @@ export async function remoteUpload(params: RemoteUploadParams): Promise<void> {
   } else {
     bundle = file;
   }
-  const bundleName = bundleNameInput ?? (typeof file === 'string' ? path.basename(file, '.wvb') : undefined);
+  const bundleName =
+    bundleNameInput ?? (typeof file === 'string' ? path.basename(file, '.wvb') : undefined);
   if (bundleName == null) {
     const message = `Cannot get bundle name. If you pass "file" as bundle object, you must provide "bundleName" field.`;
     logger?.error(message);
     throw new OperationError(message);
   }
-  logger?.info(`Will upload Remote Webview Bundle: ${c.bold(c.info(bundleName))} (Version: ${c.info(version)}`);
+  logger?.info(
+    `Will upload Remote Webview Bundle: ${c.bold(c.info(bundleName))} (Version: ${c.info(version)}`
+  );
 
   const buf = writeBundleIntoBuffer(bundle);
   const size = buf.byteLength;
@@ -73,7 +76,8 @@ export async function remoteUpload(params: RemoteUploadParams): Promise<void> {
   let signature: string | undefined;
   if (signatureConfig != null) {
     if (integrity == null) {
-      const message = 'Cannot make signature without integrity. Make sure integrity making option is enabled.';
+      const message =
+        'Cannot make signature without integrity. Make sure integrity making option is enabled.';
       logger?.error(message);
       throw new OperationError(message);
     }

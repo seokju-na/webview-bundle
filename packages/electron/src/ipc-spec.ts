@@ -1,5 +1,5 @@
-import type { Buffer } from 'node:buffer';
 import type { IpcMainInvokeEvent } from 'electron';
+import type { Buffer } from 'node:buffer';
 import type {
   BundleSourceVersion,
   BundleUpdateInfo,
@@ -41,12 +41,21 @@ export type IpcHandler<Return = unknown, Args extends unknown[] = []> = (
 export type IpcHandlerSpecs = {
   // source
   'webview-bundle:source:list-bundles': IpcHandler<ListBundleItem[]>;
-  'webview-bundle:source:load-version': IpcHandler<BundleSourceVersion | null, [bundleName: string]>;
+  'webview-bundle:source:load-version': IpcHandler<
+    BundleSourceVersion | null,
+    [bundleName: string]
+  >;
   'webview-bundle:source:update-version': IpcHandler<void, [bundleName: string, version: string]>;
   'webview-bundle:source:filepath': IpcHandler<string, [bundleName: string]>;
   // remote
-  'webview-bundle:remote:list-bundles': IpcHandler<ListRemoteBundleInfo[], [channel?: string | undefined]>;
-  'webview-bundle:remote:get-info': IpcHandler<RemoteBundleInfo, [bundleName: string, channel?: string | undefined]>;
+  'webview-bundle:remote:list-bundles': IpcHandler<
+    ListRemoteBundleInfo[],
+    [channel?: string | undefined]
+  >;
+  'webview-bundle:remote:get-info': IpcHandler<
+    RemoteBundleInfo,
+    [bundleName: string, channel?: string | undefined]
+  >;
   'webview-bundle:remote:download': IpcHandler<
     [info: RemoteBundleInfo, bundle: Buffer],
     [bundleName: string, channel?: string | undefined]
@@ -73,8 +82,12 @@ type IpcHandlerArgs<T extends IpcChannel> = IpcHandlerSpecs[T] extends (
 ) => any
   ? Args
   : never;
-type IpcHandlerReturn<T extends IpcChannel> = IpcHandlerSpecs[T] extends (...args: any[]) => Promise<infer Return>
+type IpcHandlerReturn<T extends IpcChannel> = IpcHandlerSpecs[T] extends (
+  ...args: any[]
+) => Promise<infer Return>
   ? Return
   : never;
 
-export type IpcInvoke<T extends IpcChannel> = (...args: IpcHandlerArgs<T>) => Promise<IpcHandlerReturn<T>>;
+export type IpcInvoke<T extends IpcChannel> = (
+  ...args: IpcHandlerArgs<T>
+) => Promise<IpcHandlerReturn<T>>;

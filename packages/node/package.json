@@ -1,16 +1,21 @@
 {
   "name": "@wvb/node",
-  "description": "Webview bundle API for Node.js",
   "version": "0.0.0",
-  "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./index.cjs"
-    },
-    "./package.json": "./package.json"
+  "description": "Webview bundle API for Node.js",
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/node"
   },
   "files": [
     "index.js",
@@ -21,21 +26,32 @@
     "CHANGELOG.md",
     "*.node"
   ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/node"
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
+    "./package.json": "./package.json"
   },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  "scripts": {
+    "artifacts": "just xtask artifacts napi packages/node && napi artifacts",
+    "build-napi": "yarn build-napi-esm && yarn build-napi-cjs",
+    "build-napi-esm": "napi build --platform --release --js=index.js --dts=index.d.ts --esm --no-const-enum --no-dts-cache",
+    "build-napi-cjs": "napi build --platform --release --js=index.cjs --dts=index.d.cts --no-const-enum --no-dts-cache",
+    "typecheck": "tsc --noEmit"
   },
-  "author": {
-    "name": "Seokju Na",
-    "email": "seokju.me@gmail.com",
-    "url": "https://github.com/seokju-na"
+  "devDependencies": {
+    "@hono/node-server": "^1.19.2",
+    "@napi-rs/cli": "3.1.5",
+    "@types/node": "catalog:",
+    "get-port": "^7.1.0",
+    "hono": "^4.10.3",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
-  "license": "MIT",
   "napi": {
     "binaryName": "binding",
     "targets": [
@@ -54,21 +70,5 @@
   },
   "engines": {
     "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
-  },
-  "scripts": {
-    "artifacts": "just xtask artifacts napi packages/node && napi artifacts",
-    "build-napi": "yarn build-napi-esm && yarn build-napi-cjs",
-    "build-napi-esm": "napi build --platform --release --js=index.js --dts=index.d.ts --esm --no-const-enum --no-dts-cache",
-    "build-napi-cjs": "napi build --platform --release --js=index.cjs --dts=index.d.cts --no-const-enum --no-dts-cache",
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@hono/node-server": "^1.19.2",
-    "@napi-rs/cli": "3.1.5",
-    "@types/node": "catalog:",
-    "get-port": "^7.1.0",
-    "hono": "^4.10.3",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
   }
 }

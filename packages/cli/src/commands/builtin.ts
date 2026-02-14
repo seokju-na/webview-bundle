@@ -1,6 +1,6 @@
-import path from 'node:path';
 import { Command, Option } from 'clipanion';
 import { isNotNil } from 'es-toolkit';
+import path from 'node:path';
 import { cascade, isBoolean, isInteger, isNumber } from 'typanion';
 import { resolveConfig } from '../config.js';
 import { builtin } from '../operations/builtin.js';
@@ -22,7 +22,8 @@ export class BuiltinCommand extends BaseCommand {
     description: 'Endpoint of remote server.',
   });
   readonly channel = Option.String('--channel', {
-    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+    description:
+      'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
   });
   readonly include = Option.Array('--include', {
     description: 'Patterns to which bundles should be included from remote bundles.',

@@ -1,10 +1,10 @@
+import { type Bundle, type IndexEntry, readBundle } from '@wvb/node';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type Bundle, type IndexEntry, readBundle } from '@wvb/node';
+import type { Logger } from '../log.js';
 import { c } from '../console.js';
 import { formatByteLength } from '../format.js';
 import { pathExists, toAbsolutePath, withWVBExtension } from '../fs.js';
-import type { Logger } from '../log.js';
 import { OperationError } from './error.js';
 
 export interface ExtractParams {

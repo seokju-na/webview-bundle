@@ -1,15 +1,17 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { WorkerArgs, WorkersDeploymentArgs } from '@pulumi/cloudflare';
-import * as cloudflare from '@pulumi/cloudflare';
 import type { R2BucketArgs } from '@pulumi/cloudflare/r2bucket.js';
 import type { WorkersKvNamespaceArgs } from '@pulumi/cloudflare/workersKvNamespace.js';
 import type { WorkerVersionArgs } from '@pulumi/cloudflare/workerVersion.js';
+import * as cloudflare from '@pulumi/cloudflare';
 import * as pulumi from '@pulumi/pulumi';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Optional } from './types.js';
 
 const dirname =
-  typeof import.meta.dirname === 'string' ? import.meta.dirname : path.dirname(fileURLToPath(import.meta.url));
+  typeof import.meta.dirname === 'string'
+    ? import.meta.dirname
+    : path.dirname(fileURLToPath(import.meta.url));
 
 export interface WebviewBundleRemoteProviderConfig {
   accountId: pulumi.Input<string>;
@@ -28,7 +30,11 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
   public readonly workerVersionId: pulumi.Output<string>;
   public readonly workerDeploymentId: pulumi.Output<string>;
 
-  constructor(name: string, config: WebviewBundleRemoteProviderConfig, opts?: pulumi.ComponentResourceOptions) {
+  constructor(
+    name: string,
+    config: WebviewBundleRemoteProviderConfig,
+    opts?: pulumi.ComponentResourceOptions
+  ) {
     super('webview-bundle:cloudflare:RemoteProvider', name, {}, opts);
 
     const {
@@ -77,7 +83,8 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
     const defaultWorkerFile = path.join(dirname, 'worker-script.js');
     const defaultWorkerSourcemapFile = path.join(dirname, 'worker-script.js.map');
 
-    const workerMainModule = workerVersionArgs?.mainModule == null ? defaultScriptName : workerVersionArgs?.mainModule;
+    const workerMainModule =
+      workerVersionArgs?.mainModule == null ? defaultScriptName : workerVersionArgs?.mainModule;
     const workerModules =
       workerVersionArgs?.modules == null
         ? [

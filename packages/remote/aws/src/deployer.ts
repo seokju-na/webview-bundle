@@ -1,6 +1,10 @@
 import type { CloudFrontClient, CloudFrontClientConfig } from '@aws-sdk/client-cloudfront';
 import type { S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
-import type { BaseRemoteDeployer, RemoteBundleDeployment, RemoteDeployParams } from '@wvb/config/remote';
+import type {
+  BaseRemoteDeployer,
+  RemoteBundleDeployment,
+  RemoteDeployParams,
+} from '@wvb/config/remote';
 import { getCloudFrontClient, getS3Client, isNoSuchKeyError } from './utils.js';
 
 export interface AwsRemoteDeployerConfig {
@@ -30,7 +34,11 @@ class AwsRemoteDeployerImpl implements BaseRemoteDeployer {
         : typeof keyInput === 'function'
           ? keyInput(bundleName, version, channel)
           : `bundles/${bundleName}/deployment.json`;
-    const deployment: RemoteBundleDeployment = (await this.getDeployment(s3Client, bucket, key)) ?? {
+    const deployment: RemoteBundleDeployment = (await this.getDeployment(
+      s3Client,
+      bucket,
+      key
+    )) ?? {
       name: bundleName,
     };
     deployment.name = bundleName;
@@ -49,11 +57,21 @@ class AwsRemoteDeployerImpl implements BaseRemoteDeployer {
           : typeof invalidation.callerReference === 'function'
             ? invalidation.callerReference()
             : String(Date.now());
-      await this.invalidateCache(cfClient, invalidation.distributionId, callerReference, bundleName, channel);
+      await this.invalidateCache(
+        cfClient,
+        invalidation.distributionId,
+        callerReference,
+        bundleName,
+        channel
+      );
     }
   }
 
-  private async getDeployment(s3Client: S3Client, bucket: string, key: string): Promise<RemoteBundleDeployment | null> {
+  private async getDeployment(
+    s3Client: S3Client,
+    bucket: string,
+    key: string
+  ): Promise<RemoteBundleDeployment | null> {
     try {
       const { GetObjectCommand } = await import('@aws-sdk/client-s3');
       const output = await s3Client.send(
@@ -111,7 +129,9 @@ class AwsRemoteDeployerImpl implements BaseRemoteDeployer {
             Quantity: 2,
             Items: [
               channel != null ? `/bundles?channel=${channelQs}` : '/bundles',
-              channel != null ? `/bundles/${bundleName}?channel=${channelQs}` : `/bundles/${bundleName}`,
+              channel != null
+                ? `/bundles/${bundleName}?channel=${channelQs}`
+                : `/bundles/${bundleName}`,
             ],
           },
           CallerReference: callerReference,

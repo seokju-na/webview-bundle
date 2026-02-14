@@ -3,6 +3,7 @@
   "ignorePatterns": [
     ".yarn",
     "*.json",
+    "*.jsonc",
     "!**/package.json",
     "!**/tsconfig.json",
     "!**/xtask.json",

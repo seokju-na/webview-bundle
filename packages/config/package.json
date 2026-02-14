@@ -1,7 +1,27 @@
 {
   "name": "@wvb/config",
-  "description": "Configuration for webview bundle",
   "version": "0.0.0",
+  "description": "Configuration for webview bundle",
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/config"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
@@ -16,26 +36,6 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md"
-  ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/config"
-  },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
-  "author": {
-    "name": "Seokju Na",
-    "email": "seokju.me@gmail.com",
-    "url": "https://github.com/seokju-na"
-  },
-  "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
     "build": "tsdown",

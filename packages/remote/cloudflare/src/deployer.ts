@@ -41,6 +41,8 @@ class CloudflareRemoteDeployerImpl implements BaseRemoteDeployer {
   }
 }
 
-export function cloudflareRemoteDeployer(config: CloudflareRemoteDeployerConfig): BaseRemoteDeployer {
+export function cloudflareRemoteDeployer(
+  config: CloudflareRemoteDeployerConfig
+): BaseRemoteDeployer {
   return new CloudflareRemoteDeployerImpl(config);
 }

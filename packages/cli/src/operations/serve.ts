@@ -1,8 +1,8 @@
 import type { ServerType } from '@hono/node-server';
 import { readBundle } from '@wvb/node';
+import type { Logger } from '../log.js';
 import { c, isColorEnabled } from '../console.js';
 import { pathExists, toAbsolutePath, withWVBExtension } from '../fs.js';
-import type { Logger } from '../log.js';
 import { OperationError } from './error.js';
 
 export interface ServeParams {
@@ -20,7 +20,14 @@ export interface ServeInstance {
 }
 
 export async function serve(params: ServeParams): Promise<ServeInstance> {
-  const { file, port = 4312, cwd, silent = false, logger, colorEnabled = isColorEnabled() } = params;
+  const {
+    file,
+    port = 4312,
+    cwd,
+    silent = false,
+    logger,
+    colorEnabled = isColorEnabled(),
+  } = params;
   const filepath = toAbsolutePath(withWVBExtension(file), cwd);
 
   if (!(await pathExists(filepath))) {
@@ -48,7 +55,9 @@ export async function serve(params: ServeParams): Promise<ServeInstance> {
       return c.notFound();
     }
     const entry = bundle.descriptor().index().getEntry(p)!;
-    logger?.debug(`Read entry: ${p} (content-type=${entry.contentType}, content-length=${entry.contentLength})`);
+    logger?.debug(
+      `Read entry: ${p} (content-type=${entry.contentType}, content-length=${entry.contentLength})`
+    );
     const data = bundle.getData(p)!;
     for (const [name, value] of Object.entries(entry.headers)) {
       c.header(name, value, { append: true });

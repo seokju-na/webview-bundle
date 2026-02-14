@@ -1,7 +1,27 @@
 {
   "name": "@wvb/remote-aws-provider",
-  "description": "Webview Bundle remote provider for AWS",
   "version": "0.0.0",
+  "description": "Webview Bundle remote provider for AWS",
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/remote/aws-provider"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
@@ -20,26 +40,6 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md"
-  ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/remote/aws-provider"
-  },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
-  "author": {
-    "name": "Seokju Na",
-    "email": "seokju.me@gmail.com",
-    "url": "https://github.com/seokju-na"
-  },
-  "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
     "build": "tsdown",

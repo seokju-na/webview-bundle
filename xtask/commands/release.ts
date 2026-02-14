@@ -1,5 +1,3 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { checkbox } from '@inquirer/prompts';
 import { retry } from '@octokit/plugin-retry';
 import { Octokit } from '@octokit/rest';
@@ -7,6 +5,8 @@ import { isCI } from 'ci-info';
 import { Command, Option } from 'clipanion';
 import { openRepository, type Repository } from 'es-git';
 import { isNotNil, omit } from 'es-toolkit';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { type Action, runActions } from '../action.ts';
 import { editCargoTomlVersion, formatCargoToml, parseCargoToml } from '../cargo-toml.ts';
 import { Changelog } from '../changelog.ts';
@@ -79,7 +79,8 @@ export class Release extends Command {
         continue;
       }
       const changes = Changes.fromCommits(repo, pkgStaged.commits);
-      let bumpRule = pkgStaged.bumpRule ?? Changes.fromCommits(repo, pkgStaged.commits).getBumpRule();
+      let bumpRule =
+        pkgStaged.bumpRule ?? Changes.fromCommits(repo, pkgStaged.commits).getBumpRule();
       if (bumpRule == null) {
         console.log(`${colors.warn(prefix)} no changes found. skip release.`);
         continue;
@@ -89,7 +90,9 @@ export class Release extends Command {
         bumpRule = { type: 'prerelease', data: prerelease };
       }
       pkg.bumpVersion(bumpRule);
-      console.log(`${colors.info(prefix)} ${pkg.version.toString()} -> ${colors.success(pkg.nextVersion.toString())}`);
+      console.log(
+        `${colors.info(prefix)} ${pkg.version.toString()} -> ${colors.success(pkg.nextVersion.toString())}`
+      );
       for (let i = 0; i < changes.changes.length; i += 1) {
         const change = changes.changes[i]!;
         const line = i === changes.changes.length - 1 ? '└─' : '├─';
@@ -208,7 +211,9 @@ export class Release extends Command {
       return;
     }
     const pathspecs = targets.flatMap(x =>
-      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path, this.stagedFilepath].filter(isNotNil)
+      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path, this.stagedFilepath].filter(
+        isNotNil
+      )
     );
     if (rootCargoChanged) {
       pathspecs.push('Cargo.toml');
@@ -262,7 +267,9 @@ export class Release extends Command {
     const remote = repo.getRemote('origin');
     const refspecs = [
       'refs/heads/main:refs/heads/main',
-      ...targets.map(x => x.package.nextVersionedGitTag.tagRef).map(tagRef => `${tagRef}:${tagRef}`),
+      ...targets
+        .map(x => x.package.nextVersionedGitTag.tagRef)
+        .map(tagRef => `${tagRef}:${tagRef}`),
     ];
     const logRefspecs = () => {
       for (const refspec of refspecs) {
@@ -282,7 +289,9 @@ export class Release extends Command {
     await remote.push(
       [
         'refs/heads/main:refs/heads/main',
-        ...targets.map(x => x.package.nextVersionedGitTag.tagRef).map(tagRef => `${tagRef}:${tagRef}`),
+        ...targets
+          .map(x => x.package.nextVersionedGitTag.tagRef)
+          .map(tagRef => `${tagRef}:${tagRef}`),
       ],
       {
         credential: {
@@ -309,7 +318,9 @@ export class Release extends Command {
         body: target.changelog?.extractChanges(target.package) ?? undefined,
       };
       if (this.dryRun) {
-        console.log(`${colors.info('[root]')} will create github release: ${github.repo.owner}/${github.repo.name}`);
+        console.log(
+          `${colors.info('[root]')} will create github release: ${github.repo.owner}/${github.repo.name}`
+        );
         const payloadStr = JSON.stringify(payload, null, 2);
         for (const line of payloadStr.split('\n')) {
           console.log(`  ${colors.dim(line)}`);
@@ -317,7 +328,9 @@ export class Release extends Command {
         continue;
       }
       if (this.githubToken == null) {
-        console.log(`${colors.warn('[root]')} no github token found. skip creating github release.`);
+        console.log(
+          `${colors.warn('[root]')} no github token found. skip creating github release.`
+        );
         return;
       }
       const release = await client.rest.repos.createRelease({

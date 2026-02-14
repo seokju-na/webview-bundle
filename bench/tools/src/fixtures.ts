@@ -1,9 +1,9 @@
+import { execa } from 'execa';
+import { Listr } from 'listr2';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execa } from 'execa';
-import { Listr } from 'listr2';
 import { glob } from 'tinyglobby';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -82,7 +82,14 @@ export async function buildFixture(name: string): Promise<boolean> {
   await prepareCli(name);
   await execa(
     'yarn',
-    ['wvb', 'create', getFixtureOutDir(name), '-O', getFixtureOutWebviewBundleFilePath(name), '--truncate'],
+    [
+      'wvb',
+      'create',
+      getFixtureOutDir(name),
+      '-O',
+      getFixtureOutWebviewBundleFilePath(name),
+      '--truncate',
+    ],
     { cwd: current }
   );
   return true;
