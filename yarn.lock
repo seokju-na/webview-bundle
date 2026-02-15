@@ -9213,67 +9213,67 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wvb/node-darwin-arm64@workspace:packages/node/npm/darwin-arm64":
+"@wvb/node-darwin-arm64@workspace:^, @wvb/node-darwin-arm64@workspace:packages/node/npm/darwin-arm64":
   version: 0.0.0-use.local
   resolution: "@wvb/node-darwin-arm64@workspace:packages/node/npm/darwin-arm64"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-darwin-x64@workspace:packages/node/npm/darwin-x64":
+"@wvb/node-darwin-x64@workspace:^, @wvb/node-darwin-x64@workspace:packages/node/npm/darwin-x64":
   version: 0.0.0-use.local
   resolution: "@wvb/node-darwin-x64@workspace:packages/node/npm/darwin-x64"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-freebsd-x64@workspace:packages/node/npm/freebsd-x64":
+"@wvb/node-freebsd-x64@workspace:^, @wvb/node-freebsd-x64@workspace:packages/node/npm/freebsd-x64":
   version: 0.0.0-use.local
   resolution: "@wvb/node-freebsd-x64@workspace:packages/node/npm/freebsd-x64"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-linux-arm-gnueabihf@workspace:packages/node/npm/linux-arm-gnueabihf":
+"@wvb/node-linux-arm-gnueabihf@workspace:^, @wvb/node-linux-arm-gnueabihf@workspace:packages/node/npm/linux-arm-gnueabihf":
   version: 0.0.0-use.local
   resolution: "@wvb/node-linux-arm-gnueabihf@workspace:packages/node/npm/linux-arm-gnueabihf"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-linux-arm64-gnu@workspace:packages/node/npm/linux-arm64-gnu":
+"@wvb/node-linux-arm64-gnu@workspace:^, @wvb/node-linux-arm64-gnu@workspace:packages/node/npm/linux-arm64-gnu":
   version: 0.0.0-use.local
   resolution: "@wvb/node-linux-arm64-gnu@workspace:packages/node/npm/linux-arm64-gnu"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-linux-arm64-musl@workspace:packages/node/npm/linux-arm64-musl":
+"@wvb/node-linux-arm64-musl@workspace:^, @wvb/node-linux-arm64-musl@workspace:packages/node/npm/linux-arm64-musl":
   version: 0.0.0-use.local
   resolution: "@wvb/node-linux-arm64-musl@workspace:packages/node/npm/linux-arm64-musl"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-linux-x64-gnu@workspace:packages/node/npm/linux-x64-gnu":
+"@wvb/node-linux-x64-gnu@workspace:^, @wvb/node-linux-x64-gnu@workspace:packages/node/npm/linux-x64-gnu":
   version: 0.0.0-use.local
   resolution: "@wvb/node-linux-x64-gnu@workspace:packages/node/npm/linux-x64-gnu"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-linux-x64-musl@workspace:packages/node/npm/linux-x64-musl":
+"@wvb/node-linux-x64-musl@workspace:^, @wvb/node-linux-x64-musl@workspace:packages/node/npm/linux-x64-musl":
   version: 0.0.0-use.local
   resolution: "@wvb/node-linux-x64-musl@workspace:packages/node/npm/linux-x64-musl"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-win32-arm64-msvc@workspace:packages/node/npm/win32-arm64-msvc":
+"@wvb/node-win32-arm64-msvc@workspace:^, @wvb/node-win32-arm64-msvc@workspace:packages/node/npm/win32-arm64-msvc":
   version: 0.0.0-use.local
   resolution: "@wvb/node-win32-arm64-msvc@workspace:packages/node/npm/win32-arm64-msvc"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-win32-ia32-msvc@workspace:packages/node/npm/win32-ia32-msvc":
+"@wvb/node-win32-ia32-msvc@workspace:^, @wvb/node-win32-ia32-msvc@workspace:packages/node/npm/win32-ia32-msvc":
   version: 0.0.0-use.local
   resolution: "@wvb/node-win32-ia32-msvc@workspace:packages/node/npm/win32-ia32-msvc"
   languageName: unknown
   linkType: soft
 
-"@wvb/node-win32-x64-msvc@workspace:packages/node/npm/win32-x64-msvc":
+"@wvb/node-win32-x64-msvc@workspace:^, @wvb/node-win32-x64-msvc@workspace:packages/node/npm/win32-x64-msvc":
   version: 0.0.0-use.local
   resolution: "@wvb/node-win32-x64-msvc@workspace:packages/node/npm/win32-x64-msvc"
   languageName: unknown
@@ -9286,10 +9286,44 @@ __metadata:
     "@hono/node-server": "npm:^1.19.2"
     "@napi-rs/cli": "npm:3.1.5"
     "@types/node": "catalog:"
+    "@wvb/node-darwin-arm64": "workspace:^"
+    "@wvb/node-darwin-x64": "workspace:^"
+    "@wvb/node-freebsd-x64": "workspace:^"
+    "@wvb/node-linux-arm-gnueabihf": "workspace:^"
+    "@wvb/node-linux-arm64-gnu": "workspace:^"
+    "@wvb/node-linux-arm64-musl": "workspace:^"
+    "@wvb/node-linux-x64-gnu": "workspace:^"
+    "@wvb/node-linux-x64-musl": "workspace:^"
+    "@wvb/node-win32-arm64-msvc": "workspace:^"
+    "@wvb/node-win32-ia32-msvc": "workspace:^"
+    "@wvb/node-win32-x64-msvc": "workspace:^"
     get-port: "npm:^7.1.0"
     hono: "npm:^4.10.3"
     typescript: "catalog:"
     vitest: "catalog:"
+  dependenciesMeta:
+    "@wvb/node-darwin-arm64":
+      optional: true
+    "@wvb/node-darwin-x64":
+      optional: true
+    "@wvb/node-freebsd-x64":
+      optional: true
+    "@wvb/node-linux-arm-gnueabihf":
+      optional: true
+    "@wvb/node-linux-arm64-gnu":
+      optional: true
+    "@wvb/node-linux-arm64-musl":
+      optional: true
+    "@wvb/node-linux-x64-gnu":
+      optional: true
+    "@wvb/node-linux-x64-musl":
+      optional: true
+    "@wvb/node-win32-arm64-msvc":
+      optional: true
+    "@wvb/node-win32-ia32-msvc":
+      optional: true
+    "@wvb/node-win32-x64-msvc":
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -17280,6 +17314,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-pattern@npm:^5.9.0":
+  version: 5.9.0
+  resolution: "ts-pattern@npm:5.9.0"
+  checksum: 10c0/7640db25c39d29b287471b2b82d4f7b4674a02098c6ba4d10fed180adfb07d0e0c71930d9e59dc0d90654145e02fd320af63cf0df3c41e100d4154658a612a0a
+  languageName: node
+  linkType: hard
+
 "ts-tqdm@npm:^0.8.6":
   version: 0.8.6
   resolution: "ts-tqdm@npm:0.8.6"
@@ -18229,6 +18270,7 @@ __metadata:
     p-all: "npm:^5.0.0"
     semver: "npm:^7"
     supports-color: "npm:^10.0.0"
+    ts-pattern: "npm:^5.9.0"
     typanion: "npm:^3.14.0"
     type-fest: "npm:^4.40.1"
     typescript: "catalog:"

@@ -1,4 +1,3 @@
-#!/usr/bin/env -S node --no-warnings=ExperimentalWarning --experimental-strip-types
 import { Cli } from 'clipanion';
 import { ArtifactsMergeCommand } from './commands/artifacts-merge.ts';
 import { ArtifactsNapiCommand } from './commands/artifacts-napi.ts';

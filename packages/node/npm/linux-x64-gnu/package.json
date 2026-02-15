@@ -18,7 +18,7 @@
     "directory": "packages/node"
   },
   "files": [
-    "binding.linux-x64-gnu.node"
+    "wvb-node.linux-x64-gnu.node"
   ],
   "os": [
     "linux"
@@ -29,7 +29,7 @@
   "libc": [
     "glibc"
   ],
-  "main": "binding.linux-x64-gnu.node",
+  "main": "wvb-node.linux-x64-gnu.node",
   "engines": {
     "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   }

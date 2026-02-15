@@ -18,7 +18,7 @@
     "directory": "packages/node"
   },
   "files": [
-    "binding.freebsd-x64.node"
+    "wvb-node.freebsd-x64.node"
   ],
   "os": [
     "freebsd"
@@ -26,7 +26,7 @@
   "cpu": [
     "x64"
   ],
-  "main": "binding.freebsd-x64.node",
+  "main": "wvb-node.freebsd-x64.node",
   "engines": {
     "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   }

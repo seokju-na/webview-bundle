@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "yarn create-schema",
-    "create-schema": "node --no-warnings=ExperimentalWarning --experimental-strip-types ./.scripts/create-schema.ts",
+    "create-schema": "node ./.scripts/create-schema.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "p-all": "^5.0.0",
     "semver": "^7",
     "supports-color": "^10.0.0",
+    "ts-pattern": "^5.9.0",
     "typanion": "^3.14.0",
     "type-fest": "^4.40.1",
     "zod": "^4.0.5"

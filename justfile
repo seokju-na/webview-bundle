@@ -83,7 +83,7 @@ website:
 
 # Run xtask
 xtask *ARGS:
-    ./xtask/cli.ts {{ ARGS }}
+    node ./xtask/cli.ts {{ ARGS }}
 
 # Prerelease
 prerelease:

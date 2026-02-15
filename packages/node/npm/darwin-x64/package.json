@@ -18,7 +18,7 @@
     "directory": "packages/node"
   },
   "files": [
-    "binding.darwin-x64.node"
+    "wvb-node.darwin-x64.node"
   ],
   "os": [
     "darwin"
@@ -26,7 +26,7 @@
   "cpu": [
     "x64"
   ],
-  "main": "binding.darwin-x64.node",
+  "main": "wvb-node.darwin-x64.node",
   "engines": {
     "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   }
