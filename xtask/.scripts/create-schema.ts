@@ -1,4 +1,3 @@
-#!/usr/bin/env -S node --no-warnings=ExperimentalWarning --experimental-strip-types
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

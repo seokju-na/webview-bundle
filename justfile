@@ -17,6 +17,9 @@ setup:
     yarn
     yarn lefthook install
 
+    # Setup xtask
+    yarn workspace xtask run setup
+
     # Run build
     just build
 
@@ -83,7 +86,7 @@ website:
 
 # Run xtask
 xtask *ARGS:
-    ./xtask/cli.ts {{ ARGS }}
+    node ./xtask/cli.ts {{ ARGS }}
 
 # Prerelease
 prerelease:

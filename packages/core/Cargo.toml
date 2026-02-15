@@ -4,9 +4,9 @@ description  = "Offline-first web resources delivery system for webview mounted 
 edition      = "2021"
 license      = "MIT"
 name         = "wvb"
-repository   = "https://github.com/seokju-na/webview-bundle"
+repository   = "https://github.com/webview-bundle/webview-bundle"
 rust-version = "1.85.0"
-version      = "0.0.0"
+version      = "0.1.0"
 
 [lib]
 bench   = false

@@ -1,3 +1,5 @@
+# Original sources from [napi-rs](https://github.com/napi-rs/napi-rs)
+# See https://github.com/napi-rs/napi-rs/blob/main/.github/workflows/docker.yaml
 name: docker
 on:
   workflow_dispatch:
@@ -24,7 +26,7 @@ jobs:
           file: alpine.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-alpine
+          tags: ghcr.io/webview-bundle/webview-bundle/nodejs-rust:lts-alpine
   build-debian:
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +47,7 @@ jobs:
           file: debian.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian
+          tags: ghcr.io/webview-bundle/webview-bundle/nodejs-rust:lts-debian
   build-debian-aarch64-image:
     runs-on: ubuntu-latest
     steps:
@@ -80,5 +82,5 @@ jobs:
           file: debian-aarch64.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/seokju-na/webview-bundle/nodejs-rust:lts-debian-aarch64
+          tags: ghcr.io/webview-bundle/webview-bundle/nodejs-rust:lts-debian-aarch64
           context: .

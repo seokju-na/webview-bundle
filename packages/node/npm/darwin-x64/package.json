@@ -2,9 +2,9 @@
   "name": "@wvb/node-darwin-x64",
   "version": "0.0.0",
   "description": "Webview bundle API for Node.js",
-  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "homepage": "https://github.com/webview-bundle/webview-bundle",
   "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
+    "url": "https://github.com/webview-bundle/webview-bundle/issues"
   },
   "license": "MIT",
   "author": {
@@ -14,11 +14,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
+    "url": "https://github.com/webview-bundle/webview-bundle",
     "directory": "packages/node"
   },
   "files": [
-    "binding.darwin-x64.node"
+    "wvb-node.darwin-x64.node"
   ],
   "os": [
     "darwin"
@@ -26,7 +26,7 @@
   "cpu": [
     "x64"
   ],
-  "main": "binding.darwin-x64.node",
+  "main": "wvb-node.darwin-x64.node",
   "engines": {
     "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   }

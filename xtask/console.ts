@@ -60,3 +60,5 @@ export const colors = {
     return kleur.dim(str);
   },
 };
+
+export const c = colors;
