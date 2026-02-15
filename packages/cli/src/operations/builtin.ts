@@ -1,15 +1,15 @@
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
 import { type BundleManifestData, type ListRemoteBundleInfo, Remote } from '@wvb/node';
 import { MultiBar, Presets, type SingleBar } from 'cli-progress';
 import { filterAsync } from 'es-toolkit';
 import { limitAsync } from 'es-toolkit/array';
 import { isRegExp } from 'es-toolkit/predicate';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import pm from 'picomatch';
+import type { Logger } from '../log.js';
 import { c } from '../console.js';
 import { pathExists, toAbsolutePath } from '../fs.js';
-import type { Logger } from '../log.js';
 import { coerceArray } from '../utils/coerce.js';
 import { OperationError } from './error.js';
 
@@ -81,7 +81,9 @@ export async function builtin(params: BuiltinParams): Promise<BundleManifestData
       if (bundleName == null) {
         return;
       }
-      const bar = progressBars.get(bundleName) ?? progress.create(totalBytes, downloadedBytes, { bundleName });
+      const bar =
+        progressBars.get(bundleName) ??
+        progress.create(totalBytes, downloadedBytes, { bundleName });
       if (bar.isActive) {
         bar.update(downloadedBytes);
       }
@@ -97,10 +99,8 @@ export async function builtin(params: BuiltinParams): Promise<BundleManifestData
   const install = limitAsync(async (remoteBundle: ListRemoteBundleInfo) => {
     const bundleName = remoteBundle.name;
     try {
-      const [{ version, etag, integrity, signature, lastModified }, , buffer] = await remote.download(
-        remoteBundle.name,
-        channel
-      );
+      const [{ version, etag, integrity, signature, lastModified }, , buffer] =
+        await remote.download(remoteBundle.name, channel);
       manifest.entries[bundleName] = {
         versions: {
           [version]: {
@@ -154,7 +154,9 @@ export async function builtin(params: BuiltinParams): Promise<BundleManifestData
   const failures = result.filter(x => !x.success);
   if (failures.length > 0) {
     for (const failure of failures) {
-      logger?.error(`"${c.bold(failure.bundleName)}" install failed: {error}`, { error: failure.error });
+      logger?.error(`"${c.bold(failure.bundleName)}" install failed: {error}`, {
+        error: failure.error,
+      });
     }
     throw new OperationError(
       `Install failed: ${failures.map(x => x.bundleName).join(', ')}`,

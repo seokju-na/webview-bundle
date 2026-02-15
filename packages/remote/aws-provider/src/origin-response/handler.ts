@@ -1,4 +1,9 @@
-import type { CloudFrontResponse, CloudFrontResponseEvent, CloudFrontResponseResult, Handler } from 'aws-lambda';
+import type {
+  CloudFrontResponse,
+  CloudFrontResponseEvent,
+  CloudFrontResponseResult,
+  Handler,
+} from 'aws-lambda';
 import { toAWSHeaderName } from '../utils.js';
 
 export type OriginResponseHandler = Handler<CloudFrontResponseEvent, CloudFrontResponseResult>;

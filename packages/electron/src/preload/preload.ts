@@ -1,6 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { WebviewBundleApi } from '../api.js';
-
 import { IpcChannels } from '../ipc-spec.js';
 
 export function preload(): void {

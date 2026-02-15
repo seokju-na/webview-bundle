@@ -13,7 +13,11 @@ for (const input of inputs) {
       __CONFIG__: JSON.stringify({}),
     },
   });
-  const outdir = path.join(import.meta.dirname, 'dist-lambda', path.basename(input, path.extname(input)));
+  const outdir = path.join(
+    import.meta.dirname,
+    'dist-lambda',
+    path.basename(input, path.extname(input))
+  );
   await fs.rm(outdir, { recursive: true, force: true });
   for (const code of codes) {
     const outPath = path.join(outdir, code.fileName);

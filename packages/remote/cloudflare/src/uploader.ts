@@ -6,7 +6,9 @@ export interface CloudflareRemoteUploaderConfig extends AwsS3RemoteUploaderConfi
 }
 
 class CloudflareRemoteUploaderImpl implements BaseRemoteUploader {
-  _onUploadProgress: ((progress: { loaded?: number; total?: number; part?: number }) => void) | undefined;
+  _onUploadProgress:
+    | ((progress: { loaded?: number; total?: number; part?: number }) => void)
+    | undefined;
 
   constructor(private readonly config: CloudflareRemoteUploaderConfig) {}
 
@@ -16,7 +18,8 @@ class CloudflareRemoteUploaderImpl implements BaseRemoteUploader {
       ...config,
       s3ClientConfig: {
         ...config.s3ClientConfig,
-        endpoint: config.s3ClientConfig?.endpoint ?? `https://${accountId}.r2.cloudflarestorage.com`,
+        endpoint:
+          config.s3ClientConfig?.endpoint ?? `https://${accountId}.r2.cloudflarestorage.com`,
       },
     });
     uploader._onUploadProgress = this._onUploadProgress;
@@ -24,6 +27,8 @@ class CloudflareRemoteUploaderImpl implements BaseRemoteUploader {
   }
 }
 
-export function cloudflareRemoteUploader(config: CloudflareRemoteUploaderConfig): BaseRemoteUploader {
+export function cloudflareRemoteUploader(
+  config: CloudflareRemoteUploaderConfig
+): BaseRemoteUploader {
   return new CloudflareRemoteUploaderImpl(config);
 }

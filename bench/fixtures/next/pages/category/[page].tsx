@@ -1,5 +1,5 @@
-import { Layout, Page } from '@vercel/examples-ui';
 import type { GetStaticPaths, GetStaticProps, GetStaticPropsContext } from 'next';
+import { Layout, Page } from '@vercel/examples-ui';
 import Head from 'next/head';
 import PaginationPage from '../../components/PaginatedPage';
 import getProducts from '../../lib/getProducts';
@@ -19,7 +19,12 @@ function PaginatedPage({ products, currentPage, totalProducts }: PageProps) {
         <meta name="description" content={`Statically generated page ${currentPage}`} />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <PaginationPage products={products} currentPage={currentPage} totalProducts={totalProducts} perPage={PER_PAGE} />
+      <PaginationPage
+        products={products}
+        currentPage={currentPage}
+        totalProducts={totalProducts}
+        perPage={PER_PAGE}
+      />
     </Page>
   );
 }

@@ -1,8 +1,8 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { Remote, writeBundle } from '@wvb/node';
 import { Presets, SingleBar } from 'cli-progress';
 import { Command, Option } from 'clipanion';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { isBoolean } from 'typanion';
 import { resolveConfig } from '../../config.js';
 import { c } from '../../console.js';
@@ -34,9 +34,18 @@ export class RemoteDownloadCommand extends BaseCommand {
         A progress bar is displayed during download for large bundles.
     `,
     examples: [
-      ['Download latest deployed version', '$0 remote download my-app --endpoint https://cdn.example.com'],
-      ['Download a specific version', '$0 remote download my-app 1.2.0 --endpoint https://cdn.example.com'],
-      ['Download and save to a custom path', '$0 remote download my-app --out ./bundles/my-app.wvb'],
+      [
+        'Download latest deployed version',
+        '$0 remote download my-app --endpoint https://cdn.example.com',
+      ],
+      [
+        'Download a specific version',
+        '$0 remote download my-app 1.2.0 --endpoint https://cdn.example.com',
+      ],
+      [
+        'Download and save to a custom path',
+        '$0 remote download my-app --out ./bundles/my-app.wvb',
+      ],
       ['Overwrite existing file', '$0 remote download my-app --out ./my-bundle.wvb --overwrite'],
       ['Fetch info only without saving', '$0 remote download my-app --skip-write'],
     ],
@@ -56,7 +65,8 @@ export class RemoteDownloadCommand extends BaseCommand {
     description: 'Endpoint of remote server.',
   });
   readonly channel = Option.String('--channel', {
-    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+    description:
+      'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
   });
   readonly write = Option.String('--write', true, {
     tolerateBoolean: true,
@@ -110,7 +120,7 @@ Set this to \`false\` (or pass "--no-write") just for simulating operation.
       : null;
     const remote = new Remote(endpoint, {
       onDownload: data => {
-        if (!progress?.isActive) {
+        if (progress?.isActive !== true) {
           progress?.start(data.totalBytes, data.downloadedBytes);
         } else {
           progress?.update(data.downloadedBytes);
@@ -139,6 +149,8 @@ Set this to \`false\` (or pass "--no-write") just for simulating operation.
     }
     await fs.mkdir(path.dirname(outFilePath), { recursive: true });
     const size = await writeBundle(bundle, outFilePath);
-    this.logger.info(`Output: ${c.bold(c.success(outFile))} ${c.bytes(formatByteLength(Number(size)))}`);
+    this.logger.info(
+      `Output: ${c.bold(c.success(outFile))} ${c.bytes(formatByteLength(Number(size)))}`
+    );
   }
 }

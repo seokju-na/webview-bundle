@@ -8,7 +8,12 @@ export type ConfigInputFnObj = () => Config;
 export type ConfigInputFnPromise = () => Promise<Config>;
 export type ConfigInputFn = () => Config | Promise<Config>;
 
-export type ConfigInput = Config | Promise<Config> | ConfigInputFnObj | ConfigInputFnPromise | ConfigInputFn;
+export type ConfigInput =
+  | Config
+  | Promise<Config>
+  | ConfigInputFnObj
+  | ConfigInputFnPromise
+  | ConfigInputFn;
 
 export function defineConfig(config: Config): Config;
 export function defineConfig(config: Promise<Config>): Promise<Config>;

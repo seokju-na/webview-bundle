@@ -14,8 +14,14 @@ export class CreateCommand extends BaseCommand {
     examples: [
       ['A basic usage', '$0 create ./dist'],
       ['Specify outfile path', '$0 create ./dist --outfile ./dist.wvb'],
-      ['Ignore files with patterns', `$0 create ./dist --ignore='*.txt' --ignore='node_modules/**'`],
-      ['Set headers for files', `$0 create ./dist --header='*.html' 'cache-control' 'max-age=3600'`],
+      [
+        'Ignore files with patterns',
+        `$0 create ./dist --ignore='*.txt' --ignore='node_modules/**'`,
+      ],
+      [
+        'Set headers for files',
+        `$0 create ./dist --header='*.html' 'cache-control' 'max-age=3600'`,
+      ],
     ],
   });
 
@@ -77,9 +83,10 @@ Set this to \`false\` (or pass "--no-write") just for simulating operation.
       outFile,
       outDir: defaultOutDir(config),
       ignores: [this.ignores, config.create?.ignore].filter(isNotNil),
-      headers: [config.create?.headers, this.headers != null ? this.intoHeaderConfig(this.headers) : undefined].filter(
-        isNotNil
-      ),
+      headers: [
+        config.create?.headers,
+        this.headers != null ? this.intoHeaderConfig(this.headers) : undefined,
+      ].filter(isNotNil),
       write: this.write,
       overwrite,
       cwd: config.root,

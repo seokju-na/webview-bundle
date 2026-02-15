@@ -1,7 +1,4 @@
 import type { BaseRemoteDeployer, BaseRemoteUploader, SignatureSignFn } from '@wvb/config/remote';
-import { type AwsRemoteDeployerConfig, awsRemoteDeployer } from './deployer.js';
-import { type AwsKmsSignatureSignerConfig, awsKmsSignatureSigner } from './signature.js';
-import { type AwsS3RemoteUploaderConfig, awsS3RemoteUploader } from './uploader.js';
 import type {
   AwsClientDefaults,
   AwsCloudFrontClientConfigLike,
@@ -9,6 +6,9 @@ import type {
   AwsS3ClientConfigLike,
   PartialBy,
 } from './utils.js';
+import { type AwsRemoteDeployerConfig, awsRemoteDeployer } from './deployer.js';
+import { type AwsKmsSignatureSignerConfig, awsKmsSignatureSigner } from './signature.js';
+import { type AwsS3RemoteUploaderConfig, awsS3RemoteUploader } from './uploader.js';
 
 export type { AwsRemoteDeployerConfig } from './deployer.js';
 export { awsRemoteDeployer } from './deployer.js';
@@ -17,7 +17,8 @@ export { awsKmsSignatureSigner } from './signature.js';
 export type { AwsS3RemoteUploaderConfig } from './uploader.js';
 export { awsS3RemoteUploader } from './uploader.js';
 
-export interface AwsRemoteConfig extends AwsS3ClientConfigLike, AwsCloudFrontClientConfigLike, AwsKmsClientConfigLike {
+export interface AwsRemoteConfig
+  extends AwsS3ClientConfigLike, AwsCloudFrontClientConfigLike, AwsKmsClientConfigLike {
   bucket: string;
   uploader?: PartialBy<AwsS3RemoteUploaderConfig, 'bucket'>;
   deployer?: PartialBy<AwsRemoteDeployerConfig, 'bucket'>;

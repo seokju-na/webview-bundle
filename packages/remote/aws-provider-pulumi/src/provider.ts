@@ -1,10 +1,10 @@
-import * as aws from '@pulumi/aws';
 import type * as inputs from '@pulumi/aws/types/input.js';
-import * as pulumi from '@pulumi/pulumi';
 import type { AssetArchive } from '@pulumi/pulumi/asset/archive.js';
+import * as aws from '@pulumi/aws';
+import * as pulumi from '@pulumi/pulumi';
 import { uniq } from 'es-toolkit';
-import { getLambdaCode } from './lambda.js';
 import type { LambdaRuntime } from './types.js';
+import { getLambdaCode } from './lambda.js';
 
 export interface WebviewBundleRemoteLambdaCodeConfig {
   name?: pulumi.Input<string>;
@@ -54,7 +54,11 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
   public readonly cloudfrontDistributionArn: pulumi.Output<string>;
   public readonly cloudfrontDistributionDomainName: pulumi.Output<string>;
 
-  constructor(name: string, config: WebviewBundleRemoteProviderConfig = {}, opts?: pulumi.ComponentResourceOptions) {
+  constructor(
+    name: string,
+    config: WebviewBundleRemoteProviderConfig = {},
+    opts?: pulumi.ComponentResourceOptions
+  ) {
     super('webview-bundle:aws:RemoteProvider', name, {}, opts);
 
     const {
@@ -231,7 +235,8 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
         layers: lambdaOriginRequest?.layers,
         tags: lambdaOriginRequest?.tags,
         name: lambdaOriginRequest?.name ?? `${baseName}-lambda-origin-request`,
-        description: lambdaOriginRequest?.description ?? `${baseName} lambda origin request function`,
+        description:
+          lambdaOriginRequest?.description ?? `${baseName} lambda origin request function`,
         role: lambdaRole.arn,
         runtime: lambdaOriginRequest?.runtime ?? 'nodejs22.x',
         timeout: lambdaOriginRequest?.timeout,
@@ -270,7 +275,8 @@ export class WebviewBundleRemoteProvider extends pulumi.ComponentResource {
         layers: lambdaOriginResponse?.layers,
         tags: lambdaOriginResponse?.tags,
         name: lambdaOriginResponse?.name ?? `${baseName}-lambda-origin-response`,
-        description: lambdaOriginResponse?.description ?? `${baseName} lambda origin response function`,
+        description:
+          lambdaOriginResponse?.description ?? `${baseName} lambda origin response function`,
         role: lambdaRole.arn,
         runtime: lambdaOriginResponse?.runtime ?? 'nodejs22.x',
         timeout: lambdaOriginResponse?.timeout,

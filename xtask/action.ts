@@ -1,6 +1,6 @@
+import { diffLines } from 'diff';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { diffLines } from 'diff';
 import { runCommand } from './child_process.ts';
 import { colors } from './console.ts';
 import { ROOT_DIR } from './consts.ts';
@@ -31,7 +31,10 @@ export async function runActions(actions: Action[], ctx: ActionContext) {
   }
 }
 
-async function runWriteAction(action: Extract<Action, { type: 'write' }>, { name = 'root' }: ActionContext) {
+async function runWriteAction(
+  action: Extract<Action, { type: 'write' }>,
+  { name = 'root' }: ActionContext
+) {
   const filepath = path.join(ROOT_DIR, action.path);
   await fs.mkdir(path.dirname(filepath), { recursive: true });
   await fs.writeFile(filepath, action.content, 'utf8');
@@ -41,7 +44,10 @@ async function runWriteAction(action: Extract<Action, { type: 'write' }>, { name
   }
 }
 
-async function runCommandAction(action: Extract<Action, { type: 'command' }>, { name = 'root' }: ActionContext) {
+async function runCommandAction(
+  action: Extract<Action, { type: 'command' }>,
+  { name = 'root' }: ActionContext
+) {
   console.log(`${colors.info(`[${name}]`)} run command: ${action.cmd} ${action.args.join(' ')}`);
   console.log(`  ${colors.dim(`path: ${action.path}`)}`);
   const { exitCode } = await runCommand(action.cmd, action.args, {
@@ -70,7 +76,10 @@ function dryRunAction(action: Action, ctx: ActionContext) {
   }
 }
 
-function dryRunWriteAction(action: Extract<Action, { type: 'write' }>, { name = 'root' }: ActionContext) {
+function dryRunWriteAction(
+  action: Extract<Action, { type: 'write' }>,
+  { name = 'root' }: ActionContext
+) {
   const { path, content, prevContent } = action;
   const prefix = colors.info(`[${name}]`);
   console.log(`${prefix} will write file: ${path}`);
@@ -97,7 +106,12 @@ function logDiff(prevContent: string, content: string) {
     for (const line of lines) {
       changeLineNo += 1;
       const lineStr = String(changeLineNo).padStart(3, ' ');
-      const color = change.added ? colors.success : colors.error;
+      const color = (str: string | number): string => {
+        if (change.added) {
+          return colors.success(str);
+        }
+        return colors.error(str);
+      };
       const diffPrefix = change.added ? '+' : '-';
       console.log(`  ${colors.dim(lineStr)}|${diffPrefix}${color(line)}`);
     }
@@ -105,7 +119,10 @@ function logDiff(prevContent: string, content: string) {
   }
 }
 
-function dryRunCommandAction(action: Extract<Action, { type: 'command' }>, { name = 'root' }: ActionContext) {
+function dryRunCommandAction(
+  action: Extract<Action, { type: 'command' }>,
+  { name = 'root' }: ActionContext
+) {
   const { path, cmd, args } = action;
   const prefix = colors.info(`[${name}]`);
   console.log(`${prefix} will run command: ${cmd} ${args.join(' ')}`);

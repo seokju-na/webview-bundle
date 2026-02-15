@@ -1,11 +1,31 @@
 {
   "name": "@wvb/electron",
-  "description": "Webview Bundle API for Electron",
   "version": "0.0.0",
+  "description": "Webview Bundle API for Electron",
+  "homepage": "https://github.com/seokju-na/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/seokju-na/webview-bundle/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seokju-na/webview-bundle",
+    "directory": "packages/electron"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
-  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -21,33 +41,10 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md"
-  ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/electron"
-  },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
-  "author": {
-    "name": "Seokju Na",
-    "email": "seokju.me@gmail.com",
-    "url": "https://github.com/seokju-na"
-  },
-  "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "electron": ">= 15"
   },
   "dependencies": {
     "@wvb/node": "workspace:^"
@@ -58,5 +55,8 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "electron": ">= 15"
   }
 }

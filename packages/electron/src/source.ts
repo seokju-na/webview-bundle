@@ -1,6 +1,6 @@
-import path from 'node:path';
 import { BundleSource, type BundleSourceConfig } from '@wvb/node';
 import { app } from 'electron';
+import path from 'node:path';
 
 export interface SourceOptions extends Omit<BundleSourceConfig, 'builtinDir' | 'remoteDir'> {
   builtinDir?: string;
@@ -8,7 +8,11 @@ export interface SourceOptions extends Omit<BundleSourceConfig, 'builtinDir' | '
 }
 
 export function bundleSource(options: SourceOptions = {}): BundleSource {
-  const { builtinDir = defaultBuiltinDir(), remoteDir = defaultRemoteDir(), ...otherOptions } = options;
+  const {
+    builtinDir = defaultBuiltinDir(),
+    remoteDir = defaultRemoteDir(),
+    ...otherOptions
+  } = options;
   return new BundleSource({
     builtinDir,
     remoteDir,

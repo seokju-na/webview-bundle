@@ -42,7 +42,8 @@ export class RemoteListCommand extends BaseCommand {
     description: 'Endpoint of remote server.',
   });
   readonly channel = Option.String('--channel', {
-    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+    description:
+      'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',

@@ -31,7 +31,10 @@ export class RemoteCurrentCommand extends BaseCommand {
       Use \`remote download\` if you need the actual bundle file.
     `,
     examples: [
-      ['Check current version with explicit endpoint', '$0 remote current my-app --endpoint https://cdn.example.com'],
+      [
+        'Check current version with explicit endpoint',
+        '$0 remote current my-app --endpoint https://cdn.example.com',
+      ],
       ['Use bundle name and endpoint from config', '$0 remote current'],
       ['Verify deployment in CI pipeline', '$0 remote current my-app -E https://cdn.example.com'],
     ],
@@ -45,7 +48,8 @@ export class RemoteCurrentCommand extends BaseCommand {
     description: 'Endpoint of remote server.',
   });
   readonly channel = Option.String('--channel', {
-    description: 'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
+    description:
+      'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',

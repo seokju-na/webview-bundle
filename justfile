@@ -32,26 +32,22 @@ test-rs:
     cargo test --workspace --no-fail-fast --all-features
 
 # Format all files
-format: format-toml format-rs format-js
-
-# Format TOML files
-format-toml:
-    yarn taplo format
+format: format-rs format-js
 
 # Format Rust files
 format-rs:
     cargo fmt --all
 
-# Format JS files via Biome
+# Format JS files via oxfmt
 format-js:
-    yarn biome format --write
+    yarn oxfmt
 
 # Lint all files
 lint: lint-rs lint-js
 
-# Lint JS files via Biome
+# Lint JS files via oxlint
 lint-js:
-    yarn biome check
+    yarn oxlint --type-aware
 
 # Lint Rust files via Clippy
 lint-rs:

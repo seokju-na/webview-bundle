@@ -1,7 +1,7 @@
 {
   "name": "@bench/fixture-react",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "out": "vite build --outDir out"
