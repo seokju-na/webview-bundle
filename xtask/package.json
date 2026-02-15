@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "yarn create-schema",
+    "setup": "yarn create-schema",
     "create-schema": "node ./.scripts/create-schema.ts",
     "typecheck": "tsc --noEmit"
   },
