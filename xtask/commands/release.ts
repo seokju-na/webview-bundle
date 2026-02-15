@@ -5,7 +5,10 @@ import { isCI } from 'ci-info';
 import { Command, Option } from 'clipanion';
 import { openRepository, type Repository } from 'es-git';
 import { differenceBy, isNotNil, omit } from 'es-toolkit';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { type Action, runActions } from '../action.ts';
+import { editCargoTomlVersion, formatCargoToml, parseCargoToml } from '../cargo-toml.ts';
 import { Changelog } from '../changelog.ts';
 import { Changes } from '../changes.ts';
 import { type Config, loadConfig } from '../config.ts';
@@ -50,6 +53,7 @@ export class Release extends Command {
     }
 
     await this.writeReleaseTarget(targets);
+    const rootCargoChanged = await this.writeRootCargoToml(targets);
     const rootChangelogChanged = await this.writeRootChangelog(config, targets);
 
     const publishedTargets = await this.publish(targets);
@@ -59,7 +63,7 @@ export class Release extends Command {
       if (!this.dryRun) {
         await this.updateStaged(publishedTargets, staged);
       }
-      this.gitCommitChanges(repo, config, publishedTargets, rootChangelogChanged);
+      this.gitCommitChanges(repo, config, publishedTargets, rootCargoChanged, rootChangelogChanged);
       this.gitCreateTags(repo, publishedTargets);
       await this.gitPush(repo, publishedTargets);
       await this.createGitHubReleases(config, publishedTargets);
@@ -143,6 +147,38 @@ export class Release extends Command {
     }
   }
 
+  private async writeRootCargoToml(targets: ReleaseTarget[]) {
+    const hasCargoChanged = targets
+      .filter(x => x.package.hasChanged)
+      .flatMap(x => x.package.versionedFiles)
+      .some(x => x.type === 'Cargo.toml');
+    if (!hasCargoChanged) {
+      return false;
+    }
+    const raw = await fs.readFile(path.join(ROOT_DIR, 'Cargo.toml'), 'utf8');
+    const toml = parseCargoToml(raw);
+    for (const target of targets) {
+      for (const versionedFile of target.package.versionedFiles) {
+        if (versionedFile.type !== 'Cargo.toml') {
+          continue;
+        }
+        editCargoTomlVersion(toml, versionedFile.nextVersion, versionedFile.name);
+      }
+    }
+    await runActions(
+      [
+        {
+          type: 'write',
+          path: 'Cargo.toml',
+          content: formatCargoToml(toml),
+          prevContent: raw,
+        },
+      ],
+      { dryRun: this.dryRun }
+    );
+    return true;
+  }
+
   private async writeRootChangelog(config: Config, targets: ReleaseTarget[]) {
     if (config.rootChangelog == null) {
       return false;
@@ -194,6 +230,7 @@ export class Release extends Command {
     repo: Repository,
     config: Config,
     targets: ReleaseTarget[],
+    rootCargoChanged: boolean,
     rootChangelogChanged: boolean
   ) {
     const message = 'release commit [skip actions]';
@@ -206,6 +243,9 @@ export class Release extends Command {
         isNotNil
       )
     );
+    if (rootCargoChanged) {
+      pathspecs.push('Cargo.toml');
+    }
     if (rootChangelogChanged && config.rootChangelog != null) {
       pathspecs.push(config.rootChangelog);
     }
@@ -254,7 +294,7 @@ export class Release extends Command {
   private async gitPush(repo: Repository, targets: ReleaseTarget[]) {
     const remote = repo.getRemote('origin');
     const refspecs = [
-      'refs/heads/main:refs/heads/main',
+      'HEAD:refs/heads/main',
       ...targets
         .map(x => x.package.nextVersionedGitTag.tagRef)
         .map(tagRef => `${tagRef}:${tagRef}`),
@@ -274,20 +314,12 @@ export class Release extends Command {
       console.log(`${c.warn('[root]')} no github token found. skip push.`);
       return;
     }
-    await remote.push(
-      [
-        'refs/heads/main:refs/heads/main',
-        ...targets
-          .map(x => x.package.nextVersionedGitTag.tagRef)
-          .map(tagRef => `${tagRef}:${tagRef}`),
-      ],
-      {
-        credential: {
-          type: 'Plain',
-          password: this.githubToken,
-        },
-      }
-    );
+    await remote.push(refspecs, {
+      credential: {
+        type: 'Plain',
+        password: this.githubToken,
+      },
+    });
     console.log(`${c.success('[root]')} push changes to remote: ${remote.url()}`);
     logRefspecs();
   }

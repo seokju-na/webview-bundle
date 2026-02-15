@@ -1,21 +1,4 @@
 {
-  "core": {
-    "commits": [
-      "ea88b6b402104999003b80f6f5e58abd0c5b02ce",
-      "c260b3daca44565dbc7eec6a72b8aee7184e6af5",
-      "5fcdf96b7d7def62b70d6820f6e3dc76b035e6f9",
-      "10aa8d8a5ed3a4b405bd74c82d44f2834c2786e4",
-      "12f4a768c8ac5c6ed573f7143fac947a2b463c2a",
-      "03fa332713dc85fc63cc19b67ccd425f59e3bfe7",
-      "2c00d35bbbdb4d9bda52a8da6d9a43cb60f84636",
-      "3c3933f3b369ccd417e2be4ac2b8ad66a533c838",
-      "2b0f3c8b4e56cf74174c25c420f6257996cab077",
-      "8eca4ac452d0d4901a5e223a534a4a901cb03fa3"
-    ],
-    "bumpRule": {
-      "type": "minor"
-    }
-  },
   "node": {
     "commits": [
       "c260b3daca44565dbc7eec6a72b8aee7184e6af5",

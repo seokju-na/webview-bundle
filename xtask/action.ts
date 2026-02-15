@@ -113,7 +113,7 @@ async function runCommandAction(
   console.log(`${c.info(`[${name}]`)} ${formatAction(action)}`);
   const { exitCode } = await runCommand(action.cmd, action.args, {
     cwd: path.join(ROOT_DIR, action.path),
-    prefix: `${c.info(`[${name}}`)} `,
+    prefix: `${c.info(`[${name}]`)} `,
   });
   if (exitCode !== 0) {
     console.error(`${c.error(`[${name}]`)} command action failed: exitCode=${exitCode}`);
