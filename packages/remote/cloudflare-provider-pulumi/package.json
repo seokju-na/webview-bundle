@@ -1,6 +1,6 @@
 {
   "name": "@wvb/remote-cloudflare-provider-pulumi",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Webview Bundle remote pulumi configuration for Cloudflare",
   "homepage": "https://github.com/webview-bundle/webview-bundle",
   "bugs": {

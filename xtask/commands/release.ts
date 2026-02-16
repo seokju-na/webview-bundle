@@ -288,7 +288,7 @@ export class Release extends Command {
         tagger: GIT_SIGNATURE,
       });
       const gitTag = repo.getTag(tagId);
-      console.log(`${c.info('root')} tag: ${gitTag.name()}`);
+      console.log(`${c.info('[root]')} tag: ${gitTag.name()}`);
       console.log(c.dim(`  sha: ${gitTag.id()}`));
       console.log(c.dim(`  message: ${gitTag.message()}`));
       console.log(c.dim(`  tagger name: ${gitTag.tagger()?.name}`));

@@ -49,6 +49,8 @@ export class ArtifactsNapiCommand extends Command {
         return path.join(dirname, `${name}-x86_64-apple-darwin`, filename);
       case 'darwin-arm64.node':
         return path.join(dirname, `${name}-aarch64-apple-darwin`, filename);
+      case 'win32-ia32-msvc.node':
+        return path.join(dirname, `${name}-i686-pc-windows-msvc`, filename);
       case 'win32-x64-msvc.node':
         return path.join(dirname, `${name}-x86_64-pc-windows-msvc`, filename);
       case 'win32-arm64-msvc.node':
@@ -61,6 +63,12 @@ export class ArtifactsNapiCommand extends Command {
         return path.join(dirname, `${name}-aarch64-unknown-linux-musl`, filename);
       case 'linux-arm64-gnu.node':
         return path.join(dirname, `${name}-aarch64-unknown-linux-gnu`, filename);
+      case 'linux-arm-gnueabihf':
+        return path.join(dirname, `${name}-armv7-unknown-linux-gnueabihf`, filename);
+      case 'android-arm64.node':
+        return path.join(dirname, `${name}-aarch64-linux-android`, filename);
+      case 'android-arm-eabi.node':
+        return path.join(dirname, `${name}-armv7-linux-androideabi`, filename);
       default:
         throw new Error(`unknown file: ${filepath}`);
     }
