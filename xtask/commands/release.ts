@@ -288,7 +288,7 @@ export class Release extends Command {
         tagger: GIT_SIGNATURE,
       });
       const gitTag = repo.getTag(tagId);
-      console.log(`${c.info('root')} tag: ${gitTag.name()}`);
+      console.log(`${c.info('[root]')} tag: ${gitTag.name()}`);
       console.log(c.dim(`  sha: ${gitTag.id()}`));
       console.log(c.dim(`  message: ${gitTag.message()}`));
       console.log(c.dim(`  tagger name: ${gitTag.tagger()?.name}`));
@@ -299,7 +299,7 @@ export class Release extends Command {
   private async gitPush(repo: Repository, targets: ReleaseTarget[]) {
     const remote = repo.getRemote('origin');
     const refspecs = [
-      'HEAD:refs/heads/main',
+      'refs/heads/main:refs/heads/main',
       ...targets
         .map(x => x.package.nextVersionedGitTag.tagRef)
         .map(tagRef => `${tagRef}:${tagRef}`),
