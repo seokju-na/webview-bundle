@@ -1,5 +1,5 @@
 {
-  "name": "@wvb/node-freebsd-x64",
+  "name": "@wvb/node-android-arm64",
   "version": "0.0.0",
   "description": "Webview bundle API for Node.js",
   "homepage": "https://github.com/webview-bundle/webview-bundle",
@@ -18,15 +18,15 @@
     "directory": "packages/node"
   },
   "files": [
-    "wvb-node.freebsd-x64.node"
+    "wvb-node.android-arm64.node"
   ],
   "os": [
-    "freebsd"
+    "android"
   ],
   "cpu": [
-    "x64"
+    "arm64"
   ],
-  "main": "wvb-node.freebsd-x64.node",
+  "main": "wvb-node.android-arm64.node",
   "engines": {
     "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   }

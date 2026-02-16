@@ -7,6 +7,9 @@ inputs:
   targets:
     description: "Comma-separated list of additional targets to install."
     required: false
+  cache-key:
+    description: "Cache key for cargo"
+    required: false
 runs:
   using: "composite"
   steps:
@@ -17,3 +20,16 @@ runs:
         toolchain: 1.91.0
         components: ${{ inputs.components }}
         targets: ${{ inputs.targets }}
+    - name: Cache cargo
+      id: cache-cargo
+      if: ${{ inputs.cache-key != '' }}
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # 5.0.3
+      with:
+        path: |
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          ~/.napi-rs
+          .cargo-cache
+          target/
+        key: ${{ inputs.cache-key }}

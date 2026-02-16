@@ -55,9 +55,10 @@
     "vitest": "catalog:"
   },
   "optionalDependencies": {
+    "@wvb/node-android-arm-eabi": "workspace:^",
+    "@wvb/node-android-arm64": "workspace:^",
     "@wvb/node-darwin-arm64": "workspace:^",
     "@wvb/node-darwin-x64": "workspace:^",
-    "@wvb/node-freebsd-x64": "workspace:^",
     "@wvb/node-linux-arm-gnueabihf": "workspace:^",
     "@wvb/node-linux-arm64-gnu": "workspace:^",
     "@wvb/node-linux-arm64-musl": "workspace:^",
@@ -70,17 +71,18 @@
   "napi": {
     "binaryName": "wvb-node",
     "targets": [
+      "i686-pc-windows-msvc",
       "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc",
       "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
       "x86_64-unknown-linux-gnu",
       "x86_64-unknown-linux-musl",
       "aarch64-unknown-linux-gnu",
-      "i686-pc-windows-msvc",
-      "armv7-unknown-linux-gnueabihf",
-      "x86_64-unknown-freebsd",
-      "aarch64-apple-darwin",
       "aarch64-unknown-linux-musl",
-      "aarch64-pc-windows-msvc"
+      "armv7-unknown-linux-gnueabihf",
+      "aarch64-linux-android",
+      "armv7-linux-androideabi"
     ]
   },
   "engines": {
