@@ -59,6 +59,11 @@ export class Release extends Command {
     const publishedTargets = await this.publish(targets);
     const isAllPublished = publishedTargets.length === targets.length;
 
+    // If-all failed, exit with code 1
+    if (publishedTargets.length === 0) {
+      return 1;
+    }
+
     if (this.prerelease == null) {
       if (!this.dryRun) {
         await this.updateStaged(publishedTargets, staged);
