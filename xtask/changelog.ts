@@ -45,7 +45,7 @@ export class Changelog {
             case 'package.json':
               return `[\`${name}\`](https://www.npmjs.com/package/${name}/v/${version})`;
             case 'Cargo.toml':
-              return `[\`${name}\`](https://crates.io/${name}/${version})`;
+              return `[\`${name}\`](https://crates.io/crates/${name}/${version})`;
           }
         })
         .join(', ');
