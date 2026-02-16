@@ -299,7 +299,7 @@ export class Release extends Command {
   private async gitPush(repo: Repository, targets: ReleaseTarget[]) {
     const remote = repo.getRemote('origin');
     const refspecs = [
-      'HEAD:refs/heads/main',
+      'refs/heads/main:refs/heads/main',
       ...targets
         .map(x => x.package.nextVersionedGitTag.tagRef)
         .map(tagRef => `${tagRef}:${tagRef}`),
