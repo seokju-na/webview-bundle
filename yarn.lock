@@ -9213,6 +9213,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@wvb/node-android-arm-eabi@workspace:^, @wvb/node-android-arm-eabi@workspace:packages/node/npm/android-arm-eabi":
+  version: 0.0.0-use.local
+  resolution: "@wvb/node-android-arm-eabi@workspace:packages/node/npm/android-arm-eabi"
+  languageName: unknown
+  linkType: soft
+
+"@wvb/node-android-arm64@workspace:^, @wvb/node-android-arm64@workspace:packages/node/npm/android-arm64":
+  version: 0.0.0-use.local
+  resolution: "@wvb/node-android-arm64@workspace:packages/node/npm/android-arm64"
+  languageName: unknown
+  linkType: soft
+
 "@wvb/node-darwin-arm64@workspace:^, @wvb/node-darwin-arm64@workspace:packages/node/npm/darwin-arm64":
   version: 0.0.0-use.local
   resolution: "@wvb/node-darwin-arm64@workspace:packages/node/npm/darwin-arm64"
@@ -9222,12 +9234,6 @@ __metadata:
 "@wvb/node-darwin-x64@workspace:^, @wvb/node-darwin-x64@workspace:packages/node/npm/darwin-x64":
   version: 0.0.0-use.local
   resolution: "@wvb/node-darwin-x64@workspace:packages/node/npm/darwin-x64"
-  languageName: unknown
-  linkType: soft
-
-"@wvb/node-freebsd-x64@workspace:^, @wvb/node-freebsd-x64@workspace:packages/node/npm/freebsd-x64":
-  version: 0.0.0-use.local
-  resolution: "@wvb/node-freebsd-x64@workspace:packages/node/npm/freebsd-x64"
   languageName: unknown
   linkType: soft
 
@@ -9286,9 +9292,10 @@ __metadata:
     "@hono/node-server": "npm:^1.19.2"
     "@napi-rs/cli": "npm:3.1.5"
     "@types/node": "catalog:"
+    "@wvb/node-android-arm-eabi": "workspace:^"
+    "@wvb/node-android-arm64": "workspace:^"
     "@wvb/node-darwin-arm64": "workspace:^"
     "@wvb/node-darwin-x64": "workspace:^"
-    "@wvb/node-freebsd-x64": "workspace:^"
     "@wvb/node-linux-arm-gnueabihf": "workspace:^"
     "@wvb/node-linux-arm64-gnu": "workspace:^"
     "@wvb/node-linux-arm64-musl": "workspace:^"
@@ -9302,11 +9309,13 @@ __metadata:
     typescript: "catalog:"
     vitest: "catalog:"
   dependenciesMeta:
+    "@wvb/node-android-arm-eabi":
+      optional: true
+    "@wvb/node-android-arm64":
+      optional: true
     "@wvb/node-darwin-arm64":
       optional: true
     "@wvb/node-darwin-x64":
-      optional: true
-    "@wvb/node-freebsd-x64":
       optional: true
     "@wvb/node-linux-arm-gnueabihf":
       optional: true
