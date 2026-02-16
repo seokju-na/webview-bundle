@@ -63,7 +63,7 @@ export class ArtifactsNapiCommand extends Command {
         return path.join(dirname, `${name}-aarch64-unknown-linux-musl`, filename);
       case 'linux-arm64-gnu.node':
         return path.join(dirname, `${name}-aarch64-unknown-linux-gnu`, filename);
-      case 'linux-arm-gnueabihf':
+      case 'linux-arm-gnueabihf.node':
         return path.join(dirname, `${name}-armv7-unknown-linux-gnueabihf`, filename);
       case 'android-arm64.node':
         return path.join(dirname, `${name}-aarch64-linux-android`, filename);
