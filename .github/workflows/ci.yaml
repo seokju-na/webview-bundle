@@ -35,69 +35,72 @@ jobs:
         settings:
           - host: macos-15-intel
             target: x86_64-apple-darwin
-            build: |-
-              yarn workspaces foreach -At run build-napi --target x86_64-apple-darwin &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target x86_64-apple-darwin
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: macos-latest
             target: aarch64-apple-darwin
-            build: |-
-              yarn workspaces foreach -At run build-napi --target aarch64-apple-darwin &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target aarch64-apple-darwin
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: windows-latest
             target: i686-pc-windows-msvc
-            build: |-
-              yarn workspaces foreach -At run build-napi --target i686-pc-windows-msvc &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target i686-pc-windows-msvc
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: windows-latest
             target: x86_64-pc-windows-msvc
-            build: |-
-              yarn workspaces foreach -At run build-napi --target x86_64-pc-windows-msvc &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target x86_64-pc-windows-msvc
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: windows-latest
             target: aarch64-pc-windows-msvc
-            build: |-
-              yarn workspaces foreach -At run build-napi --target aarch64-pc-windows-msvc &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target aarch64-pc-windows-msvc
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            build: |-
-              yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-gnu --use-napi-cross &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-gnu --use-napi-cross
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            build: |-
-              yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-musl -x &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target x86_64-unknown-linux-musl -x
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            build: |-
-              yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-gnu --use-napi-cross &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-gnu --use-napi-cross
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            build: |-
-              yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-musl -x &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target aarch64-unknown-linux-musl -x
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
-            build: |-
-              yarn workspaces foreach -At run build-napi --target armv7-unknown-linux-gnueabihf --use-napi-cross &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target armv7-unknown-linux-gnueabihf --use-napi-cross
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: aarch64-linux-android
-            build: |-
-              yarn workspaces foreach -At run build-napi --target aarch64-linux-android &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target aarch64-linux-android
               yarn workspaces foreach -Apt --include='@wvb/*' run build
           - host: ubuntu-latest
             target: armv7-linux-androideabi
-            build: |-
-              yarn workspaces foreach -At run build-napi --target armv7-linux-androideabi &&
+            build: |
+              yarn workspaces foreach -At run build-napi --target armv7-linux-androideabi
               yarn workspaces foreach -Apt --include='@wvb/*' run build
     runs-on: ${{ matrix.settings.host }}
     env:
       DEBUG: 'napi:*'
       MACOSX_DEPLOYMENT_TARGET: '10.13'
       CARGO_INCREMENTAL: '1'
+      # Fix for ring crate cross-compilation on aarch64
+      # See: https://github.com/briansmith/ring/issues/1789
+      CFLAGS_aarch64_unknown_linux_gnu: ${{ matrix.settings.target == 'aarch64-unknown-linux-gnu' && '-D__ARM_ARCH=8' || '' }}
     steps:
       - name: Git checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # 6.0.1
@@ -162,8 +165,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # 6.0.1
-      - if: ${{ matrix.settings.host == 'ubuntu-latest' }}
-        name: Setup tauri for linux
+      - name: Setup tauri for linux
+        if: ${{ matrix.settings.host == 'ubuntu-latest' }}
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
@@ -175,6 +178,9 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # 6.0.1
+      - name: Setup tauri for linux
+        if: ${{ matrix.settings.host == 'ubuntu-latest' }}
+        uses: ./.github/actions/tauri-linux-setup
       - name: Setup Node.js
         uses: ./.github/actions/node-setup
       - name: Setup Rust
