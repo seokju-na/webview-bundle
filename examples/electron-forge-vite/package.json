@@ -1,7 +1,6 @@
 {
   "name": "example-electron-forge-vite",
   "version": "0.0.0",
-  "productName": "webview-bundle-electron-forge-vite",
   "private": true,
   "main": ".vite/build/main.js",
   "scripts": {
@@ -24,5 +23,6 @@
     "electron": "^35.7.5",
     "typescript": "5.9.3",
     "vite": "^7.3.0"
-  }
+  },
+  "productName": "webview-bundle-electron-forge-vite"
 }

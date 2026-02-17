@@ -1,9 +1,9 @@
-import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import type { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerDMG } from '@electron-forge/maker-dmg';
 import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
-import type { ForgeConfig } from '@electron-forge/shared-types';
+import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -17,7 +17,8 @@ const config: ForgeConfig = {
     // https://github.com/electron/forge/blob/v7.10.2/packages/plugin/vite/src/VitePlugin.ts#L178
     ignore: (file: string) => {
       if (!file) return false;
-      const keep = file.startsWith('/.vite') || file.startsWith('/node_modules') || file.endsWith('.tgz');
+      const keep =
+        file.startsWith('/.vite') || file.startsWith('/node_modules') || file.endsWith('.tgz');
       return !keep;
     },
   },

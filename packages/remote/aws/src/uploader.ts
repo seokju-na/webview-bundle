@@ -16,7 +16,9 @@ export interface AwsS3RemoteUploaderConfig {
 }
 
 class AwsS3RemoteUploaderImpl implements BaseRemoteUploader {
-  _onUploadProgress: ((progress: { loaded?: number; total?: number; part?: number }) => void) | undefined;
+  _onUploadProgress:
+    | ((progress: { loaded?: number; total?: number; part?: number }) => void)
+    | undefined;
 
   constructor(private readonly config: AwsS3RemoteUploaderConfig) {}
 

@@ -1,11 +1,16 @@
-import path from 'node:path';
 import { Command, Option } from 'clipanion';
+import path from 'node:path';
 import pAll from 'p-all';
 import * as t from 'typanion';
 import { runCommand } from '../child_process.ts';
 import { ColorModeOption, colors, setColorMode } from '../console.ts';
 import { ROOT_DIR } from '../consts.ts';
-import { isRootWorkspace, loadAllWorkspaces, matchWorkspaceByPattern, runWorkspaceCommand } from '../workspaces.ts';
+import {
+  isRootWorkspace,
+  loadAllWorkspaces,
+  matchWorkspaceByPattern,
+  runWorkspaceCommand,
+} from '../workspaces.ts';
 
 export class AttwCommand extends Command {
   static paths = [['attw']];
@@ -48,7 +53,10 @@ export class AttwCommand extends Command {
         }
         const packed = await runWorkspaceCommand(workspace, 'yarn', ['pack']);
         if (packed.exitCode !== 0) {
-          return { type: 'failed' as const, error: `${prefix} pack failed with exit code: ${packed.exitCode}` };
+          return {
+            type: 'failed' as const,
+            error: `${prefix} pack failed with exit code: ${packed.exitCode}`,
+          };
         }
         const attw = await runCommand(
           'yarn',

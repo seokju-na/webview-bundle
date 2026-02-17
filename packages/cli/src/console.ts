@@ -1,7 +1,7 @@
-import util from 'node:util';
 import CI from 'ci-info';
 import { Option } from 'clipanion';
 import kleur from 'kleur';
+import util from 'node:util';
 import supportsColor from 'supports-color';
 import { isEnum } from 'typanion';
 
@@ -20,7 +20,9 @@ export function configureColor(val: typeof ColorOption) {
       kleur.enabled = true;
       break;
     case 'auto':
-      kleur.enabled = CI.GITHUB_ACTIONS ? true : supportsColor.stdout !== false && supportsColor.stdout.level > 0;
+      kleur.enabled = CI.GITHUB_ACTIONS
+        ? true
+        : supportsColor.stdout !== false && supportsColor.stdout.level > 0;
       break;
   }
 }

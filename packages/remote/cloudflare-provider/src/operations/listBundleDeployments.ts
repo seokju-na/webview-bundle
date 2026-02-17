@@ -45,7 +45,7 @@ export async function listBundleDeployments(
         ? {
             ...current,
             channels: {
-              ...(current.channels ?? {}),
+              ...current.channels,
               [channel]: version,
             },
           }

@@ -1,5 +1,5 @@
-import { Layout, Page } from '@vercel/examples-ui';
 import type { GetStaticProps } from 'next';
+import { Layout, Page } from '@vercel/examples-ui';
 import PaginationPage from '../../components/PaginatedPage';
 import getProducts from '../../lib/getProducts';
 import { PER_PAGE } from '../category/[page]';
@@ -7,7 +7,12 @@ import { PER_PAGE } from '../category/[page]';
 function Category({ products, totalProducts, currentPage }: any) {
   return (
     <Page>
-      <PaginationPage products={products} currentPage={currentPage} totalProducts={totalProducts} perPage={PER_PAGE} />
+      <PaginationPage
+        products={products}
+        currentPage={currentPage}
+        totalProducts={totalProducts}
+        perPage={PER_PAGE}
+      />
     </Page>
   );
 }

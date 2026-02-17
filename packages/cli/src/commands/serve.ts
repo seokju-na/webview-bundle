@@ -21,7 +21,8 @@ export class ServeCommand extends BaseCommand {
     required: false,
   });
   readonly port = Option.String('--port,-P', '4312', {
-    description: 'Specify a port number on which to start the http server. [Default: 4312] [env: PORT]',
+    description:
+      'Specify a port number on which to start the http server. [Default: 4312] [env: PORT]',
     validator: cascade(isNumber(), [isInteger(), isInExclusiveRange(1, 65535)]),
     env: 'PORT',
   });

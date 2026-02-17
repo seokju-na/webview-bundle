@@ -1,21 +1,22 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { checkbox } from '@inquirer/prompts';
 import { retry } from '@octokit/plugin-retry';
 import { Octokit } from '@octokit/rest';
 import { isCI } from 'ci-info';
 import { Command, Option } from 'clipanion';
 import { openRepository, type Repository } from 'es-git';
-import { isNotNil, omit } from 'es-toolkit';
+import { differenceBy, isNotNil, omit } from 'es-toolkit';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { type Action, runActions } from '../action.ts';
 import { editCargoTomlVersion, formatCargoToml, parseCargoToml } from '../cargo-toml.ts';
 import { Changelog } from '../changelog.ts';
 import { Changes } from '../changes.ts';
 import { type Config, loadConfig } from '../config.ts';
-import { ColorModeOption, colors, setColorMode } from '../console.ts';
+import { c, ColorModeOption, setColorMode } from '../console.ts';
 import { ROOT_DIR } from '../consts.ts';
+import { GIT_SIGNATURE } from '../git.ts';
 import { Package } from '../package.ts';
-import { loadStaged, removeStaged, type Staged, saveStaged } from '../staged.ts';
+import { loadStaged, removeStaged, saveStaged, type Staged } from '../staged.ts';
 import { parsePrerelease } from '../version.ts';
 
 interface ReleaseTarget {
@@ -55,17 +56,39 @@ export class Release extends Command {
     const rootCargoChanged = await this.writeRootCargoToml(targets);
     const rootChangelogChanged = await this.writeRootChangelog(config, targets);
 
-    await this.publish(targets);
+    const publishedTargets = await this.publish(targets);
+    const isAllPublished = publishedTargets.length === targets.length;
+
+    // If-all failed, exit with code 1
+    if (publishedTargets.length === 0) {
+      return 1;
+    }
 
     if (this.prerelease == null) {
       if (!this.dryRun) {
-        await this.updateStaged(targets, staged);
+        await this.updateStaged(publishedTargets, staged);
       }
-      this.gitCommitChanges(repo, config, targets, rootCargoChanged, rootChangelogChanged);
-      this.gitCreateTags(repo, targets);
-      await this.gitPush(repo, targets);
-      await this.createGitHubReleases(config, targets);
+      this.gitEnsureMainBranch(repo);
+      const commitId = this.gitCommitChanges(
+        repo,
+        config,
+        publishedTargets,
+        rootCargoChanged,
+        rootChangelogChanged
+      );
+      this.gitCreateTags(repo, commitId, publishedTargets);
+      await this.gitPush(repo, publishedTargets);
+      await this.createGitHubReleases(config, publishedTargets);
     }
+
+    if (!isAllPublished) {
+      const failedTargets = differenceBy(targets, publishedTargets, x => x.package.name);
+      for (const failedTarget of failedTargets) {
+        console.error(`${c.error(`[${failedTarget.package.name}]`)} publish failed`);
+      }
+    }
+
+    return isAllPublished ? 0 : 1;
   }
 
   private async prepareTargets(repo: Repository, config: Config, staged: Staged) {
@@ -75,13 +98,14 @@ export class Release extends Command {
       const prefix = `[${pkg.name}]`;
       const pkgStaged = staged[pkg.name];
       if (pkgStaged == null || pkgStaged.commits.length === 0) {
-        console.log(`${colors.warn(prefix)} no staged changes found. skip release.`);
+        console.log(`${c.warn(prefix)} no staged changes found. skip release.`);
         continue;
       }
       const changes = Changes.fromCommits(repo, pkgStaged.commits);
-      let bumpRule = pkgStaged.bumpRule ?? Changes.fromCommits(repo, pkgStaged.commits).getBumpRule();
+      let bumpRule =
+        pkgStaged.bumpRule ?? Changes.fromCommits(repo, pkgStaged.commits).getBumpRule();
       if (bumpRule == null) {
-        console.log(`${colors.warn(prefix)} no changes found. skip release.`);
+        console.log(`${c.warn(prefix)} no changes found. skip release.`);
         continue;
       }
       if (this.prerelease != null) {
@@ -89,11 +113,13 @@ export class Release extends Command {
         bumpRule = { type: 'prerelease', data: prerelease };
       }
       pkg.bumpVersion(bumpRule);
-      console.log(`${colors.info(prefix)} ${pkg.version.toString()} -> ${colors.success(pkg.nextVersion.toString())}`);
+      console.log(
+        `${c.info(prefix)} ${pkg.version.toString()} -> ${c.success(pkg.nextVersion.toString())}`
+      );
       for (let i = 0; i < changes.changes.length; i += 1) {
         const change = changes.changes[i]!;
         const line = i === changes.changes.length - 1 ? '└─' : '├─';
-        console.log(`   ${colors.dim(`${line} ${change.toString()}`)}`);
+        console.log(`   ${c.dim(`${line} ${change.toString()}`)}`);
       }
       const changelog = await Changelog.load(pkg.changelog);
       targets.push({ package: pkg, changes, changelog });
@@ -108,7 +134,7 @@ export class Release extends Command {
         const prevVersion = target.package.version.toString();
         const nextVersion = target.package.nextVersion.toString();
         return {
-          name: `${target.package.name} ${prevVersion} -> ${colors.success(nextVersion)}`,
+          name: `${target.package.name} ${prevVersion} -> ${c.success(nextVersion)}`,
           value: target.package.name,
           checked: true,
         };
@@ -177,7 +203,8 @@ export class Release extends Command {
     return true;
   }
 
-  private async publish(targets: ReleaseTarget[]) {
+  private async publish(targets: ReleaseTarget[]): Promise<ReleaseTarget[]> {
+    const succeedTargets: ReleaseTarget[] = [];
     for (const target of targets) {
       if (target.package.beforePublishScripts.length > 0) {
         const actions = target.package.beforePublishScripts.map(
@@ -188,10 +215,34 @@ export class Release extends Command {
             path: script.cwd ?? '',
           })
         );
-        await runActions(actions, { name: target.package.name, dryRun: this.dryRun });
+        const result = await runActions(actions, {
+          name: target.package.name,
+          dryRun: this.dryRun,
+          reject: false,
+        });
+        if (!result.allSucceed) {
+          continue;
+        }
       }
       const actions = target.package.publish();
-      await runActions(actions, { name: target.package.name, dryRun: this.dryRun });
+      const result = await runActions(actions, {
+        name: target.package.name,
+        dryRun: this.dryRun,
+        failFast: false,
+        reject: false,
+      });
+      if (result.allSucceed) {
+        succeedTargets.push(target);
+      }
+    }
+    return succeedTargets;
+  }
+
+  private gitEnsureMainBranch(repo: Repository) {
+    const head = repo.head();
+    const branch = head.symbolicTarget();
+    if (branch !== 'refs/heads/main') {
+      throw new Error('release script only run in "main" branch');
     }
   }
 
@@ -201,14 +252,16 @@ export class Release extends Command {
     targets: ReleaseTarget[],
     rootCargoChanged: boolean,
     rootChangelogChanged: boolean
-  ) {
+  ): string | undefined {
     const message = 'release commit [skip actions]';
     if (this.dryRun) {
-      console.log(`${colors.info('[root]')} will commit changes: ${message}`);
-      return;
+      console.log(`${c.info('[root]')} will commit changes: ${message}`);
+      return undefined;
     }
     const pathspecs = targets.flatMap(x =>
-      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path, this.stagedFilepath].filter(isNotNil)
+      [...x.package.versionedFiles.map(x => x.path), x.changelog?.path, this.stagedFilepath].filter(
+        isNotNil
+      )
     );
     if (rootCargoChanged) {
       pathspecs.push('Cargo.toml');
@@ -222,39 +275,40 @@ export class Release extends Command {
     const treeId = index.writeTree();
     const tree = repo.getTree(treeId);
     const parent = repo.head().target()!;
-    const sig = { name: 'Seokju Na', email: 'seokju.me@gmail.com' };
     const commitId = repo.commit(tree, message, {
-      updateRef: 'HEAD',
-      author: sig,
-      committer: sig,
+      updateRef: 'refs/heads/main',
+      author: GIT_SIGNATURE,
+      committer: GIT_SIGNATURE,
       parents: [parent],
     });
     const commit = repo.getCommit(commitId);
-    console.log(`${colors.info('[root]')} commit: ${message}`);
-    console.log(colors.dim(`  sha: ${commit.id()}`));
-    console.log(colors.dim(`  author name: ${commit.author().name}`));
-    console.log(colors.dim(`  author email: ${commit.author().email}`));
+    console.log(`${c.info('[root]')} commit: ${message}`);
+    console.log(c.dim(`  parent: ${parent}`));
+    console.log(c.dim(`  sha: ${commit.id()}`));
+    console.log(c.dim(`  author name: ${commit.author().name}`));
+    console.log(c.dim(`  author email: ${commit.author().email}`));
+    return commitId;
   }
 
-  private gitCreateTags(repo: Repository, targets: ReleaseTarget[]) {
-    const sig = { name: 'Seokju Na', email: 'seokju.me@gmail.com' };
-    const target = repo.head().target()!;
-    const commit = repo.getCommit(target);
-    const targetId = commit.id().slice(0, 7);
+  private gitCreateTags(repo: Repository, commitId: string | undefined, targets: ReleaseTarget[]) {
+    const commit = commitId != null ? repo.getCommit(commitId) : null;
+    const targetId = commit?.id().slice(0, 7);
     for (const target of targets) {
       const prefix = `[${target.package.name}]`;
       const tag = target.package.nextVersionedGitTag;
-      if (this.dryRun) {
-        console.log(`${colors.info(prefix)} will create tag (${targetId}): ${tag.tagName}`);
+      if (commit == null || this.dryRun) {
+        console.log(`${c.info(prefix)} will create tag (${targetId}): ${tag.tagName}`);
         continue;
       }
-      const tagId = repo.createTag(tag.tagName, commit.asObject(), tag.tagName, { tagger: sig });
+      const tagId = repo.createTag(tag.tagName, commit.asObject(), tag.tagName, {
+        tagger: GIT_SIGNATURE,
+      });
       const gitTag = repo.getTag(tagId);
-      console.log(`${colors.info('root')} tag: ${gitTag.name()}`);
-      console.log(colors.dim(`  sha: ${gitTag.id()}`));
-      console.log(colors.dim(`  message: ${gitTag.message()}`));
-      console.log(colors.dim(`  tagger name: ${gitTag.tagger()?.name}`));
-      console.log(colors.dim(`  tagger email: ${gitTag.tagger()?.email}`));
+      console.log(`${c.info('[root]')} tag: ${gitTag.name()}`);
+      console.log(c.dim(`  sha: ${gitTag.id()}`));
+      console.log(c.dim(`  message: ${gitTag.message()}`));
+      console.log(c.dim(`  tagger name: ${gitTag.tagger()?.name}`));
+      console.log(c.dim(`  tagger email: ${gitTag.tagger()?.email}`));
     }
   }
 
@@ -262,36 +316,32 @@ export class Release extends Command {
     const remote = repo.getRemote('origin');
     const refspecs = [
       'refs/heads/main:refs/heads/main',
-      ...targets.map(x => x.package.nextVersionedGitTag.tagRef).map(tagRef => `${tagRef}:${tagRef}`),
+      ...targets
+        .map(x => x.package.nextVersionedGitTag.tagRef)
+        .map(tagRef => `${tagRef}:${tagRef}`),
     ];
     const logRefspecs = () => {
       for (const refspec of refspecs) {
         const [src, dest] = refspec.split(':');
-        console.log(colors.dim(`  - ${src} -> ${dest}`));
+        console.log(c.dim(`  - ${src} -> ${dest}`));
       }
     };
     if (this.dryRun) {
-      console.log(`${colors.info('[root]')} will push to: ${remote.url()}`);
+      console.log(`${c.info('[root]')} will push to: ${remote.url()}`);
       logRefspecs();
       return;
     }
     if (this.githubToken == null) {
-      console.log(`${colors.warn('[root]')} no github token found. skip push.`);
+      console.log(`${c.warn('[root]')} no github token found. skip push.`);
       return;
     }
-    await remote.push(
-      [
-        'refs/heads/main:refs/heads/main',
-        ...targets.map(x => x.package.nextVersionedGitTag.tagRef).map(tagRef => `${tagRef}:${tagRef}`),
-      ],
-      {
-        credential: {
-          type: 'Plain',
-          password: this.githubToken,
-        },
-      }
-    );
-    console.log(`${colors.success('[root]')} push changes to remote: ${remote.url()}`);
+    await remote.push(refspecs, {
+      credential: {
+        type: 'Plain',
+        password: this.githubToken,
+      },
+    });
+    console.log(`${c.success('[root]')} push changes to remote: ${remote.url()}`);
     logRefspecs();
   }
 
@@ -309,15 +359,17 @@ export class Release extends Command {
         body: target.changelog?.extractChanges(target.package) ?? undefined,
       };
       if (this.dryRun) {
-        console.log(`${colors.info('[root]')} will create github release: ${github.repo.owner}/${github.repo.name}`);
+        console.log(
+          `${c.info('[root]')} will create github release: ${github.repo.owner}/${github.repo.name}`
+        );
         const payloadStr = JSON.stringify(payload, null, 2);
         for (const line of payloadStr.split('\n')) {
-          console.log(`  ${colors.dim(line)}`);
+          console.log(`  ${c.dim(line)}`);
         }
         continue;
       }
       if (this.githubToken == null) {
-        console.log(`${colors.warn('[root]')} no github token found. skip creating github release.`);
+        console.log(`${c.warn('[root]')} no github token found. skip creating github release.`);
         return;
       }
       const release = await client.rest.repos.createRelease({
@@ -325,9 +377,9 @@ export class Release extends Command {
         repo: github.repo.name,
         ...payload,
       });
-      console.log(`${colors.success('[root]')} create github release: ${release.data.tag_name}`);
-      console.log(`  ${colors.dim(`id: ${release.data.id}`)}`);
-      console.log(`  ${colors.dim(`html_url: ${release.data.html_url}`)}`);
+      console.log(`${c.success('[root]')} create github release: ${release.data.tag_name}`);
+      console.log(`  ${c.dim(`id: ${release.data.id}`)}`);
+      console.log(`  ${c.dim(`html_url: ${release.data.html_url}`)}`);
     }
   }
 

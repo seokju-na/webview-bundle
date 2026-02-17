@@ -1,36 +1,36 @@
 {
   "name": "@wvb/node-linux-arm64-musl",
-  "version": "0.0.0",
-  "cpu": [
-    "arm64"
-  ],
-  "main": "binding.linux-arm64-musl.node",
-  "files": [
-    "binding.linux-arm64-musl.node"
-  ],
+  "version": "0.1.0",
   "description": "Webview bundle API for Node.js",
+  "homepage": "https://github.com/webview-bundle/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/webview-bundle/webview-bundle/issues"
+  },
+  "license": "MIT",
   "author": {
     "name": "Seokju Na",
     "email": "seokju.me@gmail.com",
     "url": "https://github.com/seokju-na"
   },
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "license": "MIT",
-  "engines": {
-    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
-  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
+    "url": "https://github.com/webview-bundle/webview-bundle",
     "directory": "packages/node"
   },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
+  "files": [
+    "wvb-node.linux-arm64-musl.node"
+  ],
   "os": [
     "linux"
   ],
+  "cpu": [
+    "arm64"
+  ],
   "libc": [
     "musl"
-  ]
+  ],
+  "main": "wvb-node.linux-arm64-musl.node",
+  "engines": {
+    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
+  }
 }

@@ -1,7 +1,4 @@
-export type {
-  BaseRemoteDeployer,
-  RemoteDeployParams,
-} from './deployer.js';
+export type { BaseRemoteDeployer, RemoteDeployParams } from './deployer.js';
 export type {
   IntegrityAlgorithm,
   IntegrityMakeConfig,
@@ -22,8 +19,4 @@ export type {
 } from './signature.js';
 export { signSignature } from './signature.js';
 export type { RemoteBundleDeployment } from './types.js';
-export type {
-  BaseRemoteUploader,
-  RemoteUploadParams,
-  RemoteUploadProgress,
-} from './uploader.js';
+export type { BaseRemoteUploader, RemoteUploadParams, RemoteUploadProgress } from './uploader.js';

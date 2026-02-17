@@ -1,6 +1,12 @@
 import { Command } from 'clipanion';
 import { ColorOption, configureColor } from '../console.js';
-import { configureLogger, getLogger, type Logger, LogLevelOption, LogVerboseOption } from '../log.js';
+import {
+  configureLogger,
+  getLogger,
+  type Logger,
+  LogLevelOption,
+  LogVerboseOption,
+} from '../log.js';
 import { isOperationError } from '../operations/error.js';
 
 export abstract class BaseCommand extends Command {

@@ -1,10 +1,15 @@
+import type { PackageJson as PackageJsonType } from 'type-fest';
+import glob from 'fast-glob';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import glob from 'fast-glob';
-import type { PackageJson as PackageJsonType } from 'type-fest';
 import { z } from 'zod';
 import type { Action } from './action.ts';
-import { type CargoToml, editCargoTomlVersion, formatCargoToml, parseCargoToml } from './cargo-toml.ts';
+import {
+  type CargoToml,
+  editCargoTomlVersion,
+  formatCargoToml,
+  parseCargoToml,
+} from './cargo-toml.ts';
 import { ROOT_DIR } from './consts.ts';
 import { type BumpRule, Version } from './version.ts';
 

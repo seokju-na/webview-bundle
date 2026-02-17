@@ -48,13 +48,21 @@ export async function signSignature(signer: SignatureSigner, message: Buffer): P
   const signingKey =
     key.format === 'jwk'
       ? await crypto.subtle.importKey(key.format, key.data, importKeyAlg(signer), true, ['sign'])
-      : await crypto.subtle.importKey(key.format, new Uint8Array(key.data), importKeyAlg(signer), true, ['sign']);
+      : await crypto.subtle.importKey(
+          key.format,
+          new Uint8Array(key.data),
+          importKeyAlg(signer),
+          true,
+          ['sign']
+        );
   const signed = await crypto.subtle.sign(signAlg(signer), signingKey, new Uint8Array(message));
   const signedBuf = Buffer.from(signed);
   return signedBuf.toString('base64');
 }
 
-function importKeyAlg(config: SignatureSignConfig): AlgorithmIdentifier | RsaHashedImportParams | EcKeyAlgorithm {
+function importKeyAlg(
+  config: SignatureSignConfig
+): AlgorithmIdentifier | RsaHashedImportParams | EcKeyAlgorithm {
   switch (config.algorithm) {
     case 'ecdsa':
       return {

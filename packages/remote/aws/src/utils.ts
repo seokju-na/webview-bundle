@@ -41,9 +41,9 @@ export interface AwsCloudFrontClientConfigLike {
   cloudFrontClientConfig?: CloudFrontClientConfig;
 }
 
-export async function getCloudFrontClient<T extends AwsCloudFrontClientConfigLike = AwsCloudFrontClientConfigLike>(
-  config: T
-): Promise<CloudFrontClient> {
+export async function getCloudFrontClient<
+  T extends AwsCloudFrontClientConfigLike = AwsCloudFrontClientConfigLike,
+>(config: T): Promise<CloudFrontClient> {
   if (config?.cloudFrontClient != null) {
     return config.cloudFrontClient;
   }
@@ -70,6 +70,10 @@ export function isNoSuchKeyError(e: unknown): boolean {
   return e != null && typeof e === 'object' && (e as Error).name === 'NoSuchKey';
 }
 
-export function filterS3Metadata(metadata: Record<string, string | null | undefined>): Record<string, string> {
-  return Object.fromEntries(Object.entries(metadata).filter(([, value]) => value != null)) as Record<string, string>;
+export function filterS3Metadata(
+  metadata: Record<string, string | null | undefined>
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(metadata).filter(([, value]) => value != null)
+  ) as Record<string, string>;
 }

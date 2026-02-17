@@ -1,7 +1,27 @@
 {
   "name": "@wvb/remote-cloudflare-provider-pulumi",
+  "version": "0.1.0",
   "description": "Webview Bundle remote pulumi configuration for Cloudflare",
-  "version": "0.0.0",
+  "homepage": "https://github.com/webview-bundle/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/webview-bundle/webview-bundle/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webview-bundle/webview-bundle",
+    "directory": "packages/remote/cloudflare-provider-pulumi"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -12,36 +32,12 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md"
-  ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/remote/cloudflare-provider-pulumi"
-  },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
-  "author": {
-    "name": "Seokju Na",
-    "email": "seokju.me@gmail.com",
-    "url": "https://github.com/seokju-na"
-  },
-  "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
     "build": "yarn build-js && yarn build-worker-script",
     "build-js": "tsdown",
     "build-worker-script": "esbuild ./worker-script.ts --minify --bundle --format=esm --platform=neutral --target=node18 --sourcemap=external --outfile=./dist/worker-script.js",
     "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "@pulumi/cloudflare": "*",
-    "@pulumi/pulumi": "*"
   },
   "dependencies": {
     "@wvb/remote-cloudflare-provider": "workspace:^"
@@ -54,5 +50,9 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@pulumi/cloudflare": "*",
+    "@pulumi/pulumi": "*"
   }
 }

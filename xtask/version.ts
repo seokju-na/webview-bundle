@@ -9,7 +9,7 @@ export type PrereleaseData = z.infer<typeof PrereleaseDataSchema>;
 
 export function parsePrerelease(x: unknown): PrereleaseData {
   if (typeof x !== 'string') {
-    throw new Error(`invalid prerelease: ${x}`);
+    throw new Error(`invalid prerelease: ${String(x)}`);
   }
   const [id, num] = x.split('.');
   if (id == null || x.length === 0) {

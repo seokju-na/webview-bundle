@@ -1,5 +1,5 @@
-import path from 'node:path';
 import { Command, Option } from 'clipanion';
+import path from 'node:path';
 import { isBoolean } from 'typanion';
 import { defaultOutDir, defaultOutFile, resolveConfig } from '../../config.js';
 import { c } from '../../console.js';
@@ -90,7 +90,9 @@ to bypass these steps when needed.
       return 1;
     }
     const defaultFile = defaultOutFile(config);
-    const file = this.file ?? (defaultFile != null ? path.join(defaultOutDir(config), defaultFile) : undefined);
+    const file =
+      this.file ??
+      (defaultFile != null ? path.join(defaultOutDir(config), defaultFile) : undefined);
     if (file == null) {
       this.logger.error(
         'Webview Bundle file is not specified. Set "outFile" in the config file ' +
@@ -118,7 +120,9 @@ to bypass these steps when needed.
     });
 
     const dest =
-      config.remote.endpoint != null ? buildURL(config.remote.endpoint, `/bundles/${bundleName}`).toString() : null;
+      config.remote.endpoint != null
+        ? buildURL(config.remote.endpoint, `/bundles/${bundleName}`).toString()
+        : null;
     if (dest != null) {
       this.logger.info(`  Bundle Endpoint: ${c.bold(c.info(dest))}`);
     }
