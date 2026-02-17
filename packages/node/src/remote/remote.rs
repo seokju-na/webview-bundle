@@ -8,6 +8,21 @@ use std::sync::Arc;
 use wvb::remote;
 use wvb::remote::HttpConfig;
 
+/// Options for creating a remote client.
+///
+/// @property {HttpOptions} [http] - HTTP client configuration
+/// @property {(data: RemoteOnDownloadData) => void} [onDownload] - Download progress callback
+///
+/// @example
+/// ```typescript
+/// const options = {
+///   http: { timeout: 30000 },
+///   onDownload: (data) => {
+///     console.log(`Downloaded ${data.downloadedBytes}/${data.totalBytes}`);
+///   }
+/// };
+/// const remote = new Remote("https://updates.example.com", options);
+/// ```
 #[napi(object, object_to_js = false)]
 pub struct RemoteOptions {
   pub http: Option<HttpOptions>,
@@ -15,12 +30,22 @@ pub struct RemoteOptions {
   pub on_download: Option<JsCallback<RemoteOnDownloadData, ()>>,
 }
 
+/// Download progress data.
+///
+/// @property {number} downloadedBytes - Bytes downloaded so far
+/// @property {number} totalBytes - Total bytes to download
+/// @property {string} endpoint - Endpoint being downloaded from
 #[napi(object)]
 pub struct RemoteOnDownloadData {
   pub downloaded_bytes: u32,
   pub total_bytes: u32,
+  pub endpoint: String,
 }
 
+/// Bundle information from list operations.
+///
+/// @property {string} name - Bundle name
+/// @property {string} version - Version string
 #[napi(object)]
 pub struct ListRemoteBundleInfo {
   pub name: String,
@@ -36,6 +61,16 @@ impl From<remote::ListRemoteBundleInfo> for ListRemoteBundleInfo {
   }
 }
 
+/// Complete bundle information from remote server.
+///
+/// Contains version, cache validation, and integrity data.
+///
+/// @property {string} name - Bundle name
+/// @property {string} version - Version string
+/// @property {string} [etag] - HTTP ETag for cache validation
+/// @property {string} [integrity] - SHA3 integrity hash
+/// @property {string} [signature] - Digital signature
+/// @property {string} [lastModified] - Last-Modified timestamp
 #[napi(object)]
 pub struct RemoteBundleInfo {
   pub name: String,
@@ -72,6 +107,28 @@ impl From<RemoteBundleInfo> for remote::RemoteBundleInfo {
   }
 }
 
+/// HTTP client for downloading bundles from a remote server.
+///
+/// The remote client implements the bundle HTTP protocol, allowing you to:
+/// - List available bundles
+/// - Get bundle metadata
+/// - Download specific versions
+/// - Track download progress
+///
+/// @example
+/// ```typescript
+/// const remote = new Remote("https://updates.example.com");
+///
+/// // List all bundles
+/// const bundles = await remote.listBundles();
+///
+/// // Get current version info
+/// const info = await remote.getInfo("app");
+/// console.log(`Latest version: ${info.version}`);
+///
+/// // Download bundle
+/// const [bundleInfo, bundle, data] = await remote.download("app");
+/// ```
 #[napi]
 pub struct Remote {
   pub(crate) inner: Arc<remote::Remote>,
@@ -79,6 +136,27 @@ pub struct Remote {
 
 #[napi]
 impl Remote {
+  /// Creates a new remote client.
+  ///
+  /// @param {string} endpoint - Base URL of the remote server
+  /// @param {RemoteOptions} [options] - Client options
+  ///
+  /// @example
+  /// ```typescript
+  /// const remote = new Remote("https://updates.example.com");
+  /// ```
+  ///
+  /// @example
+  /// ```typescript
+  /// // With options
+  /// const remote = new Remote("https://updates.example.com", {
+  ///   http: { timeout: 60000 },
+  ///   onDownload: (data) => {
+  ///     const percent = (data.downloadedBytes / data.totalBytes) * 100;
+  ///     console.log(`Progress: ${percent.toFixed(1)}%`);
+  ///   }
+  /// });
+  /// ```
   #[napi(constructor)]
   pub fn new(endpoint: String, options: Option<RemoteOptions>) -> crate::Result<Remote> {
     let mut builder = remote::Remote::builder().endpoint(endpoint);
@@ -89,11 +167,12 @@ impl Remote {
         );
       }
       if let Some(on_download) = options.on_download {
-        builder = builder.on_download(move |downloaded_bytes, total_bytes| {
+        builder = builder.on_download(move |downloaded_bytes, total_bytes, endpoint| {
           let on_download_fn = Arc::clone(&on_download);
           let _ = on_download_fn.invoke_sync(RemoteOnDownloadData {
             downloaded_bytes: downloaded_bytes as u32,
             total_bytes: total_bytes as u32,
+            endpoint,
           });
         });
       }
@@ -104,6 +183,18 @@ impl Remote {
     })
   }
 
+  /// Lists all available bundles on the server.
+  ///
+  /// @param {string} [channel] - Optional channel filter
+  /// @returns {Promise<ListRemoteBundleInfo[]>} List of bundles
+  ///
+  /// @example
+  /// ```typescript
+  /// const bundles = await remote.listBundles();
+  /// for (const bundle of bundles) {
+  ///   console.log(`${bundle.name}@${bundle.version}`);
+  /// }
+  /// ```
   #[napi]
   pub async fn list_bundles(
     &self,
@@ -119,6 +210,22 @@ impl Remote {
     Ok(bundles)
   }
 
+  /// Gets bundle metadata for the current version.
+  ///
+  /// Fetches metadata without downloading the bundle itself.
+  ///
+  /// @param {string} bundleName - Name of the bundle
+  /// @param {string} [channel] - Optional channel filter
+  /// @returns {Promise<RemoteBundleInfo>} Bundle information
+  ///
+  /// @example
+  /// ```typescript
+  /// const info = await remote.getInfo("app");
+  /// console.log(`Current version: ${info.version}`);
+  /// if (info.integrity) {
+  ///   console.log(`Integrity: ${info.integrity}`);
+  /// }
+  /// ```
   #[napi]
   pub async fn get_info(
     &self,
@@ -132,6 +239,23 @@ impl Remote {
     Ok(info.into())
   }
 
+  /// Downloads the current version of a bundle.
+  ///
+  /// Returns bundle info, parsed bundle, and raw data.
+  ///
+  /// @param {string} bundleName - Name of the bundle
+  /// @param {string} [channel] - Optional channel filter
+  /// @returns {Promise<[RemoteBundleInfo, Bundle, Buffer]>} Tuple of info, bundle, and data
+  ///
+  /// @example
+  /// ```typescript
+  /// const [info, bundle, data] = await remote.download("app");
+  /// console.log(`Downloaded ${info.name}@${info.version}`);
+  /// console.log(`Size: ${data.length} bytes`);
+  ///
+  /// // Save to file
+  /// await writeBundle(bundle, "app.wvb");
+  /// ```
   #[napi]
   pub async fn download(
     &self,
@@ -142,6 +266,17 @@ impl Remote {
     Ok((info.into(), Bundle { inner }, data.into()))
   }
 
+  /// Downloads a specific version of a bundle.
+  ///
+  /// @param {string} bundleName - Name of the bundle
+  /// @param {string} version - Specific version to download
+  /// @returns {Promise<[RemoteBundleInfo, Bundle, Buffer]>} Tuple of info, bundle, and data
+  ///
+  /// @example
+  /// ```typescript
+  /// const [info, bundle, data] = await remote.downloadVersion("app", "1.0.0");
+  /// console.log(`Downloaded specific version: ${info.version}`);
+  /// ```
   #[napi]
   pub async fn download_version(
     &self,

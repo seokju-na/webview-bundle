@@ -50,7 +50,10 @@ export function webviewBundleRemote(config: WebviewBundleRemoteConfig): WebviewB
     const bundleName = c.req.param('name');
     const channel = c.req.query('channel');
     const deployment = await getBundleDeployment(getContext(c), bundleName);
-    const version = channel != null ? (deployment?.channels?.[channel] ?? deployment?.version) : deployment?.version;
+    const version =
+      channel != null
+        ? (deployment?.channels?.[channel] ?? deployment?.version)
+        : deployment?.version;
     if (deployment == null || version == null) {
       return c.notFound();
     }

@@ -1,12 +1,13 @@
 import CI from 'ci-info';
 import { Option } from 'clipanion';
 import kleur from 'kleur';
+import util from 'node:util';
 import supportsColor from 'supports-color';
 import { isEnum } from 'typanion';
 
-export const ColorOption = Option.String('--color,-C', 'auto', {
+export const ColorOption = Option.String('--color', 'auto', {
   validator: isEnum(['off', 'on', 'auto'] as const),
-  description: 'Set the color mode for output.',
+  description: 'Set the color mode for output. [Default: "auto"]',
   env: 'COLOR',
 });
 
@@ -19,7 +20,9 @@ export function configureColor(val: typeof ColorOption) {
       kleur.enabled = true;
       break;
     case 'auto':
-      kleur.enabled = CI.GITHUB_ACTIONS ? true : supportsColor.stdout !== false && supportsColor.stdout.level > 0;
+      kleur.enabled = CI.GITHUB_ACTIONS
+        ? true
+        : supportsColor.stdout !== false && supportsColor.stdout.level > 0;
       break;
   }
 }
@@ -37,6 +40,11 @@ export const colors = {
   header: (x: [string, string]) => kleur.gray(`${x[0]}: ${x[1]}`),
   bytes: (msg: string | number) => kleur.gray(msg),
   bold: (msg: string | number) => kleur.bold(msg),
+  progress: (msg: string | number) => kleur.cyan(msg),
   underline: (msg: string | number) => kleur.underline(msg),
 };
 export const c = colors;
+
+export function stripColor(message: string): string {
+  return util.stripVTControlCharacters(message);
+}

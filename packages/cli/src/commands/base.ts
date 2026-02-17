@@ -1,6 +1,13 @@
 import { Command } from 'clipanion';
 import { ColorOption, configureColor } from '../console.js';
-import { configureLogger, getLogger, type Logger, LogLevelOption, LogVerboseOption } from '../log.js';
+import {
+  configureLogger,
+  getLogger,
+  type Logger,
+  LogLevelOption,
+  LogVerboseOption,
+} from '../log.js';
+import { isOperationError } from '../operations/error.js';
 
 export abstract class BaseCommand extends Command {
   abstract readonly name: string;
@@ -17,7 +24,7 @@ export abstract class BaseCommand extends Command {
     return this._logger;
   }
 
-  abstract run(): Promise<number | void>;
+  abstract run(): Promise<number | boolean | void>;
 
   async execute() {
     configureColor(this.color);
@@ -27,9 +34,19 @@ export abstract class BaseCommand extends Command {
     });
     this._logger = getLogger(this.name);
     try {
-      return await this.run();
+      const ret = await this.run();
+      if (typeof ret === 'number') {
+        return ret;
+      }
+      if (typeof ret === 'boolean') {
+        return ret ? 0 : 1;
+      }
+      return 0;
     } catch (error) {
-      this._logger.error(`"${this.name}" command failed with error: {error}`, { error });
+      // Ignore logging for operation error, because it's intent to be already logged in operation.
+      if (!isOperationError(error)) {
+        this._logger.error(`"${this.name}" command failed with error: {error}`, { error });
+      }
       return 1;
     }
   }

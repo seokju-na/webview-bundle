@@ -11,13 +11,19 @@ function Home() {
         </Text>
         <Text className="mb-4">
           This example shows how to implement page based pagination with{' '}
-          <Link href="https://nextjs.org/docs/basic-features/data-fetching/get-static-props">SSG</Link> in Next.js.
+          <Link href="https://nextjs.org/docs/basic-features/data-fetching/get-static-props">
+            SSG
+          </Link>{' '}
+          in Next.js.
         </Text>
         <Text className="mb-4">
-          The first 5 paginated pages are cached in the edge at build time, and the rest are incrementally cached using{' '}
-          <Link href="https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration">ISR</Link>,
-          that way we can avoid increasing build times no matter how many pages we have while still keeping essential
-          pages cached from the start.
+          The first 5 paginated pages are cached in the edge at build time, and the rest are
+          incrementally cached using{' '}
+          <Link href="https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration">
+            ISR
+          </Link>
+          , that way we can avoid increasing build times no matter how many pages we have while
+          still keeping essential pages cached from the start.
         </Text>
         <Text className="mb-4">The example showcases a PLP (Product Listing Pages) where:</Text>
         <List className="mb-4">

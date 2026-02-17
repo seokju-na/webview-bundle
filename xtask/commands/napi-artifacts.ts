@@ -1,12 +1,13 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import { NapiCli } from '@napi-rs/cli';
 import { Command, Option } from 'clipanion';
 import glob from 'fast-glob';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { ColorModeOption, colors, setColorMode } from '../console.ts';
 import { ROOT_DIR } from '../consts.ts';
 
-export class ArtifactsNapiCommand extends Command {
-  static paths = [['artifacts', 'napi']];
+export class NapiArtifactsCommand extends Command {
+  static paths = [['napi', 'artifacts']];
 
   readonly relativePath = Option.String();
   readonly colorMode = ColorModeOption;
@@ -33,6 +34,8 @@ export class ArtifactsNapiCommand extends Command {
         await fs.copyFile(src, dest);
         console.log(`${colors.success(progress)} ${path.relative(cwd, dest)}: file copied`);
       }
+      const cli = new NapiCli();
+      await cli.artifacts({ cwd });
       return 0;
     } catch (e) {
       console.error(e);
@@ -49,6 +52,8 @@ export class ArtifactsNapiCommand extends Command {
         return path.join(dirname, `${name}-x86_64-apple-darwin`, filename);
       case 'darwin-arm64.node':
         return path.join(dirname, `${name}-aarch64-apple-darwin`, filename);
+      case 'win32-ia32-msvc.node':
+        return path.join(dirname, `${name}-i686-pc-windows-msvc`, filename);
       case 'win32-x64-msvc.node':
         return path.join(dirname, `${name}-x86_64-pc-windows-msvc`, filename);
       case 'win32-arm64-msvc.node':
@@ -61,6 +66,12 @@ export class ArtifactsNapiCommand extends Command {
         return path.join(dirname, `${name}-aarch64-unknown-linux-musl`, filename);
       case 'linux-arm64-gnu.node':
         return path.join(dirname, `${name}-aarch64-unknown-linux-gnu`, filename);
+      case 'linux-arm-gnueabihf.node':
+        return path.join(dirname, `${name}-armv7-unknown-linux-gnueabihf`, filename);
+      case 'android-arm64.node':
+        return path.join(dirname, `${name}-aarch64-linux-android`, filename);
+      case 'android-arm-eabi.node':
+        return path.join(dirname, `${name}-armv7-linux-androideabi`, filename);
       default:
         throw new Error(`unknown file: ${filepath}`);
     }

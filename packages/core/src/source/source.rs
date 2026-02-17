@@ -12,33 +12,59 @@ use std::sync::Arc;
 use tokio::fs::File;
 use tokio::sync::OnceCell;
 
+/// The type of bundle source: builtin or remote.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum BundleSourceKind {
+  /// Bundles shipped with the application (read-only, fallback)
   Builtin,
+  /// Downloaded bundles (takes priority)
   Remote,
 }
 
+/// Bundle version with source kind information.
+///
+/// This indicates which source (builtin or remote) provides a bundle version.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BundleSourceVersion {
+  /// The source kind (builtin or remote)
   pub kind: BundleSourceKind,
+  /// The version string (e.g., "1.0.0")
   pub version: String,
 }
 
 impl BundleSourceVersion {
+  /// Creates a new bundle source version.
   pub fn new(kind: BundleSourceKind, version: String) -> Self {
     Self { kind, version }
   }
 
+  /// Creates a builtin source version.
   pub fn builtin(version: String) -> Self {
     Self::new(BundleSourceKind::Builtin, version)
   }
 
+  /// Creates a remote source version.
   pub fn remote(version: String) -> Self {
     Self::new(BundleSourceKind::Remote, version)
   }
 }
 
+/// Builder for creating a `BundleSource`.
+///
+/// # Example
+///
+/// ```no_run
+/// # #[cfg(feature = "source")]
+/// # {
+/// use wvb::source::BundleSource;
+///
+/// let source = BundleSource::builder()
+///     .builtin_dir("./builtin")
+///     .remote_dir("./remote")
+///     .build();
+/// # }
+/// ```
 #[derive(Debug, Default, Clone)]
 #[non_exhaustive]
 pub struct BundleSourceBuilder {

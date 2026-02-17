@@ -1,3 +1,4 @@
+import type { BuiltinConfig } from './builtin.js';
 import type { CreateConfig } from './create.js';
 import type { ExtractConfig } from './extract.js';
 import type { RemoteConfig } from './remote/index.js';
@@ -7,7 +8,12 @@ export type ConfigInputFnObj = () => Config;
 export type ConfigInputFnPromise = () => Promise<Config>;
 export type ConfigInputFn = () => Config | Promise<Config>;
 
-export type ConfigInput = Config | Promise<Config> | ConfigInputFnObj | ConfigInputFnPromise | ConfigInputFn;
+export type ConfigInput =
+  | Config
+  | Promise<Config>
+  | ConfigInputFnObj
+  | ConfigInputFnPromise
+  | ConfigInputFn;
 
 export function defineConfig(config: Config): Config;
 export function defineConfig(config: Promise<Config>): Promise<Config>;
@@ -47,4 +53,5 @@ export interface Config {
   extract?: ExtractConfig;
   remote?: RemoteConfig;
   serve?: ServeConfig;
+  builtin?: BuiltinConfig;
 }

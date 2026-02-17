@@ -40,7 +40,7 @@ pub struct RemoteError {
   pub message: Option<String>,
 }
 
-type OnDownload = dyn Fn(u64, u64) + Send + Sync + 'static;
+type OnDownload = dyn Fn(u64, u64, String) + Send + Sync + 'static;
 
 /// Configuration for remote operations.
 #[derive(Default, Clone)]
@@ -79,7 +79,7 @@ impl RemoteBuilder {
   /// Set download progress callback.
   pub fn on_download<F>(mut self, on_download: F) -> Self
   where
-    F: Fn(u64, u64) + Send + Sync + 'static,
+    F: Fn(u64, u64, String) + Send + Sync + 'static,
   {
     self.config.on_download = Some(Arc::new(on_download));
     self
@@ -199,16 +199,16 @@ impl Remote {
 
   fn parse_info(&self, resp: &reqwest::Response) -> crate::Result<RemoteBundleInfo> {
     let headers = resp.headers();
-    let name = get_header_value(&headers, "webview-bundle-name").ok_or(
+    let name = get_header_value(headers, "webview-bundle-name").ok_or(
       crate::Error::invalid_remote_bundle("\"webview-bundle-name\" header is missing"),
     )?;
-    let version = get_header_value(&headers, "webview-bundle-version").ok_or(
+    let version = get_header_value(headers, "webview-bundle-version").ok_or(
       crate::Error::invalid_remote_bundle("\"webview-bundle-version\" header is missing"),
     )?;
-    let etag = get_header_value(&headers, header::ETAG);
-    let last_modified = get_header_value(&headers, header::LAST_MODIFIED);
-    let integrity = get_header_value(&headers, "webview-bundle-integrity");
-    let signature = get_header_value(&headers, "webview-bundle-signature");
+    let etag = get_header_value(headers, header::ETAG);
+    let last_modified = get_header_value(headers, header::LAST_MODIFIED);
+    let integrity = get_header_value(headers, "webview-bundle-integrity");
+    let signature = get_header_value(headers, "webview-bundle-signature");
     Ok(RemoteBundleInfo {
       name,
       version,
@@ -240,7 +240,7 @@ impl Remote {
     channel: Option<&String>,
   ) -> crate::Result<(RemoteBundleInfo, Bundle, Vec<u8>)> {
     let endpoint = self.endpoint(path, channel.map(|x| vec![("channel", x)]))?;
-    let resp = self.client.get(endpoint).send().await?;
+    let resp = self.client.get(&endpoint).send().await?;
     if !resp.status().is_success() {
       return Err(self.parse_err(resp).await);
     }
@@ -254,7 +254,7 @@ impl Remote {
       data.append(&mut chunk.to_vec());
       downloaded_bytes += chunk.len() as u64;
       if let Some(on_download) = &self.config.on_download {
-        on_download(downloaded_bytes, total_size);
+        on_download(downloaded_bytes, total_size, endpoint.to_owned());
       }
     }
     let mut reader = Cursor::new(&data);

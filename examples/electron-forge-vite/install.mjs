@@ -33,7 +33,9 @@ for (const [name, version] of Object.entries(dependencies)) {
   const expectFileName = `wvb-${name.split('/')[1]}.tgz`;
   const expectVersion = `file:./${expectFileName}`;
   if (version !== expectVersion) {
-    throw new Error(`Expect "${name}" package version to be "${expectVersion}" (but it is "${version}")`);
+    throw new Error(
+      `Expect "${name}" package version to be "${expectVersion}" (but it is "${version}")`
+    );
   }
   const cmd = `yarn workspace ${name} pack`;
   console.log(`Run command: ${cmd}`);

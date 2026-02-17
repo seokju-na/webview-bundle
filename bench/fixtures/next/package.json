@@ -1,7 +1,7 @@
 {
   "name": "@bench/fixture-next",
-  "repository": "https://github.com/vercel/examples.git",
   "private": true,
+  "repository": "https://github.com/vercel/examples.git",
   "scripts": {
     "dev": "next dev",
     "out": "next build"

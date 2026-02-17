@@ -31,7 +31,10 @@ export class RemoteCurrentCommand extends BaseCommand {
       Use \`remote download\` if you need the actual bundle file.
     `,
     examples: [
-      ['Check current version with explicit endpoint', '$0 remote current my-app --endpoint https://cdn.example.com'],
+      [
+        'Check current version with explicit endpoint',
+        '$0 remote current my-app --endpoint https://cdn.example.com',
+      ],
       ['Use bundle name and endpoint from config', '$0 remote current'],
       ['Verify deployment in CI pipeline', '$0 remote current my-app -E https://cdn.example.com'],
     ],
@@ -43,6 +46,10 @@ export class RemoteCurrentCommand extends BaseCommand {
   });
   readonly endpoint = Option.String('--endpoint,-E', {
     description: 'Endpoint of remote server.',
+  });
+  readonly channel = Option.String('--channel', {
+    description:
+      'Release channel to manage and distribute different stability versions. (e.g. "beta", "alpha")',
   });
   readonly configFile = Option.String('--config,-C', {
     description: 'Path to the config file.',
@@ -67,7 +74,7 @@ export class RemoteCurrentCommand extends BaseCommand {
       return 1;
     }
     const remote = new Remote(endpoint);
-    const info = await remote.getInfo(bundleName);
+    const info = await remote.getInfo(bundleName, this.channel);
     this.logger.info(`Remote Webview Bundle info for ${c.info(bundleName)}`);
     this.logger.info(`  Version: ${c.bold(c.info(info.version))}`);
     this.logger.info(`  ETag: ${c.bold(c.info(info.etag ?? '(none)'))}`);

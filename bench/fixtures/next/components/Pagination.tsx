@@ -10,7 +10,12 @@ export type PaginationProps = {
 
 export const dotts = '...';
 
-const Pagination = ({ totalItems, currentPage, itemsPerPage = 10, renderPageLink }: PaginationProps) => {
+const Pagination = ({
+  totalItems,
+  currentPage,
+  itemsPerPage = 10,
+  renderPageLink,
+}: PaginationProps) => {
   const pages = usePagination(totalItems, currentPage, itemsPerPage);
 
   return (

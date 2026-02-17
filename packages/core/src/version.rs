@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 
 pub(crate) const VERSION_LEN: usize = 1;
 
+/// Version fo Webview Bundle.
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Default)]
 pub enum Version {
   /// Version 1

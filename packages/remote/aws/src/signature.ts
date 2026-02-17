@@ -1,6 +1,6 @@
-import { Buffer } from 'node:buffer';
 import type { KMSClient, KMSClientConfig, SigningAlgorithmSpec } from '@aws-sdk/client-kms';
 import type { SignatureSignFn } from '@wvb/config/remote';
+import { Buffer } from 'node:buffer';
 import { getKmsClient } from './utils.js';
 
 export interface AwsKmsSignatureSignerConfig {

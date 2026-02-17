@@ -1,81 +1,137 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { diffLines } from 'diff';
+import fs from 'node:fs/promises';
+import { EOL } from 'node:os';
+import path from 'node:path';
+import { match } from 'ts-pattern';
 import { runCommand } from './child_process.ts';
-import { colors } from './console.ts';
+import { c } from './console.ts';
 import { ROOT_DIR } from './consts.ts';
 
 export type Action =
   | { type: 'write'; path: string; content: string; prevContent?: string }
-  | { type: 'command'; cmd: string; args: string[]; path: string; ignoreError?: boolean };
+  | { type: 'command'; cmd: string; args: string[]; path: string };
 
-interface ActionContext {
-  name?: string;
-  dryRun: boolean;
-}
-
-export async function runActions(actions: Action[], ctx: ActionContext) {
-  if (ctx.dryRun) {
-    dryRunActions(actions, ctx);
-    return;
-  }
-  for (const action of actions) {
-    switch (action.type) {
-      case 'write':
-        await runWriteAction(action, ctx);
-        break;
-      case 'command':
-        await runCommandAction(action, ctx);
-        break;
-    }
-  }
-}
-
-async function runWriteAction(action: Extract<Action, { type: 'write' }>, { name = 'root' }: ActionContext) {
-  const filepath = path.join(ROOT_DIR, action.path);
-  await fs.mkdir(path.dirname(filepath), { recursive: true });
-  await fs.writeFile(filepath, action.content, 'utf8');
-  console.log(`${colors.success(`[${name}]`)} write file: ${action.path}`);
-  if (action.prevContent != null) {
-    logDiff(action.prevContent, action.content);
-  }
-}
-
-async function runCommandAction(action: Extract<Action, { type: 'command' }>, { name = 'root' }: ActionContext) {
-  console.log(`${colors.info(`[${name}]`)} run command: ${action.cmd} ${action.args.join(' ')}`);
-  console.log(`  ${colors.dim(`path: ${action.path}`)}`);
-  const { exitCode } = await runCommand(action.cmd, action.args, {
-    cwd: path.join(ROOT_DIR, action.path),
-    prefix: `${colors.info(`[${name}}`)} `,
-  });
-  if (action.ignoreError !== true && exitCode !== 0) {
-    throw new Error(`[${name}] command failed with exit code: ${exitCode}`);
-  }
-}
-
-function dryRunActions(actions: Action[], ctx: ActionContext) {
-  for (const action of actions) {
-    dryRunAction(action, ctx);
-  }
-}
-
-function dryRunAction(action: Action, ctx: ActionContext) {
+export function formatAction(action: Action): string {
   switch (action.type) {
     case 'write':
-      dryRunWriteAction(action, ctx);
-      break;
+      return ['write action', c.dim(`  path: ${action.path}`)].join(EOL);
     case 'command':
-      dryRunCommandAction(action, ctx);
-      break;
+      return [
+        'command action',
+        c.dim(`  path: ${action.path}`),
+        c.dim(`  cmd: ${action.cmd}`),
+        c.dim(`  args: ${action.args.join(' ')}`),
+      ].join(EOL);
   }
 }
 
-function dryRunWriteAction(action: Extract<Action, { type: 'write' }>, { name = 'root' }: ActionContext) {
-  const { path, content, prevContent } = action;
-  const prefix = colors.info(`[${name}]`);
-  console.log(`${prefix} will write file: ${path}`);
-  if (prevContent != null) {
-    logDiff(prevContent, content);
+export interface RunActionsContext {
+  name?: string;
+  dryRun?: boolean;
+  failFast?: boolean;
+  reject?: boolean;
+}
+
+export type RunActionResult =
+  | { succeed: true; action: Action }
+  | { succeed: false; action: Action; error: Error };
+export type RunActionsResult =
+  | {
+      allSucceed: true;
+      items: Array<Extract<RunActionResult, { succeed: true }>>;
+      ctx: Required<RunActionsContext>;
+    }
+  | { allSucceed: false; items: RunActionResult[]; ctx: Required<RunActionsContext> };
+
+export async function runActions(
+  actions: Action[],
+  initialCtx: RunActionsContext = {}
+): Promise<RunActionsResult> {
+  const { name = 'root', dryRun = false, failFast = true, reject = true } = initialCtx;
+  const ctx: Required<RunActionsContext> = { name, dryRun, failFast, reject };
+  if (dryRun) {
+    dryRunActions(name, actions);
+    return {
+      allSucceed: true,
+      items: actions.map(action => ({ succeed: true, action })),
+      ctx,
+    };
+  }
+  const items: RunActionResult[] = [];
+  const rejectFailures = (): never => {
+    const failureCount = items.filter(x => !x.succeed).length;
+    throw new Error(`${c.error(`[${name}]`)} ${failureCount} action(s) failed`);
+  };
+  for (const action of actions) {
+    const item = await match(action)
+      .with({ type: 'write' }, x => runWriteAction(name, x))
+      .with({ type: 'command' }, x => runCommandAction(name, x))
+      .exhaustive();
+    items.push(item);
+    if (failFast && !item.succeed) {
+      if (reject) {
+        rejectFailures();
+      }
+      return { allSucceed: false, items, ctx };
+    }
+  }
+  const result = {
+    allSucceed: items.every(x => x.succeed),
+    items,
+    ctx,
+  } as RunActionsResult;
+  if (reject && !result.allSucceed) {
+    rejectFailures();
+  }
+  return result;
+}
+
+async function runWriteAction(
+  name: string,
+  action: Extract<Action, { type: 'write' }>
+): Promise<RunActionResult> {
+  console.log(`${c.info(`[${name}]`)} ${formatAction(action)}`);
+  try {
+    const filepath = path.join(ROOT_DIR, action.path);
+    await fs.mkdir(path.dirname(filepath), { recursive: true });
+    await fs.writeFile(filepath, action.content, 'utf8');
+    if (action.prevContent != null) {
+      logDiff(action.prevContent, action.content);
+    }
+    return { succeed: true, action };
+  } catch (e) {
+    const error = e as Error;
+    console.error(`${c.error(`[${name}]`)} write command failed: ${error.message}`);
+    return { succeed: false, action, error };
+  }
+}
+
+async function runCommandAction(
+  name: string,
+  action: Extract<Action, { type: 'command' }>
+): Promise<RunActionResult> {
+  console.log(`${c.info(`[${name}]`)} ${formatAction(action)}`);
+  const { exitCode } = await runCommand(action.cmd, action.args, {
+    cwd: path.join(ROOT_DIR, action.path),
+    prefix: `${c.info(`[${name}]`)} `,
+  });
+  if (exitCode !== 0) {
+    console.error(`${c.error(`[${name}]`)} command action failed: exitCode=${exitCode}`);
+    return {
+      succeed: false,
+      action,
+      error: new Error(`command failed with exitCode: ${exitCode}`),
+    };
+  }
+  return { succeed: true, action };
+}
+
+function dryRunActions(name: string, actions: Action[]) {
+  for (const action of actions) {
+    console.log(`${c.info(`[${name}]`)} ${formatAction(action)}`);
+    if (action.type === 'write' && action.prevContent != null) {
+      logDiff(action.prevContent, action.content);
+    }
   }
 }
 
@@ -97,17 +153,15 @@ function logDiff(prevContent: string, content: string) {
     for (const line of lines) {
       changeLineNo += 1;
       const lineStr = String(changeLineNo).padStart(3, ' ');
-      const color = change.added ? colors.success : colors.error;
+      const color = (str: string | number): string => {
+        if (change.added) {
+          return c.success(str);
+        }
+        return c.error(str);
+      };
       const diffPrefix = change.added ? '+' : '-';
-      console.log(`  ${colors.dim(lineStr)}|${diffPrefix}${color(line)}`);
+      console.log(`  ${c.dim(lineStr)}|${diffPrefix}${color(line)}`);
     }
     modified = change.count;
   }
-}
-
-function dryRunCommandAction(action: Extract<Action, { type: 'command' }>, { name = 'root' }: ActionContext) {
-  const { path, cmd, args } = action;
-  const prefix = colors.info(`[${name}]`);
-  console.log(`${prefix} will run command: ${cmd} ${args.join(' ')}`);
-  console.log(`  ${colors.dim(`path: ${path}`)}`);
 }

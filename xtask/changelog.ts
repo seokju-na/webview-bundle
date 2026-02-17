@@ -2,8 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Action } from './action.ts';
 import type { Changes } from './changes.ts';
-import { ROOT_DIR } from './consts.ts';
 import type { Package } from './package.ts';
+import { ROOT_DIR } from './consts.ts';
 
 export class Changelog {
   public readonly path: string;
@@ -45,11 +45,18 @@ export class Changelog {
             case 'package.json':
               return `[\`${name}\`](https://www.npmjs.com/package/${name}/v/${version})`;
             case 'Cargo.toml':
-              return `[\`${name}\`](https://crates.io/${name}/${version})`;
+              return `[\`${name}\`](https://crates.io/crates/${name}/${version})`;
           }
         })
         .join(', ');
-      const lines = ['', title, '', `This release includes packages: ${packages}`, '', ...changesLines];
+      const lines = [
+        '',
+        title,
+        '',
+        `This release includes packages: ${packages}`,
+        '',
+        ...changesLines,
+      ];
       if (this.lines.length > 1) {
         this.lines.splice(1, 0, ...lines);
       } else {
@@ -67,7 +74,7 @@ export class Changelog {
     }
     idx += 1;
     while (this.lines[idx] != null) {
-      if (this.lines[idx]?.startsWith('## ')) {
+      if (this.lines[idx]?.startsWith('## ') === true) {
         break;
       }
       lines.push(this.lines[idx]!);

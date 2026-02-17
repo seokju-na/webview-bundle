@@ -1,7 +1,13 @@
-import { Buffer } from 'node:buffer';
-import { BundleProtocol, type BundleSource, type HttpMethod, type HttpResponse, LocalProtocol } from '@wvb/node';
 import type { Protocol as ElectronProtocol, Privileges } from 'electron';
+import {
+  BundleProtocol,
+  type BundleSource,
+  type HttpMethod,
+  type HttpResponse,
+  LocalProtocol,
+} from '@wvb/node';
 import { app, protocol as electronProtocol } from 'electron';
+import { Buffer } from 'node:buffer';
 import { makeError } from './utils.js';
 
 export interface ProtocolHandler {
@@ -17,7 +23,9 @@ export interface ProtocolOptions {
 export interface ProtocolHandlerBuildContext {
   source: BundleSource;
 }
-export type ProtocolHandlerBuild = (ctx: ProtocolHandlerBuildContext) => ProtocolHandler | Promise<ProtocolHandler>;
+export type ProtocolHandlerBuild = (
+  ctx: ProtocolHandlerBuildContext
+) => ProtocolHandler | Promise<ProtocolHandler>;
 
 export interface Protocol {
   scheme: string;

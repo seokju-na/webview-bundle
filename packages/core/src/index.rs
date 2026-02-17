@@ -18,6 +18,23 @@ use crate::writer::AsyncWriter;
 #[cfg(feature = "async")]
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 
+/// Metadata for a single file in the bundle.
+///
+/// An index entry contains:
+/// - File location (offset and length in the data section)
+/// - HTTP metadata (content-type, content-length)
+/// - Optional HTTP headers for protocol serving
+///
+/// # Example
+///
+/// ```
+/// use wvb::IndexEntry;
+///
+/// let entry = IndexEntry::new(0, 1024, "text/html", 512);
+/// assert_eq!(entry.content_type(), "text/html");
+/// assert_eq!(entry.offset(), 0);
+/// assert_eq!(entry.len(), 1024);
+/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct IndexEntry {
   offset: u64,
@@ -28,6 +45,14 @@ pub struct IndexEntry {
 }
 
 impl IndexEntry {
+  /// Creates a new index entry.
+  ///
+  /// # Arguments
+  ///
+  /// * `offset` - Byte offset in the data section (after compression)
+  /// * `len` - Length of compressed data in bytes
+  /// * `content_type` - MIME type of the file
+  /// * `content_length` - Original file size before compression
   pub fn new(offset: u64, len: u64, content_type: impl Into<String>, content_length: u64) -> Self {
     Self {
       offset,
@@ -38,26 +63,32 @@ impl IndexEntry {
     }
   }
 
+  /// Returns the MIME type of the file.
   pub fn content_type(&self) -> &str {
     &self.content_type
   }
 
+  /// Returns the original file size before compression.
   pub fn content_length(&self) -> u64 {
     self.content_length
   }
 
+  /// Returns HTTP headers associated with this file.
   pub fn headers(&self) -> &HeaderMap {
     &self.headers
   }
 
+  /// Returns the byte offset in the data section.
   pub fn offset(&self) -> u64 {
     self.offset
   }
 
+  /// Returns `true` if the compressed data length is zero.
   pub fn is_empty(&self) -> bool {
     self.len == 0
   }
 
+  /// Returns the length of the compressed data in bytes.
   pub fn len(&self) -> u64 {
     self.len
   }
@@ -113,16 +144,43 @@ impl<T> Decode<T> for IndexEntry {
 #[derive(Debug, Default, PartialEq, Clone)]
 pub(crate) struct IndexEntryMap(pub(crate) HashMap<String, IndexEntry>);
 
+/// Bundle index mapping file paths to their metadata.
+///
+/// The index is a HashMap stored as binary-encoded data in the bundle file,
+/// immediately after the header. It maps file paths (keys) to `IndexEntry`
+/// metadata (values).
+///
+/// The index section includes an xxHash-32 checksum for verification.
+///
+/// # Example
+///
+/// ```
+/// use wvb::{Bundle, BundleBuilder};
+///
+/// let bundle = Bundle::builder()
+///     .add_file("/index.html", b"<html></html>", None)
+///     .add_file("/app.js", b"console.log('hello');", None)
+///     .build();
+///
+/// let index = bundle.descriptor().index();
+/// assert!(index.contains_path("/index.html"));
+/// assert!(index.contains_path("/app.js"));
+/// assert_eq!(index.len(), 2);
+/// ```
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Index {
   entries: IndexEntryMap,
 }
 
 impl Index {
+  /// Creates a new empty index.
   pub fn new() -> Self {
     Self::default()
   }
 
+  /// Creates a new index with pre-allocated capacity.
+  ///
+  /// Use this when you know how many files will be in the bundle.
   pub fn new_with_capacity(capacity: usize) -> Self {
     Self {
       entries: IndexEntryMap(HashMap::with_capacity(capacity)),

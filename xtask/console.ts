@@ -17,7 +17,9 @@ export function disableColor(): void {
 }
 
 export function autoColor(): void {
-  kleur.enabled = CI.GITHUB_ACTIONS ? true : supportsColor.stdout !== false && supportsColor.stdout.level > 0;
+  kleur.enabled = CI.GITHUB_ACTIONS
+    ? true
+    : supportsColor.stdout !== false && supportsColor.stdout.level > 0;
 }
 
 const COLOR_MODES = ['on', 'off', 'auto'] as const;
@@ -58,3 +60,5 @@ export const colors = {
     return kleur.dim(str);
   },
 };
+
+export const c = colors;

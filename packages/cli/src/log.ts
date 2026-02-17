@@ -1,4 +1,3 @@
-import util from 'node:util';
 import {
   type LogLevel as AllLogLevel,
   configure,
@@ -8,7 +7,8 @@ import {
   type LogRecord,
 } from '@logtape/logtape';
 import { Option } from 'clipanion';
-import { isEnum } from 'typanion';
+import util from 'node:util';
+import { isBoolean, isEnum } from 'typanion';
 import { c } from './console.js';
 
 const LOG_LEVELS = ['debug', 'info', 'warning', 'error'] as const;
@@ -33,7 +33,9 @@ export const LogLevelOption = Option.String('--log-level', 'info', {
   env: 'LOG_LEVEL',
 });
 
-export const LogVerboseOption = Option.Boolean('--log-verbose', false, {
+export const LogVerboseOption = Option.String('--log-verbose', false, {
+  tolerateBoolean: true,
+  validator: isBoolean(),
   description: 'Enable verbose logging. [Default: false]',
 });
 

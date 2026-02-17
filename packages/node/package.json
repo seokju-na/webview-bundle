@@ -1,7 +1,33 @@
 {
   "name": "@wvb/node",
+  "version": "0.1.0",
   "description": "Webview bundle API for Node.js",
-  "version": "0.0.0",
+  "homepage": "https://github.com/webview-bundle/webview-bundle",
+  "bugs": {
+    "url": "https://github.com/webview-bundle/webview-bundle/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Seokju Na",
+    "email": "seokju.me@gmail.com",
+    "url": "https://github.com/seokju-na"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webview-bundle/webview-bundle",
+    "directory": "packages/node"
+  },
+  "files": [
+    "index.js",
+    "index.cjs",
+    "index.d.ts",
+    "index.d.cts",
+    "README.md",
+    "CHANGELOG.md",
+    "*.node",
+    "!artifacts/**/*",
+    "!npm/**/*"
+  ],
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -12,51 +38,8 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "index.js",
-    "index.cjs",
-    "index.d.ts",
-    "index.d.cts",
-    "README.md",
-    "CHANGELOG.md",
-    "*.node"
-  ],
-  "homepage": "https://github.com/seokju-na/webview-bundle",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/seokju-na/webview-bundle",
-    "directory": "packages/node"
-  },
-  "bugs": {
-    "url": "https://github.com/seokju-na/webview-bundle/issues"
-  },
-  "author": {
-    "name": "Seokju Na",
-    "email": "seokju.me@gmail.com",
-    "url": "https://github.com/seokju-na"
-  },
-  "license": "MIT",
-  "napi": {
-    "binaryName": "binding",
-    "targets": [
-      "x86_64-pc-windows-msvc",
-      "x86_64-apple-darwin",
-      "x86_64-unknown-linux-gnu",
-      "x86_64-unknown-linux-musl",
-      "aarch64-unknown-linux-gnu",
-      "i686-pc-windows-msvc",
-      "armv7-unknown-linux-gnueabihf",
-      "x86_64-unknown-freebsd",
-      "aarch64-apple-darwin",
-      "aarch64-unknown-linux-musl",
-      "aarch64-pc-windows-msvc"
-    ]
-  },
-  "engines": {
-    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
-  },
   "scripts": {
-    "artifacts": "just xtask artifacts napi packages/node && napi artifacts",
+    "artifacts": "just xtask napi artifacts packages/node",
     "build-napi": "yarn build-napi-esm && yarn build-napi-cjs",
     "build-napi-esm": "napi build --platform --release --js=index.js --dts=index.d.ts --esm --no-const-enum --no-dts-cache",
     "build-napi-cjs": "napi build --platform --release --js=index.cjs --dts=index.d.cts --no-const-enum --no-dts-cache",
@@ -70,5 +53,39 @@
     "hono": "^4.10.3",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "optionalDependencies": {
+    "@wvb/node-android-arm-eabi": "workspace:^",
+    "@wvb/node-android-arm64": "workspace:^",
+    "@wvb/node-darwin-arm64": "workspace:^",
+    "@wvb/node-darwin-x64": "workspace:^",
+    "@wvb/node-linux-arm-gnueabihf": "workspace:^",
+    "@wvb/node-linux-arm64-gnu": "workspace:^",
+    "@wvb/node-linux-arm64-musl": "workspace:^",
+    "@wvb/node-linux-x64-gnu": "workspace:^",
+    "@wvb/node-linux-x64-musl": "workspace:^",
+    "@wvb/node-win32-arm64-msvc": "workspace:^",
+    "@wvb/node-win32-ia32-msvc": "workspace:^",
+    "@wvb/node-win32-x64-msvc": "workspace:^"
+  },
+  "napi": {
+    "binaryName": "wvb-node",
+    "targets": [
+      "i686-pc-windows-msvc",
+      "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-unknown-linux-musl",
+      "armv7-unknown-linux-gnueabihf",
+      "aarch64-linux-android",
+      "armv7-linux-androideabi"
+    ]
+  },
+  "engines": {
+    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
   }
 }

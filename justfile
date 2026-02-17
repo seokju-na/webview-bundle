@@ -17,6 +17,9 @@ setup:
     yarn
     yarn lefthook install
 
+    # Setup xtask
+    yarn workspace xtask run setup
+
     # Run build
     just build
 
@@ -32,26 +35,22 @@ test-rs:
     cargo test --workspace --no-fail-fast --all-features
 
 # Format all files
-format: format-toml format-rs format-js
-
-# Format TOML files
-format-toml:
-    yarn taplo format
+format: format-rs format-js
 
 # Format Rust files
 format-rs:
     cargo fmt --all
 
-# Format JS files via Biome
+# Format JS files via oxfmt
 format-js:
-    yarn biome format --write
+    yarn oxfmt
 
 # Lint all files
 lint: lint-rs lint-js
 
-# Lint JS files via Biome
+# Lint JS files via oxlint
 lint-js:
-    yarn biome check
+    yarn oxlint --type-aware
 
 # Lint Rust files via Clippy
 lint-rs:
@@ -87,14 +86,26 @@ website:
 
 # Run xtask
 xtask *ARGS:
-    ./xtask/cli.ts {{ ARGS }}
+    node ./xtask/cli.ts {{ ARGS }}
+
+git_current_branch := shell('git rev-parse --abbrev-ref HEAD')
 
 # Prerelease
 prerelease:
+    #!/usr/bin/env bash
+    if [ "{{ git_current_branch}}" != "main" ]; then \
+      echo "prerelease script must be run in \"main\" branch"; \
+      exit 1; \
+    fi
     git tag -a prerelease -m "prerelease" --force
     git push origin prerelease --force
 
 # Release
 release:
+    #!/usr/bin/env bash
+    if [ "{{ git_current_branch}}" != "main" ]; then \
+      echo "release script must be run in \"main\" branch"; \
+      exit 1; \
+    fi
     git tag -a release -m "release" --force
     git push origin release --force

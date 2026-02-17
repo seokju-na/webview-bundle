@@ -4,7 +4,10 @@ import { signSignature } from './signature.js';
 
 describe('signSignature', () => {
   it('ecdsa secp256r1 (sha256)', async () => {
-    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+      'sign',
+      'verify',
+    ]);
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
     const message = Buffer.from('test message');
     const signature = await signSignature(
@@ -29,7 +32,10 @@ describe('signSignature', () => {
   });
 
   it('ecdsa secp256r1 (sha384)', async () => {
-    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+      'sign',
+      'verify',
+    ]);
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
     const message = Buffer.from('test message');
     const signature = await signSignature(
@@ -54,7 +60,10 @@ describe('signSignature', () => {
   });
 
   it('ecdsa secp256r1 (sha512)', async () => {
-    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, [
+      'sign',
+      'verify',
+    ]);
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
     const message = Buffer.from('test message');
     const signature = await signSignature(
@@ -79,7 +88,10 @@ describe('signSignature', () => {
   });
 
   it('ecdsa secp384r1 (sha256)', async () => {
-    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-384' }, true, ['sign', 'verify']);
+    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-384' }, true, [
+      'sign',
+      'verify',
+    ]);
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
     const message = Buffer.from('test message');
     const signature = await signSignature(
@@ -104,7 +116,10 @@ describe('signSignature', () => {
   });
 
   it('ecdsa secp384r1 (sha384)', async () => {
-    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-384' }, true, ['sign', 'verify']);
+    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-384' }, true, [
+      'sign',
+      'verify',
+    ]);
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
     const message = Buffer.from('test message');
     const signature = await signSignature(
@@ -129,7 +144,10 @@ describe('signSignature', () => {
   });
 
   it('ecdsa secp384r1 (sha512)', async () => {
-    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-384' }, true, ['sign', 'verify']);
+    const keyPair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-384' }, true, [
+      'sign',
+      'verify',
+    ]);
     const pkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
     const message = Buffer.from('test message');
     const signature = await signSignature(

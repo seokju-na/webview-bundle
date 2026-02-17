@@ -1,8 +1,8 @@
 import type { Commit, Repository } from 'es-git';
 import { isNotNil } from 'es-toolkit';
-import { ConventionalCommit } from './conventional-commit.ts';
 import type { BumpRule } from './version.ts';
 import type { VersionedGitTag } from './versioned-git-tag.ts';
+import { ConventionalCommit } from './conventional-commit.ts';
 
 export class Change {
   public readonly commit: ConventionalCommit;
@@ -33,7 +33,11 @@ export class Change {
 export class Changes {
   public readonly changes: ReadonlyArray<Change>;
 
-  static tryFromGitTag(repo: Repository, prevTag: VersionedGitTag, scopes: readonly string[]): Changes {
+  static tryFromGitTag(
+    repo: Repository,
+    prevTag: VersionedGitTag,
+    scopes: readonly string[]
+  ): Changes {
     const head = repo.head().target();
     if (head == null) {
       throw new Error('cannot find git `HEAD` target');
@@ -44,7 +48,9 @@ export class Changes {
     if (tag != null) {
       revwalk.hide(tag.id());
     }
-    const changes = Changes.getChangesFromCommits(repo, [...revwalk]).filter(x => x.isInScopes(scopes));
+    const changes = Changes.getChangesFromCommits(repo, [...revwalk]).filter(x =>
+      x.isInScopes(scopes)
+    );
     return new Changes(changes);
   }
 
@@ -71,7 +77,7 @@ export class Changes {
     this.changes = changes;
   }
 
-  getBumpRule(): BumpRule | null {
+  getBumpRule(): Extract<BumpRule, { type: 'major' | 'minor' | 'patch' }> | null {
     if (this.changes.length === 0) {
       return null;
     }

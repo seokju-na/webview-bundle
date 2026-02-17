@@ -1,8 +1,8 @@
 import type { BaseRemoteDeployer, BaseRemoteUploader } from '@wvb/config/remote';
 import type { AwsRemoteConfig } from '@wvb/remote-aws';
+import type { CloudflareClientConfigLike, PartialBy } from './utils.js';
 import { type CloudflareRemoteDeployerConfig, cloudflareRemoteDeployer } from './deployer.js';
 import { type CloudflareRemoteUploaderConfig, cloudflareRemoteUploader } from './uploader.js';
-import type { CloudflareClientConfigLike, PartialBy } from './utils.js';
 
 export interface CloudflareRemoteConfig extends CloudflareClientConfigLike {
   bucket: string;

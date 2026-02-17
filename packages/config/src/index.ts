@@ -1,3 +1,4 @@
+export type { BuiltinConfig, RemoteBundleMatches } from './builtin.js';
 export type {
   Config,
   ConfigInput,
