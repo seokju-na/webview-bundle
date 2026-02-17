@@ -268,6 +268,7 @@ export class Release extends Command {
     });
     const commit = repo.getCommit(commitId);
     console.log(`${c.info('[root]')} commit: ${message}`);
+    console.log(c.dim(`  parent: ${parent}`));
     console.log(c.dim(`  sha: ${commit.id()}`));
     console.log(c.dim(`  author name: ${commit.author().name}`));
     console.log(c.dim(`  author email: ${commit.author().email}`));
@@ -299,7 +300,7 @@ export class Release extends Command {
   private async gitPush(repo: Repository, targets: ReleaseTarget[]) {
     const remote = repo.getRemote('origin');
     const refspecs = [
-      'refs/heads/main:refs/heads/main',
+      'HEAD:refs/heads/main',
       ...targets
         .map(x => x.package.nextVersionedGitTag.tagRef)
         .map(tagRef => `${tagRef}:${tagRef}`),

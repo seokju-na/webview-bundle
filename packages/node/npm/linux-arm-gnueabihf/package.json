@@ -1,6 +1,6 @@
 {
   "name": "@wvb/node-linux-arm-gnueabihf",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Webview bundle API for Node.js",
   "homepage": "https://github.com/webview-bundle/webview-bundle",
   "bugs": {
