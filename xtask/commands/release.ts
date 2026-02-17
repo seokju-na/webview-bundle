@@ -69,8 +69,14 @@ export class Release extends Command {
         await this.updateStaged(publishedTargets, staged);
       }
       this.gitEnsureMainBranch(repo);
-      this.gitCommitChanges(repo, config, publishedTargets, rootCargoChanged, rootChangelogChanged);
-      this.gitCreateTags(repo, publishedTargets);
+      const commitId = this.gitCommitChanges(
+        repo,
+        config,
+        publishedTargets,
+        rootCargoChanged,
+        rootChangelogChanged
+      );
+      this.gitCreateTags(repo, commitId, publishedTargets);
       await this.gitPush(repo, publishedTargets);
       await this.createGitHubReleases(config, publishedTargets);
     }
@@ -246,11 +252,11 @@ export class Release extends Command {
     targets: ReleaseTarget[],
     rootCargoChanged: boolean,
     rootChangelogChanged: boolean
-  ) {
+  ): string | undefined {
     const message = 'release commit [skip actions]';
     if (this.dryRun) {
       console.log(`${c.info('[root]')} will commit changes: ${message}`);
-      return;
+      return undefined;
     }
     const pathspecs = targets.flatMap(x =>
       [...x.package.versionedFiles.map(x => x.path), x.changelog?.path, this.stagedFilepath].filter(
@@ -281,16 +287,16 @@ export class Release extends Command {
     console.log(c.dim(`  sha: ${commit.id()}`));
     console.log(c.dim(`  author name: ${commit.author().name}`));
     console.log(c.dim(`  author email: ${commit.author().email}`));
+    return commitId;
   }
 
-  private gitCreateTags(repo: Repository, targets: ReleaseTarget[]) {
-    const target = repo.head().target()!;
-    const commit = repo.getCommit(target);
-    const targetId = commit.id().slice(0, 7);
+  private gitCreateTags(repo: Repository, commitId: string | undefined, targets: ReleaseTarget[]) {
+    const commit = commitId != null ? repo.getCommit(commitId) : null;
+    const targetId = commit?.id().slice(0, 7);
     for (const target of targets) {
       const prefix = `[${target.package.name}]`;
       const tag = target.package.nextVersionedGitTag;
-      if (this.dryRun) {
+      if (commit == null || this.dryRun) {
         console.log(`${c.info(prefix)} will create tag (${targetId}): ${tag.tagName}`);
         continue;
       }
