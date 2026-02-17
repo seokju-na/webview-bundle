@@ -14,7 +14,13 @@ export const StagedSchema = z.record(
 export type Staged = z.infer<typeof StagedSchema>;
 
 export async function loadStaged(filepath: string): Promise<Staged> {
-  const content = await fs.readFile(resolveFilepath(filepath), 'utf8');
+  const file = resolveFilepath(filepath);
+  try {
+    await fs.access(file);
+  } catch {
+    return {};
+  }
+  const content = await fs.readFile(file, 'utf8');
   return StagedSchema.parse(JSON.parse(content));
 }
 
