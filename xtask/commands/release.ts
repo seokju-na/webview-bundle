@@ -68,6 +68,7 @@ export class Release extends Command {
       if (!this.dryRun) {
         await this.updateStaged(publishedTargets, staged);
       }
+      this.gitEnsureMainBranch(repo);
       this.gitCommitChanges(repo, config, publishedTargets, rootCargoChanged, rootChangelogChanged);
       this.gitCreateTags(repo, publishedTargets);
       await this.gitPush(repo, publishedTargets);
@@ -231,6 +232,14 @@ export class Release extends Command {
     return succeedTargets;
   }
 
+  private gitEnsureMainBranch(repo: Repository) {
+    const head = repo.head();
+    const branch = head.symbolicTarget();
+    if (branch !== 'refs/heads/main') {
+      throw new Error('release script only run in "main" branch');
+    }
+  }
+
   private gitCommitChanges(
     repo: Repository,
     config: Config,
@@ -261,7 +270,7 @@ export class Release extends Command {
     const tree = repo.getTree(treeId);
     const parent = repo.head().target()!;
     const commitId = repo.commit(tree, message, {
-      updateRef: 'HEAD',
+      updateRef: 'refs/heads/main',
       author: GIT_SIGNATURE,
       committer: GIT_SIGNATURE,
       parents: [parent],
@@ -300,7 +309,7 @@ export class Release extends Command {
   private async gitPush(repo: Repository, targets: ReleaseTarget[]) {
     const remote = repo.getRemote('origin');
     const refspecs = [
-      'HEAD:refs/heads/main',
+      'refs/heads/main:refs/heads/main',
       ...targets
         .map(x => x.package.nextVersionedGitTag.tagRef)
         .map(tagRef => `${tagRef}:${tagRef}`),

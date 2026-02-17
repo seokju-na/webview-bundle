@@ -1,3 +1,4 @@
+import { NapiCli } from '@napi-rs/cli';
 import { Command, Option } from 'clipanion';
 import glob from 'fast-glob';
 import fs from 'node:fs/promises';
@@ -5,8 +6,8 @@ import path from 'node:path';
 import { ColorModeOption, colors, setColorMode } from '../console.ts';
 import { ROOT_DIR } from '../consts.ts';
 
-export class ArtifactsNapiCommand extends Command {
-  static paths = [['artifacts', 'napi']];
+export class NapiArtifactsCommand extends Command {
+  static paths = [['napi', 'artifacts']];
 
   readonly relativePath = Option.String();
   readonly colorMode = ColorModeOption;
@@ -33,6 +34,8 @@ export class ArtifactsNapiCommand extends Command {
         await fs.copyFile(src, dest);
         console.log(`${colors.success(progress)} ${path.relative(cwd, dest)}: file copied`);
       }
+      const cli = new NapiCli();
+      await cli.artifacts({ cwd });
       return 0;
     } catch (e) {
       console.error(e);
