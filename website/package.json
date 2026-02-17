@@ -7,7 +7,7 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "upload:prod": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "deploy:dev": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --name=wvb-website-dev --env=dev",
     "typegen": "yarn typegen:next && yarn typegen:cloudflare",
     "typegen:next": "fumadocs-mdx && next typegen",
