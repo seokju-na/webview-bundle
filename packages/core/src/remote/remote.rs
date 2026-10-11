@@ -68,16 +68,34 @@ pub struct Remote {
   client: reqwest::Client,
 }
 
+// The updater must distinguish an absent update from permission to reuse its cache.
+pub(crate) enum RemoteUpdateResult {
+  Update(RemoteUpdateResponse),
+  NotModified,
+  NoContent,
+}
+
 impl Remote {
   pub fn builder() -> RemoteBuilder {
     RemoteBuilder::default()
   }
 
   /// Gets update information for the remote server.
+  /// Returns `None` for HTTP 204 (no update) or 304 (not modified).
   pub async fn get_update(
     &self,
     options: Option<RemoteGetUpdateOptions>,
   ) -> crate::Result<Option<RemoteUpdateResponse>> {
+    Ok(match self.get_update_result(options).await? {
+      RemoteUpdateResult::Update(update) => Some(update),
+      RemoteUpdateResult::NotModified | RemoteUpdateResult::NoContent => None,
+    })
+  }
+
+  pub(crate) async fn get_update_result(
+    &self,
+    options: Option<RemoteGetUpdateOptions>,
+  ) -> crate::Result<RemoteUpdateResult> {
     let endpoint = format!(
       "{}/update",
       self
@@ -122,10 +140,12 @@ impl Remote {
     }
 
     let resp = req.send().await?;
+    match resp.status() {
+      StatusCode::NO_CONTENT => return Ok(RemoteUpdateResult::NoContent),
+      StatusCode::NOT_MODIFIED => return Ok(RemoteUpdateResult::NotModified),
+      _ => {}
+    }
     if !resp.status().is_success() {
-      if resp.status() == StatusCode::NOT_MODIFIED {
-        return Ok(None);
-      }
       return Err(self.parse_err(resp).await);
     }
 
@@ -173,7 +193,7 @@ impl Remote {
       signature,
     };
 
-    Ok(Some(update_resp))
+    Ok(RemoteUpdateResult::Update(update_resp))
   }
 
   /// Download bundle into given file path.
@@ -482,6 +502,31 @@ mod tests {
     assert_eq!(header_of(&requests[0], "if-none-match"), Some("etag-1"));
     assert_eq!(header_of(&requests[0], "wvb-update-channel"), Some("beta"));
     assert_eq!(header_of(&requests[0], "wvb-expect-signature"), None);
+  }
+
+  #[tokio::test]
+  async fn returns_none_when_no_content() {
+    let (server, _) = mock_server(204, vec![], "");
+
+    assert_eq!(
+      remote(server.base_url()).get_update(None).await.unwrap(),
+      None
+    );
+  }
+
+  #[cfg(all(feature = "signature", feature = "signature-ed25519"))]
+  #[tokio::test]
+  async fn no_content_does_not_require_a_signature() {
+    let (server, _) = mock_server(204, vec![], "");
+    let options = RemoteGetUpdateOptions::default().expect_signature(key_set("default"));
+
+    assert_eq!(
+      remote(server.base_url())
+        .get_update(Some(options))
+        .await
+        .unwrap(),
+      None
+    );
   }
 
   #[tokio::test]

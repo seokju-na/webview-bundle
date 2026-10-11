@@ -1,4 +1,6 @@
-use crate::remote::{BundleUpdate, Remote, RemoteGetUpdateOptions, RemoteUpdateResponse, Update};
+use crate::remote::{
+  BundleUpdate, Remote, RemoteGetUpdateOptions, RemoteUpdateResponse, RemoteUpdateResult, Update,
+};
 use crate::source::{
   ManifestBundleItemStatus, ManifestSetCurrentVersionResultKind, ManifestStageData,
   ManifestVersionData, Source, SourceKind, SourceListItem,
@@ -101,6 +103,7 @@ impl Updater {
 
   /// Fetches update information from the remote server and reduces it to the bundles that
   /// are not being served yet.
+  /// HTTP 204 returns `None` even when a previous update is stored; HTTP 304 reuses it.
   pub async fn get_update(
     &self,
     options: Option<UpdaterGetUpdateOptions>,
@@ -139,11 +142,13 @@ impl Updater {
 
     // An update older than the stored one would take the client back to a version it has
     // already moved past, so it is refused and what is stored stays in place.
-    let next = self
-      .remote
-      .get_update(Some(opts))
-      .await?
-      .filter(|next| prev.as_ref().is_none_or(|prev| !is_rollback(next, prev)));
+    let next = match self.remote.get_update_result(Some(opts)).await? {
+      RemoteUpdateResult::NoContent => return Ok(None),
+      RemoteUpdateResult::NotModified => None,
+      RemoteUpdateResult::Update(next) => {
+        Some(next).filter(|next| prev.as_ref().is_none_or(|prev| !is_rollback(next, prev)))
+      }
+    };
 
     let resp = match next {
       Some(next) => {
@@ -736,6 +741,61 @@ mod tests {
     let updater = updater(&source, &server.base_url());
 
     assert_eq!(updater.get_update(None).await.unwrap(), None);
+  }
+
+  #[tokio::test]
+  async fn get_update_returns_none_when_no_content() {
+    let server = httpmock::MockServer::start();
+    let response = server.mock(|when, then| {
+      when.path("/update");
+      then.status(204);
+    });
+    let source = builtin_source(&[("app", "1.0.0")]);
+
+    assert_eq!(
+      updater(&source, &server.base_url())
+        .get_update(None)
+        .await
+        .unwrap(),
+      None
+    );
+    response.assert();
+  }
+
+  #[tokio::test]
+  async fn no_content_does_not_reuse_a_stored_update() {
+    let mut server = remote_server(&[("app", "1.1.0")]);
+    server.set_current_version("app", "1.1.0");
+    let source = builtin_source(&[("app", "1.0.0")]);
+    let filepath = update_filepath();
+    build_updater(
+      &source,
+      &server.base_url(),
+      &filepath,
+      UpdaterOptions::default(),
+    )
+    .get_update(None)
+    .await
+    .unwrap()
+    .unwrap();
+    let stored = tokio::fs::read(&filepath).await.unwrap();
+
+    let server = httpmock::MockServer::start();
+    let response = server.mock(|when, then| {
+      when.path("/update");
+      then.status(204);
+    });
+    let updater = build_updater(
+      &source,
+      &server.base_url(),
+      &filepath,
+      UpdaterOptions::default(),
+    );
+
+    assert_eq!(updater.get_update(None).await.unwrap(), None);
+    // Keep the stored update for rollback protection on subsequent responses.
+    assert_eq!(tokio::fs::read(&filepath).await.unwrap(), stored);
+    response.assert();
   }
 
   #[tokio::test]
