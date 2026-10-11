@@ -64,9 +64,9 @@ export class WebviewBundlePlugin extends PluginBase<WebviewBundlePluginConfig> {
     // and forge invokes `packageAfterCopy` once per (platform, arch). Build a fresh target instead.
     const installTarget: BuiltinTarget =
       target == null
-        ? { type: 'remote', endpoint: resolved.remote?.endpoint }
+        ? { type: 'remote', baseUrl: resolved.remote?.baseUrl }
         : target.type === 'remote'
-          ? { ...target, endpoint: target.endpoint ?? resolved.remote?.endpoint }
+          ? { ...target, baseUrl: target.baseUrl ?? resolved.remote?.baseUrl }
           : target;
 
     const dir = outDir ?? DEFAULT_BUILTIN_OUT_DIR;

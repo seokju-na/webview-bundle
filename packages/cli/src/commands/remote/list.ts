@@ -31,14 +31,17 @@ stored on the remote server.
   This command can be invoked as either \`remote list\` or \`remote ls\`.
     `,
     examples: [
-      ['List all bundles on a server', '$0 remote ls --endpoint https://cdn.example.com'],
-      ['List bundles using endpoint from config', '$0 remote list'],
-      ['List and filter with jq', '$0 remote ls -E https://cdn.example.com | jq ".[].name"'],
+      ['List all bundles on a server', '$0 remote ls --base-url https://cdn.example.com'],
+      ['List bundles using base url from config', '$0 remote list'],
+      [
+        'List and filter with jq',
+        '$0 remote ls --base-url https://cdn.example.com | jq ".[].name"',
+      ],
     ],
   });
 
-  readonly endpoint = Option.String('--endpoint,-E', {
-    description: 'Endpoint of remote server.',
+  readonly baseUrl = Option.String('--base-url', {
+    description: 'Base url of remote server.',
   });
   readonly channel = Option.String('--channel', {
     description:
@@ -56,12 +59,12 @@ stored on the remote server.
       root: this.cwd,
       configFile: this.configFile,
     });
-    const endpointInput = this.endpoint ?? config.remote?.endpoint;
-    if (endpointInput == null) {
-      this.logger.error('"endpoint" is required for remote operations.');
+    const baseUrl = this.baseUrl ?? config.remote?.baseUrl;
+    if (baseUrl == null) {
+      this.logger.error('"baseUrl" is required for remote operations.');
       return 1;
     }
-    const remote = new Remote({ baseUrl: endpointInput });
+    const remote = new Remote({ baseUrl });
     const bundles = (await remote.getUpdate({ channel: this.channel }))?.update.bundles ?? [];
     this.logger.info(`Remote Webview Bundles:`);
     console.log(JSON.stringify(bundles, null, 2));

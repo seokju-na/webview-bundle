@@ -152,7 +152,7 @@ export async function builtin(params: BuiltinParams): Promise<BuiltinResult> {
       };
 
       if (write) {
-        const filename = `${bundle.name}_${bundle.version}.wvb`;
+        const filename = `${bundle.version}.wvb`;
         const filepath = path.join(dir, bundle.name, filename);
         await fs.mkdir(path.dirname(filepath), { recursive: true });
         await fs.writeFile(filepath, bundle.data);
@@ -480,14 +480,14 @@ async function* loadRemoteBundles(
     logger?: Logger;
   }
 ): AsyncGenerator<LoadedBundle[]> {
-  const remoteEndpoint = target.endpoint;
-  if (remoteEndpoint == null) {
-    const message = 'Remote endpoint is required.';
+  const remoteBaseUrl = target.baseUrl;
+  if (remoteBaseUrl == null) {
+    const message = 'Remote base url is required.';
     options.logger?.error(message);
     throw new ApiError(message);
   }
 
-  let remote = new Remote({ baseUrl: remoteEndpoint, http: target.download?.http });
+  let remote = new Remote({ baseUrl: remoteBaseUrl, http: target.download?.http });
   const channel = options.channel;
   const update = await remote.getUpdate({ channel });
   const remoteBundles = await filterAsync(update?.update.bundles ?? [], async remoteBundle => {
@@ -522,7 +522,7 @@ async function* loadRemoteBundles(
   }
 
   remote = new Remote({
-    baseUrl: remoteEndpoint,
+    baseUrl: remoteBaseUrl,
     http: target.download?.http,
     onDownload: options.onDownload,
   });
@@ -535,7 +535,7 @@ async function* loadRemoteBundles(
         const filepath = path.join(os.tmpdir(), `wvb-cli-${randomUUID()}.wvb`);
         const url =
           remoteBundle.downloadUrl ??
-          `${remoteEndpoint}/bundles/${remoteBundle.name}/${remoteBundle.version}`;
+          `${remoteBaseUrl}/bundles/${remoteBundle.name}/${remoteBundle.version}`;
         await remote.download(url, filepath);
         const data = await fs.readFile(filepath);
         await fs.rm(filepath, { force: true });

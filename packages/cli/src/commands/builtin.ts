@@ -35,8 +35,8 @@ export class BuiltinCommand extends BaseCommand {
   readonly out = Option.String('--out,-O', {
     description: 'Output directory path. [Default: "./.wvb/builtin/bundles"]',
   });
-  readonly endpoint = Option.String('--endpoint,-E', {
-    description: `Remote endpoint of remote server.
+  readonly baseUrl = Option.String('--base-url', {
+    description: `Base url of remote server.
 This option is only used when the target is "remote".`,
   });
   readonly channel = Option.String('--channel', {
@@ -137,10 +137,10 @@ This will adds a \`folderReference\` to Project.swift.`,
     const target = config.builtin?.target ?? { type: 'remote' };
 
     if (target.type === 'remote') {
-      target.endpoint ??= this.endpoint ?? config.remote?.endpoint;
+      target.baseUrl ??= this.baseUrl ?? config.remote?.baseUrl;
 
-      if (target.endpoint == null) {
-        this.logger.error('Remote endpoint is required for remote target.');
+      if (target.baseUrl == null) {
+        this.logger.error('Remote base url is required for remote target.');
         return 1;
       }
 

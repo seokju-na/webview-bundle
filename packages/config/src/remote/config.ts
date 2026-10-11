@@ -6,9 +6,9 @@ import type { BaseUploader } from './uploader.js';
 
 export interface RemoteConfig {
   /**
-   * Endpoint to remote server.
+   * Base URL to remote server.
    */
-  endpoint?: string;
+  baseUrl?: string;
   /**
    * Name of the bundle to be used in remote.
    */

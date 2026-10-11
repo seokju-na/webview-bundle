@@ -6,7 +6,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { serve as honoServe, type ServerType } from '@hono/node-server';
 import type { ManifestData } from '@wvb/node';
-import { BundleBuilder, readBundle, writeBundleIntoBuffer } from '@wvb/node';
+import {
+  BundleBuilder,
+  BundleProtocol,
+  readBundle,
+  Source,
+  writeBundleIntoBuffer,
+} from '@wvb/node';
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { pathExists } from '../fs.js';
@@ -68,7 +74,7 @@ async function generateEd25519Key() {
 }
 
 describe('builtin with a local target', () => {
-  it('installs each workspace bundle as "<dir>/<name>/<name>_<version>.wvb"', async () => {
+  it('installs each workspace bundle as "<dir>/<name>/<version>.wvb"', async () => {
     await writeWorkspace('workspaces/app-a', { name: 'app-a', version: '1.0.0' });
 
     const result = await builtin({
@@ -78,7 +84,7 @@ describe('builtin with a local target', () => {
     });
 
     expect(result.manifest.entries['app-a']?.currentVersion).toBe('1.0.0');
-    const installed = await readBundle(path.join(root, 'builtin/app-a/app-a_1.0.0.wvb'));
+    const installed = await readBundle(path.join(root, 'builtin/app-a/1.0.0.wvb'));
     expect(installed.getData('/index.html')?.toString('utf8')).toBe('<h1>Hello</h1>');
   });
 
@@ -137,7 +143,7 @@ describe('builtin with a local target', () => {
     });
 
     expect(result.manifest.entries.renamed?.currentVersion).toBe('9.9.9');
-    expect(await pathExists(path.join(root, 'builtin/renamed/renamed_9.9.9.wvb'))).toBe(true);
+    expect(await pathExists(path.join(root, 'builtin/renamed/9.9.9.wvb'))).toBe(true);
   });
 
   it('resolves the workspace list from a function', async () => {
@@ -298,7 +304,7 @@ describe('builtin with a local target', () => {
       cwd: root,
     });
 
-    const installed = await readBundle(path.join(root, 'builtin/app-a/app-a_1.0.0.wvb'));
+    const installed = await readBundle(path.join(root, 'builtin/app-a/1.0.0.wvb'));
     expect(Object.keys(installed.descriptor().index().entries())).toEqual(['/seeded.txt']);
   });
 
@@ -339,7 +345,7 @@ describe('builtin integrity and signature for a local target', () => {
       cwd: root,
     });
 
-    const installed = await fs.readFile(path.join(root, 'builtin/app-a/app-a_1.0.0.wvb'));
+    const installed = await fs.readFile(path.join(root, 'builtin/app-a/1.0.0.wvb'));
     expect(result.manifest.entries['app-a']?.versions['1.0.0']?.integrity).toBe(
       `sha256:${createHash('sha256').update(installed).digest('base64')}`
     );
@@ -356,7 +362,7 @@ describe('builtin integrity and signature for a local target', () => {
       cwd: root,
     });
 
-    const installed = await fs.readFile(path.join(root, 'builtin/app-a/app-a_1.0.0.wvb'));
+    const installed = await fs.readFile(path.join(root, 'builtin/app-a/1.0.0.wvb'));
     expect(result.manifest.entries['app-a']?.versions['1.0.0']?.integrity).toBe(
       `sha512:${createHash('sha512').update(installed).digest('base64')}`
     );
@@ -415,7 +421,7 @@ describe('builtin integrity and signature for a local target', () => {
 
 describe('builtin with a remote target', () => {
   let server: ServerType;
-  let endpoint: string;
+  let baseUrl: string;
   let listedBundles: Array<{ name: string; version: string }>;
   let listRequestUrls: string[];
 
@@ -460,7 +466,7 @@ describe('builtin with a remote target', () => {
         server.once('listening', () => resolve());
       });
     }
-    endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
   afterEach(async () => {
@@ -469,21 +475,28 @@ describe('builtin with a remote target', () => {
     });
   });
 
-  it('downloads every listed bundle into "<dir>/<name>/<name>_<version>.wvb"', async () => {
+  it('downloads every listed bundle into "<dir>/<name>/<version>.wvb"', async () => {
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
     });
 
     expect(result.manifest.entries['app-a']?.currentVersion).toBe('1.0.0');
-    const installed = await readBundle(path.join(root, 'builtin/app-a/app-a_1.0.0.wvb'));
+    const installed = await readBundle(path.join(root, 'builtin/app-a/1.0.0.wvb'));
     expect(installed.getData('/index.html')?.toString('utf8')).toBe('<h1>app-a</h1>');
+    const source = new Source({
+      builtinDir: path.join(root, 'builtin'),
+      remoteDir: path.join(root, 'remote'),
+    });
+    const response = await new BundleProtocol(source, {}).handle('get', 'app://app-a.wvb/', {});
+    expect(response.status).toBe(200);
+    expect(response.body?.toString('utf8')).toBe('<h1>app-a</h1>');
   });
 
   it('records the metadata the remote reported in the manifest', async () => {
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
     });
@@ -496,13 +509,13 @@ describe('builtin with a remote target', () => {
 
   it('forwards the channel when listing bundles', async () => {
     await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       channel: 'beta',
     });
 
-    expect(listRequestUrls).toEqual([`${endpoint}/update`]);
+    expect(listRequestUrls).toEqual([`${baseUrl}/update`]);
   });
 
   it('downloads only the bundles matching the include patterns', async () => {
@@ -512,7 +525,7 @@ describe('builtin with a remote target', () => {
     ];
 
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       include: [/^app-a$/],
@@ -528,7 +541,7 @@ describe('builtin with a remote target', () => {
     ];
 
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       exclude: ['app-b'],
@@ -542,7 +555,7 @@ describe('builtin with a remote target', () => {
     const { logger, messages } = createTestLogger();
 
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       logger,
@@ -554,7 +567,7 @@ describe('builtin with a remote target', () => {
 
   it('does not touch the disk when write is false', async () => {
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       write: false,
@@ -564,10 +577,10 @@ describe('builtin with a remote target', () => {
     expect(await pathExists(path.join(root, 'builtin'))).toBe(false);
   });
 
-  it('throws when the endpoint is missing', async () => {
+  it('throws when the base url is missing', async () => {
     await expect(
       builtin({ target: { type: 'remote' }, dir: './builtin', cwd: root })
-    ).rejects.toThrow('Remote endpoint is required.');
+    ).rejects.toThrow('Remote base url is required.');
   });
 });
 
