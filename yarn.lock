@@ -7268,6 +7268,127 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tauri-apps/cli-darwin-arm64@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-darwin-arm64@npm:2.12.2"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-darwin-x64@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-darwin-x64@npm:2.12.2"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-arm-gnueabihf@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-linux-arm-gnueabihf@npm:2.12.2"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-arm64-gnu@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-linux-arm64-gnu@npm:2.12.2"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-arm64-musl@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-linux-arm64-musl@npm:2.12.2"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-riscv64-gnu@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-linux-riscv64-gnu@npm:2.12.2"
+  conditions: os=linux & cpu=riscv64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-x64-gnu@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-linux-x64-gnu@npm:2.12.2"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-linux-x64-musl@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-linux-x64-musl@npm:2.12.2"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-win32-arm64-msvc@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-win32-arm64-msvc@npm:2.12.2"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-win32-ia32-msvc@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-win32-ia32-msvc@npm:2.12.2"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli-win32-x64-msvc@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli-win32-x64-msvc@npm:2.12.2"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/cli@npm:^2.11.3":
+  version: 2.12.2
+  resolution: "@tauri-apps/cli@npm:2.12.2"
+  dependencies:
+    "@tauri-apps/cli-darwin-arm64": "npm:2.12.2"
+    "@tauri-apps/cli-darwin-x64": "npm:2.12.2"
+    "@tauri-apps/cli-linux-arm-gnueabihf": "npm:2.12.2"
+    "@tauri-apps/cli-linux-arm64-gnu": "npm:2.12.2"
+    "@tauri-apps/cli-linux-arm64-musl": "npm:2.12.2"
+    "@tauri-apps/cli-linux-riscv64-gnu": "npm:2.12.2"
+    "@tauri-apps/cli-linux-x64-gnu": "npm:2.12.2"
+    "@tauri-apps/cli-linux-x64-musl": "npm:2.12.2"
+    "@tauri-apps/cli-win32-arm64-msvc": "npm:2.12.2"
+    "@tauri-apps/cli-win32-ia32-msvc": "npm:2.12.2"
+    "@tauri-apps/cli-win32-x64-msvc": "npm:2.12.2"
+  dependenciesMeta:
+    "@tauri-apps/cli-darwin-arm64":
+      optional: true
+    "@tauri-apps/cli-darwin-x64":
+      optional: true
+    "@tauri-apps/cli-linux-arm-gnueabihf":
+      optional: true
+    "@tauri-apps/cli-linux-arm64-gnu":
+      optional: true
+    "@tauri-apps/cli-linux-arm64-musl":
+      optional: true
+    "@tauri-apps/cli-linux-riscv64-gnu":
+      optional: true
+    "@tauri-apps/cli-linux-x64-gnu":
+      optional: true
+    "@tauri-apps/cli-linux-x64-musl":
+      optional: true
+    "@tauri-apps/cli-win32-arm64-msvc":
+      optional: true
+    "@tauri-apps/cli-win32-ia32-msvc":
+      optional: true
+    "@tauri-apps/cli-win32-x64-msvc":
+      optional: true
+  bin:
+    tauri: tauri.js
+  checksum: 10c0/39b9c09b4bd4dd4f08e2b9c4d2867f94c7d6976a5ffb29452d8745b2f722c8b88ff512b24422d54699839ee46f7e4b23571a0edf5ab1c4955c13e8d46e27a9a3
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:2":
   version: 2.0.1
   resolution: "@tootallnate/once@npm:2.0.1"
@@ -8219,6 +8340,8 @@ __metadata:
     "@types/node": "catalog:"
     es-toolkit: "npm:^1.43.0"
     zod: "npm:^4.0.5"
+  bin:
+    wvb-playground-env-setup-remote-info: ./bin/setup-remote-info.ts
   languageName: unknown
   linkType: soft
 
@@ -8265,11 +8388,22 @@ __metadata:
     "@electron/packager": "npm:20.3.0"
     "@playwright/test": "npm:1.61.1"
     "@types/node": "catalog:"
+    "@wvb-playground/env": "workspace:^"
     "@wvb/cli": "workspace:^"
     "@wvb/electron": "workspace:^"
     electron: "npm:^42.5.1"
     typescript: "catalog:"
     vite: "npm:^8.1.5"
+  languageName: unknown
+  linkType: soft
+
+"@wvb-playground/native-tauri@workspace:playground/native/tauri":
+  version: 0.0.0-use.local
+  resolution: "@wvb-playground/native-tauri@workspace:playground/native/tauri"
+  dependencies:
+    "@tauri-apps/cli": "npm:^2.11.3"
+    "@wvb-playground/env": "workspace:^"
+    "@wvb/cli": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -8484,6 +8618,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:6.1.2"
     "@wvb-playground/env": "workspace:^"
     "@wvb-playground/versions": "workspace:^"
+    "@wvb/bridge": "workspace:^"
     "@wvb/cli": "workspace:^"
     "@wvb/remote-aws": "workspace:*"
     "@wvb/remote-cloudflare": "workspace:^"
@@ -8495,7 +8630,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wvb/bridge@workspace:packages/bridge":
+"@wvb/bridge@workspace:^, @wvb/bridge@workspace:packages/bridge":
   version: 0.0.0-use.local
   resolution: "@wvb/bridge@workspace:packages/bridge"
   dependencies:
