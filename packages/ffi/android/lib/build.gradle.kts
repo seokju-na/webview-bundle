@@ -9,6 +9,7 @@ android {
 
     defaultConfig {
         minSdk = 24
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -30,6 +31,8 @@ android {
 }
 
 dependencies {
+    // Match the rustls-platform-verifier-android crate in Cargo.lock.
+    implementation("org.rustls:rustls-platform-verifier:0.2.0")
     implementation(libs.androidx.annotation)
     implementation("net.java.dev.jna:jna:${libs.versions.jna.get()}@aar")
     implementation(libs.kotlinx.coroutines.core)
