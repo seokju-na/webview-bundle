@@ -4,6 +4,9 @@
 //! translating between Rust-native types and the flattened record/enum/object
 //! types that UniFFI can project into Kotlin, Swift, and other target languages.
 
+#[cfg(target_os = "android")]
+mod android;
+
 /// Bundle encoding, decoding, and inspection APIs.
 pub mod bundle;
 /// Cancellation primitives for asynchronous operations.

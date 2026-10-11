@@ -10,4 +10,5 @@ build
 local.properties
 
 /lib/src/main/kotlin/dev/wvb/*
+!/lib/src/main/kotlin/dev/wvb/WvbRustlsPlatformVerififer.kt
 /lib/src/main/jniLibs

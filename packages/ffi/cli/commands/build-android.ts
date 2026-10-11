@@ -36,6 +36,10 @@ export class BuildAndroidCommand extends Command {
     const kotlinDir = path.join(androidDir, 'lib', 'src', 'main', 'kotlin');
     await fs.mkdir(kotlinDir, { recursive: true });
     await generateUniffiBindings('kotlin', libPath!, kotlinDir);
+    await fs.rename(
+      path.join(kotlinDir, 'dev', 'wvb', 'wvb_ffi.kt'),
+      path.join(kotlinDir, 'dev', 'wvb', 'WvbFFI.kt')
+    );
     await this.zip(androidDir, zipPath);
   }
 
