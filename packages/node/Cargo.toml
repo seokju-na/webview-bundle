@@ -1,13 +1,12 @@
 [package]
-authors      = { workspace = true }
-description  = "TBD"
-edition      = { workspace = true }
-license      = { workspace = true }
-name         = "wvb-node"
-publish      = false
-repository   = { workspace = true }
-rust-version = "1.85.0"
-version      = "0.1.0"
+authors     = { workspace = true }
+description = "TBD"
+edition     = { workspace = true }
+license     = { workspace = true }
+name        = "wvb-node"
+publish     = false
+repository  = { workspace = true }
+version     = "0.1.0"
 
 [lib]
 bench      = false

@@ -6,7 +6,7 @@ license      = { workspace = true }
 links        = "wvb-tauri"
 name         = "wvb-tauri"
 repository   = { workspace = true }
-rust-version = "1.85.0"
+rust-version = "1.90.0"
 version      = "0.1.0"
 
 [dependencies]
