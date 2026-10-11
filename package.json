@@ -5,9 +5,9 @@
     "packages/**/*",
     "xtask",
     "playground/native/*",
-    "playground/remotes/*",
+    "playground/remote/*",
     "playground/tools/*",
-    "playground/webviews/**/*"
+    "playground/webview/**/*"
   ],
   "type": "module",
   "devDependencies": {

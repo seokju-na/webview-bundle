@@ -1,0 +1,15 @@
+{
+  "name": "@wvb-playground/remote-aws-with-pulumi",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@pulumi/aws": "^7.47.0",
+    "@pulumi/pulumi": "^3.263.0",
+    "@wvb/remote-aws": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "6.0.3"
+  }
+}

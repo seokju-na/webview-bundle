@@ -1,0 +1,25 @@
+{
+  "name": "@wvb-playground/versions",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "bin": {
+    "wvb-playground-versions-build": "./bin/build.ts",
+    "wvb-playground-versions-wvb-pack": "./bin/wvb-pack.ts",
+    "wvb-playground-versions-wvb-upload": "./bin/wvb-upload.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./vite": "./src/vite.ts"
+  },
+  "peerDependencies": {
+    "vite": "*"
+  },
+  "dependencies": {
+    "execa": "^9"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "vite": "^8.1.5"
+  }
+}

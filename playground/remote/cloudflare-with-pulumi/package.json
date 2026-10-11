@@ -1,0 +1,14 @@
+{
+  "name": "@wvb-playground/remote-cloudflare-with-pulumi",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@pulumi/cloudflare": "^6.10.0",
+    "@pulumi/pulumi": "^3.237.0",
+    "@wvb/remote-cloudflare": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}

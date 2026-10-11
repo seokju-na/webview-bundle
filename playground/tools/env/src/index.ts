@@ -2,10 +2,14 @@ import path from 'node:path';
 import { loadEnvFile } from 'node:process';
 import { camelCase } from 'es-toolkit';
 import z from 'zod';
+import { lazyEnv } from './lazy-env.ts';
 
 const EnvSchema = z.object({
   remote: z.object({
-    endpoint: z.string(),
+    baseUrl: z.string(),
+  }),
+  aws: z.object({
+    bucket: z.string(),
   }),
   cloudflare: z.object({
     accountId: z.string(),
@@ -40,5 +44,5 @@ export function loadEnv(configFile?: string): Env {
     raw[category][name] = value;
   }
 
-  return EnvSchema.parse(raw);
+  return lazyEnv(EnvSchema, raw);
 }

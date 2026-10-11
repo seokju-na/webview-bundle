@@ -1,0 +1,28 @@
+{
+  "name": "@wvb-playground/webview-testbed",
+  "type": "module",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "wvb-playground-versions-build",
+    "wvb-pack": "wvb-playground-versions-wvb-pack",
+    "wvb-upload:cloudflare": "REMOTE_PROVIDER=cloudflare wvb-playground-versions-wvb-upload",
+    "wvb-upload:aws": "REMOTE_PROVIDER=aws wvb-playground-versions-wvb-upload",
+    "wvb-deploy:cloudflare": "REMOTE_PROVIDER=cloudflare VERSION=1.0.0 wvb deploy testbed --version=1.0.0",
+    "wvb-deploy:aws": "REMOTE_PROVIDER=aws VERSION=1.0.0 wvb deploy testbed --version=1.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "@wvb-playground/env": "workspace:^",
+    "@wvb-playground/versions": "workspace:^",
+    "@wvb/cli": "workspace:^",
+    "@wvb/remote-aws": "workspace:*",
+    "@wvb/remote-cloudflare": "workspace:^",
+    "execa": "^9",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "typescript": "catalog:",
+    "vite": "^8.1.5"
+  }
+}
