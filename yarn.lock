@@ -8345,6 +8345,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@wvb-playground/native-android@workspace:playground/native/android":
+  version: 0.0.0-use.local
+  resolution: "@wvb-playground/native-android@workspace:playground/native/android"
+  dependencies:
+    "@wvb-playground/env": "workspace:^"
+    "@wvb/cli": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@wvb-playground/native-electron-builder@workspace:playground/native/electron-builder":
   version: 0.0.0-use.local
   resolution: "@wvb-playground/native-electron-builder@workspace:playground/native/electron-builder"
