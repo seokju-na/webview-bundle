@@ -11,7 +11,7 @@ export default defineConfig({
     },
     rolldownOptions: {
       platform: 'node',
-      external: ['electron', '@wvb/node', /^node:/],
+      external: ['electron', /^node:/],
     },
   },
 });

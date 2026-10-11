@@ -10,7 +10,7 @@ const wvb = webviewBundle({
 });
 
 async function bootstrap() {
-  await wvb.whenProtocolRegistered();
+  await wvb.ready();
 
   const win = new BrowserWindow({
     width: 800,
@@ -20,7 +20,7 @@ async function bootstrap() {
       preload: path.join(import.meta.dirname, 'preload.cjs'),
     },
   });
-  await win.loadURL('app://test.wvb');
+  await win.loadURL('app://testbed.wvb');
 }
 
 void bootstrap();
