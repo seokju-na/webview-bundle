@@ -54,9 +54,9 @@ export function webviewBundleAfterPack(
     // target instead, defaulting a remote endpoint from `remote.endpoint` when missing.
     const installTarget: BuiltinTarget =
       target == null
-        ? { type: 'remote', endpoint: resolved.remote?.endpoint }
+        ? { type: 'remote', baseUrl: resolved.remote?.baseUrl }
         : target.type === 'remote'
-          ? { ...target, endpoint: target.endpoint ?? resolved.remote?.endpoint }
+          ? { ...target, baseUrl: target.baseUrl ?? resolved.remote?.baseUrl }
           : target;
 
     // Stage per (platform, arch) so a multi-target build never shares — and clobbers — one dir.
