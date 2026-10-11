@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import type { Config } from '@wvb/config';
+import type { RemoteConfig } from '@wvb/config/remote';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { loadConfigFile, resolveConfig } from './config.js';
 
@@ -104,6 +106,13 @@ describe('resolveConfig', () => {
 });
 
 describe('loadConfigFile', () => {
+  const resolveRemoteConfig = (config: Config | undefined): RemoteConfig | undefined =>
+    config != null
+      ? typeof config.remote === 'function'
+        ? config.remote()
+        : config.remote
+      : undefined;
+
   it('returns null when no config file is found', async () => {
     await expect(loadConfigFile(undefined, root)).resolves.toBeNull();
   });
@@ -112,8 +121,9 @@ describe('loadConfigFile', () => {
     await write('wvb.config.mjs', `export default { remote: { baseUrl: 'https://mjs' } };`);
 
     const loaded = await loadConfigFile(undefined, root);
+    const remoteConfig = resolveRemoteConfig(loaded?.config);
 
-    expect(loaded?.config.remote?.baseUrl).toBe('https://mjs');
+    expect(remoteConfig?.baseUrl).toBe('https://mjs');
     expect(loaded?.configFile).toBe(path.join(root, 'wvb.config.mjs'));
   });
 
@@ -121,8 +131,9 @@ describe('loadConfigFile', () => {
     await write('wvb.config.cjs', `module.exports = { remote: { baseUrl: 'https://cjs' } };`);
 
     const loaded = await loadConfigFile(undefined, root);
+    const remoteConfig = resolveRemoteConfig(loaded?.config);
 
-    expect(loaded?.config.remote?.baseUrl).toBe('https://cjs');
+    expect(remoteConfig?.baseUrl).toBe('https://cjs');
   });
 
   it('transpiles a TypeScript config (.ts)', async () => {
@@ -132,16 +143,18 @@ describe('loadConfigFile', () => {
     );
 
     const loaded = await loadConfigFile(undefined, root);
+    const remoteConfig = resolveRemoteConfig(loaded?.config);
 
-    expect(loaded?.config.remote?.baseUrl).toBe('https://ts');
+    expect(remoteConfig?.baseUrl).toBe('https://ts');
   });
 
   it('parses a JSON config (.json)', async () => {
     await write('wvb.config.json', `{ "remote": { "baseUrl": "https://json" } }`);
 
     const loaded = await loadConfigFile(undefined, root);
+    const remoteConfig = resolveRemoteConfig(loaded?.config);
 
-    expect(loaded?.config.remote?.baseUrl).toBe('https://json');
+    expect(remoteConfig?.baseUrl).toBe('https://json');
   });
 
   it('honors DEFAULT_CONFIG_FILES precedence (.mjs before .json)', async () => {
@@ -149,8 +162,9 @@ describe('loadConfigFile', () => {
     await write('wvb.config.json', `{ "remote": { "baseUrl": "https://json" } }`);
 
     const loaded = await loadConfigFile(undefined, root);
+    const remoteConfig = resolveRemoteConfig(loaded?.config);
 
-    expect(loaded?.config.remote?.baseUrl).toBe('https://mjs');
+    expect(remoteConfig?.baseUrl).toBe('https://mjs');
   });
 });
 
