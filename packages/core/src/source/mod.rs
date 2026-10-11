@@ -8,11 +8,11 @@
 //! ```text
 //! {source_dir}/
 //! ├── {bundle_name}/
-//! │   ├── {bundle_name}_{version}.wvb
-//! │   └── {bundle_name}_{version}.wvb
+//! │   ├── {version}.wvb
+//! │   └── {version}.wvb
 //! ├── app/
-//! │   ├── app_1.0.0.wvb
-//! │   └── app_1.1.0.wvb
+//! │   ├── 1.0.0.wvb
+//! │   └── 1.1.0.wvb
 //! └── manifest.json
 //! ```
 //!
