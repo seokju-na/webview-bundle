@@ -227,7 +227,7 @@ export class PrepareReleaseCommand extends Command {
         { name: `patch (${preview('patch')})`, value: 'patch' },
         { name: `minor (${preview('minor')})`, value: 'minor' },
         { name: `major (${preview('major')})`, value: 'major' },
-        { name: 'exact version', value: 'exact' },
+        { name: 'exact version (enter a specific version)', value: 'exact' },
         { name: 'skip (do not release)', value: 'skip' },
       ],
       default: 'patch',
@@ -236,8 +236,8 @@ export class PrepareReleaseCommand extends Command {
   }
 
   /**
-   * Prompt for an explicit next version, for when no bump rule expresses the intent — typically
-   * landing several packages on one shared version. Re-prompts until the input is a version the
+   * Prompt for this package's explicit next version when no bump rule expresses the intent.
+   * Re-prompts until the input is a version the
    * package accepts, so a typo cannot abort a run part-way through the package list.
    */
   private async promptExactVersion(prefix: string, pkg: Package): Promise<Version> {
