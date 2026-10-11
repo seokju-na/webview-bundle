@@ -7,7 +7,7 @@ links        = "wvb-tauri"
 name         = "wvb-tauri"
 repository   = { workspace = true }
 rust-version = "1.90.0"
-version      = "0.1.0"
+version      = "0.3.0"
 
 [dependencies]
 serde     = { workspace = true }

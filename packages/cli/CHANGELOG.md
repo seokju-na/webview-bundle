@@ -1,1 +1,36 @@
 # Changelog
+
+## cli v0.3.0
+
+This release includes packages: [`@wvb/cli`](https://www.npmjs.com/package/@wvb/cli/v/0.3.0)
+
+- fix(config,cli): remote `endpoint` -> `baseUrl` (#259) (1c31096)
+- fix(cli): builtin directory structure wrong (#257) (8e703b0)
+- feat(config,cli): support setting remote config with funciton (#255) (5d763b9)
+- fix(cli): inspect fail when logging with objects (#254) (82e08f6)
+- feat(remote): update remote new model (#252) (6ad819d)
+- feat(cli): update supported node version (#249) (38bee42)
+- chore(deps): bump the npm_and_yarn group across 3 directories with 3 updates (#234) (e5c4611)
+- feat(all): renew all update model (#236) (2cdde63)
+- feat(cli): `extract` -> `unpack` rename command, add `pathResolver` option and tests (#235) (4e9fda6)
+- refactor(cli): unify tsdown config (#219) (8da93ee)
+- feat(cli): accept more color options (#218) (68c78ef)
+- feat: verify data checksums on read and bundles on load (#215) (76508f8)
+- refactor(xtask): move package config to root xtask.config.ts (#207) (1b3f0ab)
+- feat(cli): add android/ios builtin presets (#190) (3c76b78)
+- fix(cli): normalize config file default export to a plain object (#186) (562fb27)
+- fix(cli): change `--version,-V` arguments in upload command (#185) (58bc641)
+- fix(cli,remote): fix confusing deploy command arguments, `--force` option for deploy was not working (#183) (9992fa1)
+- fix(cli): set `--deploy` option default value as false in `upload` command (#181) (439ff59)
+- chore(deps): bump the npm_and_yarn group across 1 directory with 3 updates (#169) (dbc4e0e)
+- refactor(cli,config): collapse pack outDir + outFileName into single outFile (#166) (7d67d53)
+- fix(core): set total bytes as optional (#163) (7e38986)
+- feat(cli,config): add local builtin installation option (#160) (a2ef9f3)
+- chore(deps): bump hono from 4.12.18 to 4.12.21 in the npm_and_yarn group across 1 directory (#156) (f70129a)
+- chore(deps): bump the npm_and_yarn group across 4 directories with 9 updates (#140) (ce26eb2)
+- feat(ffi): add ffi package for Android/iOS bindings (#139) (c41b723)
+- feat: redesgin cli commands, add local remote provider, oxc -> biome (#132) (af26b39)
+- feat(cli): expose `/api` import path for `@wvb/cli` npm package (#122) (fea4e32)
+- chore(deps): bump the npm_and_yarn group across 1 directory with 2 updates (#119) (722dcd0)
+- chore: fix xtask artifacts missing platforms (#112) (5d60ad6)
+- update dependencies: @wvb/config@0.3.0, wvb-node@0.3.0, @wvb/node@0.3.0, @wvb/node-android-arm-eabi@0.3.0, @wvb/node-android-arm64@0.3.0, @wvb/node-darwin-arm64@0.3.0, @wvb/node-darwin-x64@0.3.0, @wvb/node-linux-arm-gnueabihf@0.3.0, @wvb/node-linux-arm64-gnu@0.3.0, @wvb/node-linux-arm64-musl@0.3.0, @wvb/node-linux-x64-gnu@0.3.0, @wvb/node-linux-x64-musl@0.3.0, @wvb/node-win32-arm64-msvc@0.3.0, @wvb/node-win32-ia32-msvc@0.3.0, @wvb/node-win32-x64-msvc@0.3.0, @wvb/remote-local@0.3.0

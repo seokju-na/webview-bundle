@@ -1,6 +1,6 @@
 {
   "name": "@wvb/deno",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "license": "MIT",
   "exports": {
     ".": "./lib/mod.ts",
@@ -13,7 +13,12 @@
     "build": "deno run --allow-read --allow-write --allow-run --allow-env scripts/build.ts"
   },
   "publish": {
-    "exclude": ["fixtures", "scripts", "lib/testing.ts", "**/*.test.ts"]
+    "exclude": [
+      "fixtures",
+      "scripts",
+      "lib/testing.ts",
+      "**/*.test.ts"
+    ]
   },
   "imports": {
     "@denosaurs/plug": "jsr:@denosaurs/plug@^1",

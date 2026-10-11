@@ -1,6 +1,6 @@
 {
   "name": "@wvb/bridge",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "WebView bridge",
   "homepage": "https://github.com/webview-bundle/webview-bundle",
   "bugs": {
