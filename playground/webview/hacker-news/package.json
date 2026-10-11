@@ -24,8 +24,7 @@
     "build-ssr": "vite build --ssr src/entry-server.tsx --outDir dist-ssr --emptyOutDir",
     "build-lib": "tsdown",
     "prerender": "node scripts/prerender.mjs",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@wvb-playground/testdriver": "0.1.0"
