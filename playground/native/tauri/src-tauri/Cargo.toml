@@ -1,0 +1,15 @@
+[package]
+name = "wvb-playground-tauri"
+version = "1.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+tauri = { version = "2.11.5", features = ["custom-protocol"] }
+serde_json = "1"
+wvb-tauri = { path = "../../../../packages/tauri" }

@@ -24,5 +24,8 @@
     "react-dom": "19.3.0",
     "typescript": "catalog:",
     "vite": "^8.1.5"
+  },
+  "dependencies": {
+    "@wvb/bridge": "workspace:^"
   }
 }

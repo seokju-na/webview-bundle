@@ -6,6 +6,10 @@ const wvb = webviewBundle({
   source: app.isPackaged
     ? undefined
     : { builtinDir: path.join(import.meta.dirname, '..', '.wvb', 'builtin', 'bundles') },
+  updater: {
+    remote: { baseUrl: process.env.WVB_PLAYGROUND_REMOTE_BASE_URL! },
+    updateFilepath: path.join(app.getPath('userData'), 'update.json'),
+  },
   protocols: [bundleProtocol('app')],
 });
 

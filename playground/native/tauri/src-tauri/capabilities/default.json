@@ -1,0 +1,5 @@
+{
+  "identifier": "main",
+  "windows": ["main"],
+  "permissions": ["core:default", "wvb-tauri:default"]
+}

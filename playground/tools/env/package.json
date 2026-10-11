@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
+  "bin": {
+    "wvb-playground-env-setup-remote-info": "./bin/setup-remote-info.ts"
+  },
   "dependencies": {
     "es-toolkit": "^1.43.0",
     "zod": "^4.0.5"

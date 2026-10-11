@@ -1,0 +1,16 @@
+{
+  "name": "@wvb-playground/native-tauri",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "wvb-playground-env-setup-remote-info",
+    "builtin": "wvb builtin --include testbed",
+    "dev": "tauri dev",
+    "build": "tauri build --bundles dmg"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.3",
+    "@wvb-playground/env": "workspace:^",
+    "@wvb/cli": "workspace:^"
+  }
+}
