@@ -1138,7 +1138,7 @@ export type SignatureKeyFormat = /** SubjectPublicKeyInfo DER format (binary) */
 'raw';
 
 export interface SignatureVerifyKey {
-  id: string
+  id?: string
   verify: SignatureKey | ((message: Uint8Array, signature: string) => Promise<boolean>)
 }
 
@@ -1185,7 +1185,7 @@ export interface Update {
   /** Bundles included in the update. */
   bundles: Array<BundleUpdate>
   /** Provider-defined, string-valued update metadata. */
-  metadata: Record<string, string>
+  metadata?: Record<string, string>
 }
 
 export const UPDATE_PROTOCOL_VERSION: string
