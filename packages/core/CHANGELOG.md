@@ -1,1 +1,31 @@
 # Changelog
+
+## core v0.3.0
+
+This release includes packages: [`wvb`](https://crates.io/crates/wvb/0.3.0)
+
+- chore: set msrv (#269) (d7a77cc)
+- fix(core): returns `None` when update returns 204 no contents (#268) (cf8b48f)
+- fix(core): source dir documentation wrong (#258) (d898301)
+- feat(remote): update remote new model (#252) (6ad819d)
+- fix(core): remove `local-offset` feature in `time` crate (#247) (cacd1af)
+- refactor: update comments for reference documents (#239) (df5bd70)
+- feat(all): renew all update model (#236) (2cdde63)
+- fix(core): handle Windows delete-pending bundle reads (#229) (ce62907)
+- fix: remove `hickory_dns` field in `HttpOptions` (#224) (76b4cbf)
+- feat: verify data checksums on read and bundles on load (#215) (76508f8)
+- feat: add protocol resolver options (#214) (5d93c7f)
+- feat: unify error codes across bindings (#212) (a4754f8)
+- refactor(xtask): move package config to root xtask.config.ts (#207) (1b3f0ab)
+- fix(core): fix windows fs retry (#201) (1d1c856)
+- fix(core): retry manifest read on Windows transient errors during concurrent rename (#197) (5ae0375)
+- fix: bundle integrity/signature verification & deterministic serialization (#196) (02018aa)
+- refactor(core): update deprecated method for time formatting (#184) (8b4d8aa)
+- fix(core): set total bytes as optional (#163) (7e38986)
+- feat: update node.js, ffi, tauri api (#155) (a1bf387)
+- feat: safe bundle update with separating download/install step and remove unused remote bundles after install (#152) (39020e6)
+- feat(ffi): add ffi package for Android/iOS bindings (#139) (c41b723)
+- fix(core): pass request headers to local proxy (#130) (b8ef163)
+- feat: add core testing, tauri commands (#129) (c49207f)
+- feat(core): add tracing support for debugging and request handling (#123) (5a4ed09)
+- feat(core): add mock system for testing (#118) (7a79c1a)

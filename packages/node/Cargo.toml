@@ -6,7 +6,7 @@ license     = { workspace = true }
 name        = "wvb-node"
 publish     = false
 repository  = { workspace = true }
-version     = "0.1.0"
+version     = "0.3.0"
 
 [lib]
 bench      = false
