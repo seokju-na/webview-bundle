@@ -17,6 +17,7 @@ class TestRunner(private val context: Context) {
     private val indexJs = "console.log('hello')".toByteArray()
 
     suspend fun run(): List<TestResult> = withContext(Dispatchers.IO) {
+        WvbAndroid.initialize(context)
         val results = mutableListOf<TestResult>()
 
         fun test(name: String, block: () -> Unit) {

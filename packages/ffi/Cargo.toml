@@ -31,5 +31,9 @@ tokio       = { workspace = true, features = ["rt-multi-thread", "macros", "sync
 uniffi      = { workspace = true, features = ["cli", "tokio"] }
 wvb         = { workspace = true, features = ["full"] }
 
+[target.'cfg(target_os = "android")'.dependencies]
+jni                      = "0.22"
+rustls-platform-verifier = "0.7"
+
 [build-dependencies]
 uniffi = { workspace = true, default-features = false, features = ["build"] }
