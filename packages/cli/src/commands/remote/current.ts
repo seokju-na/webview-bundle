@@ -34,7 +34,7 @@ Use \`remote download\` if you need the actual bundle file.
         'Check current version with explicit base url',
         '$0 remote current my-app --base-url https://cdn.example.com',
       ],
-      ['Use bundle name and base ir; from config', '$0 remote current'],
+      ['Use bundle name and base url; from config', '$0 remote current'],
       [
         'Verify deployment in CI pipeline',
         '$0 remote current my-app --base-url https://cdn.example.com',
