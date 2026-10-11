@@ -32,7 +32,7 @@ export interface Config {
    */
   root?: string;
   pack?: PackConfig;
-  remote?: RemoteConfig;
+  remote?: RemoteConfig | (() => RemoteConfig);
   serve?: ServeConfig;
   builtin?: BuiltinConfig;
 }
