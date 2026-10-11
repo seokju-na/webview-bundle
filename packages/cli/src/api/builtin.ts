@@ -152,7 +152,7 @@ export async function builtin(params: BuiltinParams): Promise<BuiltinResult> {
       };
 
       if (write) {
-        const filename = `${bundle.name}_${bundle.version}.wvb`;
+        const filename = `${bundle.version}.wvb`;
         const filepath = path.join(dir, bundle.name, filename);
         await fs.mkdir(path.dirname(filepath), { recursive: true });
         await fs.writeFile(filepath, bundle.data);

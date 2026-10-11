@@ -10,6 +10,7 @@ import type {
   PackageJson,
   VersionResolver,
 } from '@wvb/config';
+import type { RemoteConfig } from '@wvb/config/remote';
 import { DEFAULT_CONFIG_FILES } from './constants.js';
 import {
   findNearestPackageJson,
@@ -177,12 +178,13 @@ export interface InlineConfig extends Config {
 
 export interface ResolvedConfig
   extends Readonly<
-    Omit<Config, 'root'> & {
+    Omit<Config, 'root' | 'remote'> & {
       root: string;
       configFile: string | undefined;
       configFileDependencies: string[] | undefined;
       inlineConfig: InlineConfig;
       packageJson: PackageJson | undefined;
+      remote: RemoteConfig | undefined;
     }
   > {}
 
@@ -207,6 +209,7 @@ export async function resolveConfig(inlineConfig: InlineConfig): Promise<Resolve
     configFileDependencies,
     inlineConfig,
     packageJson,
+    remote: typeof config.remote === 'function' ? config.remote() : config.remote,
   };
   return resolved;
 }
