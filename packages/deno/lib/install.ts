@@ -4,13 +4,14 @@
 //   deno run -A jsr:@wvb/deno/install [--out .wvb/lib] [--target <triple>] [--version <v>] [--url <base>] [--no-integrity]
 //
 // The release asset is named `<prefix>wvb_deno-<target>.<ext>` (e.g. `libwvb_deno-aarch64-apple-darwin.dylib`)
-// and is saved locally under the plain platform name (`libwvb_deno.dylib`), since a single compiled
-// binary targets one platform. Then: `deno desktop --allow-ffi --include <out>/<file> main.ts`.
+// and is saved under `<out>/<target>/<platform filename>` so different architectures can coexist.
+// Then: `deno desktop --allow-ffi --include <out>/<target> main.ts`.
 //
 // Downloaded bytes are verified against the asset's `.sha256` sidecar before being written, unless
 // `--no-integrity` is passed.
 
 import { retry } from '@std/async';
+import { join } from '@std/path';
 import { libFileName } from './ffi.ts';
 import {
   osOfTarget,
@@ -27,7 +28,7 @@ export interface InstallOptions {
    */
   target?: string;
   /**
-   * Output directory.
+   * Output directory. Each target is installed in its own subdirectory.
    * @default .wvb/lib
    */
   out?: string;
@@ -64,6 +65,9 @@ class HttpError extends Error {
 
 export async function install(options: InstallOptions = {}): Promise<string> {
   const target = options.target ?? Deno.build.target;
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(target)) {
+    throw new Error(`wvb: invalid native library target: ${target}`);
+  }
   const out = options.out ?? '.wvb/lib';
   const version = options.version ?? VERSION;
   const base = options.url ?? releaseBaseUrl(version);
@@ -96,8 +100,9 @@ export async function install(options: InstallOptions = {}): Promise<string> {
     await verifyChecksum(bytes, base, assetName);
   }
 
-  await Deno.mkdir(out, { recursive: true });
-  const dest = `${out}/${libFileName(osOfTarget(target))}`;
+  const targetDir = join(out, target);
+  await Deno.mkdir(targetDir, { recursive: true });
+  const dest = join(targetDir, libFileName(osOfTarget(target)));
   await Deno.writeFile(dest, bytes);
 
   return dest;
