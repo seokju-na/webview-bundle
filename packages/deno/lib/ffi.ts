@@ -289,7 +289,8 @@ export interface LoadLibViaPlugOptions {
 
 /**
  * Download the platform cdylib from a release from github release.
- * For `deno run` / library use where the dylib isn't bundled.
+ * Intended for development with `deno run` / library use where the dylib isn't bundled.
+ * Packaged desktop apps should include the library installed by `@wvb/deno/install` instead.
  *
  * Requires `--allow-net --allow-read --allow-write --allow-env --allow-ffi`.
  */
@@ -350,7 +351,7 @@ export function getLib(): WvbLib {
   }
   throw new Error(
     'wvb: native library not loaded. Call loadLib(path), ' +
-      'loadLibViaPlug({ url }), or set WVB_DENO_LIB.'
+      'loadFromGitHub({ url }), or set WVB_DENO_LIB.'
   );
 }
 

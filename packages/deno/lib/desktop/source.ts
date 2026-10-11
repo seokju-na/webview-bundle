@@ -1,18 +1,17 @@
-// bundleSource — construct a @wvb/deno Source with Deno desktop defaults (mirrors
-// @wvb/electron's source.ts):
-//   • builtin bundles are READ from inside the app — `bundles` next to the entry module
-//     (the `deno desktop --include`d, self-extracted dir), like Electron's `resourcesPath/bundles`.
-//   • remote (downloaded) bundles are WRITTEN under the OS application-data directory, so they
-//     persist across runs and app updates — like Electron's `app.getPath('userData')/bundles`.
 import { fromFileUrl } from '@std/path';
 import { Source, type SourceConfig } from '../mod.ts';
 
 export interface BundleSourceConfig extends Omit<SourceConfig, 'builtinDir' | 'remoteDir'> {
   /**
    * Read-only builtin bundles directory. Defaults to `bundles` next to the app's entry module
-   * (`Deno.mainModule`) — i.e. the `deno desktop --include`d, self-extracted dir inside the app.
+   * (`Deno.mainModule`). Compiled `webviewBundle` apps extract it to disk before creating a Source.
    */
   builtinDir?: string;
+  /**
+   * Extraction cache for compiled `webviewBundle` apps. Defaults to
+   * `<app-data>/<appName>/builtin`. Kept separate from downloaded remote bundles.
+   */
+  builtinCacheDir?: string;
   /**
    * Writable directory for downloaded (remote) bundles. Defaults to
    * `<app-data>/<appName>/bundles` (see {@link appDataDir}) so updates persist across runs.
@@ -27,12 +26,16 @@ export interface BundleSourceConfig extends Omit<SourceConfig, 'builtinDir' | 'r
  * can reuse the directories it picked — the updater's default update filepath sits next to them.
  */
 export function resolveSourceConfig(config: BundleSourceConfig = {}): SourceConfig {
-  const { appName, builtinDir, remoteDir, ...rest } = config;
+  const { appName, builtinDir, remoteDir, builtinCacheDir: _builtinCacheDir, ...rest } = config;
   return {
     ...rest,
     builtinDir: builtinDir ?? defaultBuiltinDir(),
     remoteDir: ensureDir(remoteDir ?? defaultRemoteDir(appName ?? defaultAppName())),
   };
+}
+
+export function builtinCacheDir(config: BundleSourceConfig = {}): string {
+  return config.builtinCacheDir ?? `${appDataDir()}/${config.appName ?? defaultAppName()}/builtin`;
 }
 
 export function bundleSource(config: BundleSourceConfig = {}): Source {

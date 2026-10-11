@@ -6,9 +6,10 @@ import {
   Updater,
   type UpdaterOptions,
 } from '../mod.ts';
+import { prepareBuiltin, retainBuiltin } from './builtin.ts';
 import { remote } from './remote.ts';
 import { createHandler, type Mount, normalizeRoutes, type Routes } from './routes.ts';
-import { type BundleSourceConfig, resolveSourceConfig } from './source.ts';
+import { type BundleSourceConfig, builtinCacheDir, resolveSourceConfig } from './source.ts';
 
 /** Remote update options owned by a Deno Desktop host. */
 export interface WebviewBundleUpdaterConfig extends UpdaterOptions {
@@ -24,7 +25,7 @@ export interface WebviewBundleUpdaterConfig extends UpdaterOptions {
 /** Configuration used to build a Deno Desktop request handler. */
 export interface WebviewBundleConfig {
   /**
-   * Deno-specific: the native cdylib path — e.g. the `.wvb/lib` directory you installed it into with
+   * Deno-specific: the native cdylib path — e.g. the `.wvb/lib/<target>` directory installed with
    * `deno run -A jsr:@wvb/deno/install`, or a `deno desktop --include`d dir resolved from the app's
    * `import.meta.url`. Omit if you already loaded it via `loadLib`/`loadFromGitHub`.
    */
@@ -57,18 +58,37 @@ export class WebviewBundle {
       loadLib(config.lib);
     }
     const sourceConfig = resolveSourceConfig(config.source);
-    this.#source = new Source(sourceConfig);
-    if (config.updater != null) {
-      const { remote: remoteConfig, updateFilepath, ...updaterOptions } = config.updater;
-      this.#remote = remote(remoteConfig);
-      this.#updater = new Updater(
-        this.#source,
-        this.#remote,
-        updateFilepath ?? `${sourceConfig.remoteDir}/update.json`,
-        updaterOptions
-      );
+    const builtin = Deno.build.standalone
+      ? prepareBuiltin(sourceConfig, builtinCacheDir(config.source))
+      : undefined;
+    try {
+      this.#source = new Source({
+        ...sourceConfig,
+        ...(builtin != null
+          ? {
+              builtinDir: builtin.builtinDir,
+              builtinManifestFilepath: builtin.builtinManifestFilepath,
+            }
+          : {}),
+      });
+      if (config.updater != null) {
+        const { remote: remoteConfig, updateFilepath, ...updaterOptions } = config.updater;
+        this.#remote = remote(remoteConfig);
+        this.#updater = new Updater(
+          this.#source,
+          this.#remote,
+          updateFilepath ?? `${sourceConfig.remoteDir}/update.json`,
+          updaterOptions
+        );
+      }
+      this.#handler = createHandler(this.#mounts, this.#source);
+    } catch (error) {
+      builtin?.[Symbol.dispose]();
+      throw error;
     }
-    this.#handler = createHandler(this.#mounts, this.#source);
+    if (builtin != null) {
+      retainBuiltin(builtin);
+    }
   }
 
   /** Mount paths, in match order (longest prefix first). */
