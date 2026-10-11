@@ -415,7 +415,7 @@ describe('builtin integrity and signature for a local target', () => {
 
 describe('builtin with a remote target', () => {
   let server: ServerType;
-  let endpoint: string;
+  let baseUrl: string;
   let listedBundles: Array<{ name: string; version: string }>;
   let listRequestUrls: string[];
 
@@ -460,7 +460,7 @@ describe('builtin with a remote target', () => {
         server.once('listening', () => resolve());
       });
     }
-    endpoint = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
   afterEach(async () => {
@@ -471,7 +471,7 @@ describe('builtin with a remote target', () => {
 
   it('downloads every listed bundle into "<dir>/<name>/<name>_<version>.wvb"', async () => {
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
     });
@@ -483,7 +483,7 @@ describe('builtin with a remote target', () => {
 
   it('records the metadata the remote reported in the manifest', async () => {
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
     });
@@ -496,13 +496,13 @@ describe('builtin with a remote target', () => {
 
   it('forwards the channel when listing bundles', async () => {
     await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       channel: 'beta',
     });
 
-    expect(listRequestUrls).toEqual([`${endpoint}/update`]);
+    expect(listRequestUrls).toEqual([`${baseUrl}/update`]);
   });
 
   it('downloads only the bundles matching the include patterns', async () => {
@@ -512,7 +512,7 @@ describe('builtin with a remote target', () => {
     ];
 
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       include: [/^app-a$/],
@@ -528,7 +528,7 @@ describe('builtin with a remote target', () => {
     ];
 
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       exclude: ['app-b'],
@@ -542,7 +542,7 @@ describe('builtin with a remote target', () => {
     const { logger, messages } = createTestLogger();
 
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       logger,
@@ -554,7 +554,7 @@ describe('builtin with a remote target', () => {
 
   it('does not touch the disk when write is false', async () => {
     const result = await builtin({
-      target: { type: 'remote', endpoint },
+      target: { type: 'remote', baseUrl },
       dir: './builtin',
       cwd: root,
       write: false,
@@ -564,10 +564,10 @@ describe('builtin with a remote target', () => {
     expect(await pathExists(path.join(root, 'builtin'))).toBe(false);
   });
 
-  it('throws when the endpoint is missing', async () => {
+  it('throws when the base url is missing', async () => {
     await expect(
       builtin({ target: { type: 'remote' }, dir: './builtin', cwd: root })
-    ).rejects.toThrow('Remote endpoint is required.');
+    ).rejects.toThrow('Remote base url is required.');
   });
 });
 

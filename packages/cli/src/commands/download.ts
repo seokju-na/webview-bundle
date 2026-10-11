@@ -32,10 +32,10 @@ and optionally saves it to disk.
   A progress bar is displayed during download for large bundles.
     `,
     examples: [
-      ['Download latest deployed version', '$0 download my-app --endpoint https://cdn.example.com'],
+      ['Download latest deployed version', '$0 download my-app --base-url https://cdn.example.com'],
       [
         'Download a specific version',
-        '$0 download my-app 1.2.0 --endpoint https://cdn.example.com',
+        '$0 download my-app 1.2.0 --base-url https://cdn.example.com',
       ],
       ['Download and save to a custom path', '$0 download my-app --out ./bundles/my-app.wvb'],
       ['Overwrite existing file', '$0 download my-app --out ./my-bundle.wvb --overwrite'],
@@ -53,8 +53,8 @@ and optionally saves it to disk.
   readonly out = Option.String('--out,-O', {
     description: 'Output file path.',
   });
-  readonly endpoint = Option.String('--endpoint,-E', {
-    description: 'Endpoint of remote server.',
+  readonly baseUrl = Option.String('--base-url', {
+    description: 'Base url of remote server.',
   });
   readonly channel = Option.String('--channel', {
     description:
@@ -89,9 +89,9 @@ Set this to \`false\` (or pass "--no-write") just for simulating operation.
       root: this.cwd,
       configFile: this.configFile,
     });
-    const endpoint = this.endpoint ?? config.remote?.endpoint;
-    if (endpoint == null) {
-      this.logger.error('"endpoint" is required for remote operations.');
+    const baseUrl = this.baseUrl ?? config.remote?.baseUrl;
+    if (baseUrl == null) {
+      this.logger.error('"baseUrl" is required for remote operations.');
       return 1;
     }
     const bundleName =
@@ -112,7 +112,7 @@ Set this to \`false\` (or pass "--no-write") just for simulating operation.
         )
       : null;
     const remote = new Remote({
-      baseUrl: endpoint,
+      baseUrl,
       onDownload: data => {
         if (progress?.isActive !== true && data.totalBytes != null) {
           progress?.start(data.totalBytes, data.downloadedBytes);
@@ -141,7 +141,7 @@ Set this to \`false\` (or pass "--no-write") just for simulating operation.
     }
     if (!write) return 0;
     await fs.mkdir(path.dirname(outFilePath), { recursive: true });
-    const url = bundle.downloadUrl ?? `${endpoint}/bundles/${bundle.name}/${bundle.version}`;
+    const url = bundle.downloadUrl ?? `${baseUrl}/bundles/${bundle.name}/${bundle.version}`;
     await remote.download(url, outFilePath);
     const size = (await fs.stat(outFilePath)).size;
     this.logger.info(

@@ -31,11 +31,14 @@ Use \`remote download\` if you need the actual bundle file.
     `,
     examples: [
       [
-        'Check current version with explicit endpoint',
-        '$0 remote current my-app --endpoint https://cdn.example.com',
+        'Check current version with explicit base url',
+        '$0 remote current my-app --base-url https://cdn.example.com',
       ],
-      ['Use bundle name and endpoint from config', '$0 remote current'],
-      ['Verify deployment in CI pipeline', '$0 remote current my-app -E https://cdn.example.com'],
+      ['Use bundle name and base ir; from config', '$0 remote current'],
+      [
+        'Verify deployment in CI pipeline',
+        '$0 remote current my-app --base-url https://cdn.example.com',
+      ],
     ],
   });
 
@@ -43,8 +46,8 @@ Use \`remote download\` if you need the actual bundle file.
     name: 'BUNDLE',
     required: false,
   });
-  readonly endpoint = Option.String('--endpoint,-E', {
-    description: 'Endpoint of remote server.',
+  readonly baseUrl = Option.String('--base-url', {
+    description: 'Base url of remote server.',
   });
   readonly channel = Option.String('--channel', {
     description:
@@ -62,9 +65,9 @@ Use \`remote download\` if you need the actual bundle file.
       root: this.cwd,
       configFile: this.configFile,
     });
-    const endpoint = this.endpoint ?? config.remote?.endpoint;
-    if (endpoint == null) {
-      this.logger.error('"endpoint" is required for remote operations.');
+    const baseUrl = this.baseUrl ?? config.remote?.baseUrl;
+    if (baseUrl == null) {
+      this.logger.error('"baseUrl" is required for remote operations.');
       return 1;
     }
     const bundleName =
@@ -73,7 +76,7 @@ Use \`remote download\` if you need the actual bundle file.
       this.logger.error('"bundleName" is required for remote operations.');
       return 1;
     }
-    const remote = new Remote({ baseUrl: endpoint });
+    const remote = new Remote({ baseUrl });
     const update = await remote.getUpdate({ channel: this.channel });
     const info = update?.update.bundles.find(bundle => bundle.name === bundleName);
     if (info == null) {

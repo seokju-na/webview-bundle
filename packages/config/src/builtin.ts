@@ -19,7 +19,7 @@ export interface BuiltinDownloadConfig {
 /**
  * Install builtin bundles from a remote target.
  */
-export interface BuiltinRemoteTargetConfig extends Pick<RemoteConfig, 'endpoint'> {
+export interface BuiltinRemoteTargetConfig extends Pick<RemoteConfig, 'baseUrl'> {
   download?: BuiltinDownloadConfig;
 }
 
