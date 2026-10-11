@@ -28,10 +28,24 @@ picks up the new version. Contributors are not required to follow any commit con
 
    The bump is `patch`/`minor`/`major` — each shown with the version it lands on — or **`exact
    version`**, which asks for the next version outright. Use it when no rule expresses the intent,
-   typically to land several packages on one shared version. The version has to be ahead of the
+   for example to upgrade one package from `0.1.0` directly to `0.3.0`. Each package's version is
+   chosen independently. The version has to be ahead of the
    package's current one (`release` only publishes what the merge commit *raised*), and it applies
    to every manifest the package owns, so a package whose manifests have drifted apart (e.g. the
    napi platform packages) is realigned on the way.
+
+   Run `just xtask prepare-release` and choose `exact version` in the package's bump menu:
+
+   ```text
+   ? [bridge] Select version bump (direct changes)
+     patch (0.1.1)
+     minor (0.2.0)
+     major (1.0.0)
+   > exact version (enter a specific version)
+     skip (do not release)
+   ? [bridge] Exact version (current 0.1.0) 0.3.0
+   ```
+
 2. Merging that PR is the trigger: on the base branch the CI runs `just xtask release`, which
    publishes every package bumped by the merge commit, tags the merge commit, pushes the tags, and
    creates GitHub releases (uploading each package's configured assets). Every step skips work
