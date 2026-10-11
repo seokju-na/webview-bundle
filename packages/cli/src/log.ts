@@ -99,7 +99,7 @@ function formatValue(value: unknown, verbose: boolean): string {
       }
       return c.bold(c.error(`${value.name}: ${value.message}`));
     }
-    return c.bold(c.debug(util.inspect('%O', value)));
+    return c.bold(c.debug(util.inspect(value)));
   }
   return c.bold(String(value));
 }
