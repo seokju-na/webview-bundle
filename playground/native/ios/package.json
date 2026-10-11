@@ -1,0 +1,15 @@
+{
+  "name": "@wvb-playground/native-ios",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "builtin": "wvb builtin --ios=. --include=testbed",
+    "setup": "wvb-playground-env-setup-remote-info",
+    "build": "./build.sh",
+    "generate": "./generate.sh"
+  },
+  "devDependencies": {
+    "@wvb-playground/env": "workspace:^",
+    "@wvb/cli": "workspace:^"
+  }
+}
