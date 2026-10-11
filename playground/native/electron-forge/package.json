@@ -7,8 +7,7 @@
     "build": "vite build && vite build --config vite.preload.config.ts",
     "start": "install-electron && yarn wvb-builtin && yarn build && electron .",
     "wvb-builtin": "wvb builtin",
-    "package": "yarn build && electron-forge make",
-    "typecheck": "tsc --noEmit"
+    "package": "yarn build && electron-forge make"
   },
   "dependencies": {
     "@wvb/electron": "workspace:^"
