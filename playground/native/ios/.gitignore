@@ -1,0 +1,7 @@
+/bundles/
+/.wvb/
+/out/
+/*.xcodeproj/
+/*.xcworkspace/
+/Derived/
+remote.json
