@@ -1,0 +1,37 @@
+{
+  "name": "@wvb-playground/native-electron-forge",
+  "private": true,
+  "type": "module",
+  "main": "./dist/main.mjs",
+  "scripts": {
+    "build": "vite build && vite build --config vite.preload.config.ts",
+    "start": "install-electron && yarn wvb-builtin && yarn build && electron .",
+    "wvb-builtin": "wvb builtin",
+    "package": "yarn build && electron-forge make"
+  },
+  "dependencies": {
+    "@wvb/electron": "workspace:^"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "7.11.2",
+    "@electron-forge/maker-dmg": "7.11.2",
+    "@electron-forge/shared-types": "7.11.2",
+    "@playwright/test": "1.61.1",
+    "@types/node": "catalog:",
+    "@wvb-playground/env": "workspace:*",
+    "@wvb/cli": "workspace:^",
+    "@wvb/electron-forge": "workspace:^",
+    "electron": "^42.5.1",
+    "typescript": "catalog:",
+    "vite": "^8.1.5"
+  },
+  "version": "1.0.0",
+  "description": "Webview Bundle Electron forge playground",
+  "author": "Webview Bundle",
+  "config": {
+    "forge": "./forge.config.ts"
+  },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  }
+}

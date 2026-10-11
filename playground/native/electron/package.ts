@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import packager from '@electron/packager';
+import { packager } from '@electron/packager';
 
 const execFileAsync = promisify(execFile);
 
@@ -33,11 +33,13 @@ await fs.writeFile(
 
 const require = createRequire(root);
 
-// Copy native modules
-const wvbNodeDir = path.dirname(require.resolve('@wvb/node/package.json'));
-const wvbNodeDest = path.join(stageDir, 'node_modules', '@wvb', 'node');
-await fs.mkdir(wvbNodeDest, { recursive: true });
-await fs.cp(wvbNodeDir, wvbNodeDest, { recursive: true });
+// Preserve package-relative native binding paths instead of bundling the loader into main.mjs.
+const packageDir = path.dirname(require.resolve('@wvb/electron/package.json'));
+const packageDest = path.join(stageDir, 'node_modules', '@wvb', 'electron');
+await fs.mkdir(packageDest, { recursive: true });
+for (const entry of ['package.json', 'dist', 'node-bindings']) {
+  await fs.cp(path.join(packageDir, entry), path.join(packageDest, entry), { recursive: true });
+}
 
 const [appPath] = await packager({
   dir: stageDir,
@@ -46,7 +48,6 @@ const [appPath] = await packager({
   electronVersion: require('electron/package.json').version,
   asar: {
     unpack: '**/*.node',
-    unpackDir: '**/@wvb/node',
   },
   extraResource: [path.join(root, '.wvb', 'builtin', 'bundles')],
   prune: false,

@@ -6,11 +6,15 @@ const wvb = webviewBundle({
   source: app.isPackaged
     ? undefined
     : { builtinDir: path.join(import.meta.dirname, '..', '.wvb', 'builtin', 'bundles') },
+  updater: {
+    remote: { baseUrl: process.env.WVB_PLAYGROUND_REMOTE_BASE_URL! },
+    updateFilepath: path.join(app.getPath('userData'), 'update.json'),
+  },
   protocols: [bundleProtocol('app')],
 });
 
 async function bootstrap() {
-  await wvb.whenProtocolRegistered();
+  await wvb.ready();
 
   const win = new BrowserWindow({
     width: 800,
@@ -20,7 +24,7 @@ async function bootstrap() {
       preload: path.join(import.meta.dirname, 'preload.cjs'),
     },
   });
-  await win.loadURL('app://test.wvb');
+  await win.loadURL('app://testbed.wvb');
 }
 
 void bootstrap();

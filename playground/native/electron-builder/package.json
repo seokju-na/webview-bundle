@@ -1,0 +1,29 @@
+{
+  "name": "@wvb-playground/native-electron-builder",
+  "private": true,
+  "type": "module",
+  "main": "./dist/main.mjs",
+  "scripts": {
+    "build": "vite build && vite build --config vite.preload.config.ts",
+    "start": "install-electron && yarn wvb-builtin && yarn build && electron .",
+    "wvb-builtin": "wvb builtin",
+    "package": "yarn build && electron-builder --config electron-builder.config.ts --mac dmg --publish never"
+  },
+  "dependencies": {
+    "@wvb/electron": "workspace:^"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1",
+    "@types/node": "catalog:",
+    "@wvb-playground/env": "workspace:*",
+    "@wvb/cli": "workspace:^",
+    "@wvb/electron-builder": "workspace:^",
+    "electron": "^42.5.1",
+    "electron-builder": "26.15.3",
+    "typescript": "catalog:",
+    "vite": "^8.1.5"
+  },
+  "version": "1.0.0",
+  "description": "Webview Bundle Electron builder playground",
+  "author": "Webview Bundle"
+}

@@ -1,0 +1,7 @@
+name: wvb-playground-remote
+description: Cloudflare R2, KV, and Worker for the Webview Bundle playground
+runtime:
+  name: nodejs
+  options:
+    typescript: true
+main: src/index.ts

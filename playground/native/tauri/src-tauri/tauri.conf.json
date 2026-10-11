@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "WvbTauri",
+  "version": "1.0.0",
+  "identifier": "dev.wvb.playground.tauri",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "WVB Tauri",
+        "width": 800,
+        "height": 600,
+        "url": "bundle://testbed.wvb"
+      }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg"],
+    "resources": { "../.wvb/bundles/": "bundles/" }
+  }
+}

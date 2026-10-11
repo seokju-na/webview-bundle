@@ -5,9 +5,9 @@
     "packages/**/*",
     "xtask",
     "playground/native/*",
-    "playground/remotes/*",
+    "playground/remote/*",
     "playground/tools/*",
-    "playground/webviews/**/*"
+    "playground/webview/**/*"
   ],
   "type": "module",
   "devDependencies": {
@@ -28,7 +28,8 @@
     "minimatch@npm:^10.1.2": "^10.2.5",
     "undici@npm:^7.19.0": "^7.28.0",
     "undici@npm:^7.24.4": "^7.28.0",
-    "form-data": "^4.0.6"
+    "form-data": "^4.0.6",
+    "fs-xattr@npm:^0.3.0": "https://github.com/seokju-na/fs-xattr.git#commit=750966126d2f8fd251be216d4eb4c8b4f85ce54c"
   },
   "packageManager": "yarn@4.18.1"
 }

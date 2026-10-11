@@ -1,0 +1,7 @@
+name: wvb-playground-aws-pulumi
+description: S3, CloudFront, and Lambda@Edge remote for the Webview Bundle playground
+runtime:
+  name: nodejs
+  options:
+    typescript: true
+main: src/index.ts
