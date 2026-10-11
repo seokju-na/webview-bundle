@@ -290,7 +290,7 @@ impl Remote {
 
 #[uniffi::export(async_runtime = "tokio")]
 impl Remote {
-  /// Gets the current update document, or `None` when its ETag has not changed.
+  /// Gets the current update document, or `None` for no content (204) or an unchanged ETag (304).
   pub async fn get_update(
     &self,
     options: Option<RemoteGetUpdateOptions>,
