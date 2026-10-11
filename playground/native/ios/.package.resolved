@@ -1,0 +1,15 @@
+{
+  "originHash" : "83a2dd468755c3101f2aacb78cb5de632eae677e4d341e7d8ae54c4993835f0d",
+  "pins" : [
+    {
+      "identity" : "webview-bundle-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/webview-bundle/webview-bundle-ios.git",
+      "state" : {
+        "revision" : "c13957fe0458b23b33e95fc95d9b66e2cf990c8e",
+        "version" : "0.0.1"
+      }
+    }
+  ],
+  "version" : 3
+}

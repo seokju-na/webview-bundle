@@ -8406,6 +8406,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@wvb-playground/native-ios@workspace:playground/native/ios":
+  version: 0.0.0-use.local
+  resolution: "@wvb-playground/native-ios@workspace:playground/native/ios"
+  dependencies:
+    "@wvb-playground/env": "workspace:^"
+    "@wvb/cli": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@wvb-playground/native-tauri@workspace:playground/native/tauri":
   version: 0.0.0-use.local
   resolution: "@wvb-playground/native-tauri@workspace:playground/native/tauri"
