@@ -1,0 +1,15 @@
+{
+  "name": "@wvb-playground/native-android",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "cd app/src/main/assets && wvb-playground-env-setup-remote-info",
+    "builtin": "wvb builtin --android=./app --include=testbed",
+    "build": "./gradlew :app:assembleDebug",
+    "install:app": "./gradlew :app:installDebug"
+  },
+  "devDependencies": {
+    "@wvb-playground/env": "workspace:^",
+    "@wvb/cli": "workspace:^"
+  }
+}
