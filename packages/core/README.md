@@ -2,8 +2,7 @@
 
 Webview Bundle is offline-first web resources delivery system for webview mounted
 frameworks/platforms. (
-e.g. [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app/), Android and iOS are
-planned)
+e.g. [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app/), Android and iOS)
 
 > [!NOTE]
 > This project is under development.
@@ -30,7 +29,7 @@ planned)
 </tr>
 <tr>
   <td>8 bytes</td>
-  <td>1 bytes</td>
+  <td>1 byte</td>
   <td>4 bytes</td>
   <td>4 bytes</td>
   <td>Size of index</td>
@@ -45,7 +44,7 @@ planned)
 - **Magic Number (8 bytes)**
   - Big endian format. Value : `0xf09f8c90` / `0xf09f8e81`
   - Represents "🌐🎁" as utf8 encoding.
-- **Version (1 bytes)**
+- **Version (1 byte)**
   - Version field for this webview bundle format.
   - Available versions:
     - version1: `0x01`
@@ -65,7 +64,8 @@ planned)
     value is a big endian format.
   - Format of index should be `HashMap` formatted with binary encoded:
     - Key is a path for this file.
-    - Value contains offset, length for reading contents from the data field.
+    - Value contains offset, length for reading contents from the data field, content type and
+      uncompressed content length.
     - Value can contain http headers which will be included in the response.
 - **Index checksum (4 bytes)**
   - Checksum verifies that the full index data has been decoded correctly.
@@ -79,12 +79,13 @@ planned)
 - **Data**
   - This field has dynamic bytes size which can be determined each file offset and length from
     Index.
-  - The content of data is compressed
-    with [lz4 block format](https://github.com/lz4/lz4/blob/dev/doc/lz4_Block_format.md).
-  - The last 4 bytes are the checksum which is the result
+  - Each file is compressed
+    with [lz4 block format](https://github.com/lz4/lz4/blob/dev/doc/lz4_Block_format.md),
+    prefixed with its uncompressed size as a 4-byte little endian value.
+  - Each compressed file is followed by a 4-byte checksum which is the result
     of [xxHash-32 algorithm](https://github.com/Cyan4973/xxHash/blob/release/doc/xxhash_spec.md)
     digesting the
-    compressed data as input.
+    size-prefixed compressed data as input.
 
 ## Source
 
@@ -97,10 +98,10 @@ The directory structure is as follows:
 ```
 {dir}
 |- {bundle_name}
-|  |- {bundle_name}_{version}.wvb
+|  |- {version}.wvb
 |- app
-|  |- app_1.0.0.wvb
-|  |- app_1.1.0.wvb
+|  |- 1.0.0.wvb
+|  |- 1.1.0.wvb
 |- manifest.json
 ```
 
@@ -112,17 +113,17 @@ Below is the manifest v1 schema:
 ```json
 {
   "manifestVersion": 1,
-  "entries": {
+  "bundles": {
     "<bundle_name>": {
       "versions": {
         "<version>": {
-          "etag": "(optional)",
           "integrity": "(optional)",
-          "signature": "(optional)",
-          "last_modified": "(optional)"
-        },
-        "currentVersion": "<version>"
-      }
+          "metadata": { "key": "value (optional)" }
+        }
+      },
+      "currentVersion": "<version> (optional)",
+      "previousVersion": "<version> (optional)",
+      "stagedVersion": "<version> (optional)"
     },
     "app": {
       "versions": {
@@ -144,130 +145,67 @@ Directories can be separated into two types within the application:
 
 ## Remote HTTP Spec
 
-### List bundles (`GET /bundles`)
+### Get the current update (`GET /update`)
 
-This returns a list of bundles.
+This returns the current update, including a list of bundles and their versions.
 
-Remote bundles must be version-specified. Therefore, bundles with un-deployed versions should be
-excluded from the response.
+The request includes the following headers:
+
+- `wvb-update-protocol-version` : Update protocol version (`1`).
+- `wvb-runtime-version` : Supported update runtime version (`1`).
+- `wvb-update-channel` : (Optional) Channel of this update.
+- `If-None-Match` : (Optional) ETag from the previous response.
+- `wvb-expect-signature` : (Optional) Verification key and algorithm, formatted as
+  `key_id="key1", alg="ed25519"`.
 
 ```http request
-GET /bundles
+GET /update
 Host: wvb.example.com
 Accept: application/json
+Wvb-Update-Protocol-Version: 1
+Wvb-Runtime-Version: 1
 
 ### Response
 HTTP 200 OK
 Content-Type: application/json
+ETag: "update1"
 
-[{ "name": "bundle1", "version": "1.0.0" }]
+{
+  "id": "a91bb7cb-1d45-4f78-bc48-6521371ed7f2",
+  "createdAt": "2026-10-12T00:00:00Z",
+  "runtimeVersion": 1,
+  "bundles": [{ "name": "bundle1", "version": "1.0.0" }]
+}
 ```
 
-### Get the current bundle info (`HEAD /bundles/{name}`)
-
-Get a bundle metadata with the specified name.
-
-Bundle metadata includes the following metadata in response headers:
-
-- `webview-bundle-name` : The name of this bundle.
-- `webview-bundle-version` : Currently deployed version of this bundle.
-- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for
-  verification.
-- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for
-  verification.
-
-```http request
-HEAD /bundles/{name}
-Host: wvb.example.com
-
-### Response
-HTTP 200 OK
-Content-Type: application/webview-bundle
-Webview-Bundle-Name: bundle_name_1
-Webview-Bundle-Version: 1.0.0
-Webview-Bundle-Integrity: ...
-Webview-Bundle-Signature: ...
-```
+Bundle metadata can include optional `integrity`, `downloadUrl` and string-valued `metadata`.
+The optional `wvb-signature` response header contains a signature of the raw update response body,
+formatted as `key_id="key1", alg="ed25519", sig="<base64 signature>"`.
 
 #### Exceptions
 
-If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found
-response.
+If no update is available, the server will return a 204 No Content response.
+If the update matches `If-None-Match`, the server will return a 304 Not Modified response.
+
+### Download a specific version of the bundle (`GET /bundles/{name}/{version}`)
+
+Get a specific version of the bundle with the specified name and version.
+If `downloadUrl` is specified in the update, the client uses that URL instead.
 
 ```http request
-HEAD /bundles/{name}
-Host: wvb.example.com
-
-### Response
-HTTP 404 Not Found
-```
-
-### Download the current bundle (`GET /bundles/{name}`)
-
-Download the current bundle with the specified name.
-
-Bundle metadata includes the following metadata in response headers:
-
-- `webview-bundle-name` : The name of this bundle.
-- `webview-bundle-version` : Currently deployed version of this bundle.
-- `webview-bundle-integrity` : (Optional) Integrity of this bundle which can be used for
-  verification.
-- `webview-bundle-signature` : (Optional) Sinature of this bundle which can be used for
-  verification.
-
-```http request
-GET /bundles/{name}
+GET /bundles/{name}/{version}
 Host: wvb.example.com
 
 ### Response
 HTTP 200 OK
 Content-Type: application/webview-bundle
-Webview-Bundle-Name: bundle_name_1
-Webview-Bundle-Version: 1.0.0
-Webview-Bundle-Integrity: ...
-Webview-Bundle-Signature: ...
 
 (binary data)
 ```
 
 #### Exceptions
 
-If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found
-response.
-
-```http request
-HEAD /bundles/{name}
-Host: wvb.example.com
-
-### Response
-HTTP 404 Not Found
-```
-
-### Download a specific version of the bundle (`GET /bundles/{name}/{version}`)
-
-Get a specific version of the bundle with the specified name and version.
-
-In the enterprise cases, you may want to prevent downloading specific versions. You can enable this
-feature by using the
-`allowOtherVersions` option.
-
-```http request
-GET /bundles/{name}/{version}
-Host: wvb.example.com
-
-### Response
-HTTP 200 OK
-Content-Type: application/webview-bundle
-Webview-Bundle-Name: bundle_name_1
-Webview-Bundle-Version: 1.0.0
-Webview-Bundle-Integrity: ...
-Webview-Bundle-Signature: ...
-```
-
-#### Exceptions
-
-If the bundle does not exist, or the bundle is not deployed, the server will return a 404 Not Found
-response.
+If the bundle version does not exist, the server will return a 404 Not Found response.
 
 ```http request
 GET /bundles/{name}/{version}
@@ -275,14 +213,4 @@ Host: wvb.example.com
 
 ### Response
 HTTP 404 Not Found
-```
-
-If the `allowOtherVersions` option is not enabled, the server will return a 403 Forbidden response.
-
-```http request
-GET /bundles/{name}/{version}
-Host: wvb.example.com
-
-### Response
-HTTP 403 Forbidden
 ```
