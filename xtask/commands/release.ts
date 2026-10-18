@@ -13,7 +13,7 @@ import {
   formatPublishStatus,
   type PublishOutcome,
   packagesBumpedInHead,
-  publishPackage,
+  publishPackages,
   type ReleasedPackage,
 } from '../releasing.ts';
 
@@ -83,7 +83,12 @@ export class ReleaseCommand extends Command {
 
     const ports = createPorts({ repo, githubToken: this.githubToken });
     const head = repo.head().target();
-    const outcomes = await this.publishPackages(targets, ports);
+    const outcomes = await publishPackages(targets, {
+      current: true,
+      distTag: this.distTag,
+      dryRun: this.dryRun,
+      ports,
+    });
     const succeeded = outcomes.filter(x => x.status !== 'failed').map(x => x.package);
     // Per-package failures of the post-publish steps (tag/push/release), folded into the outcomes.
     const stepFailures = new Map<string, string>();
@@ -130,25 +135,6 @@ export class ReleaseCommand extends Command {
     const graph = Package.buildGraph(packages);
     const targets = packagesBumpedInHead(repo, packages);
     return graph.topoSort(targets);
-  }
-
-  /** Publish each target package idempotently (see {@link publishPackage}); returns every outcome. */
-  private async publishPackages(targets: Package[], ports: Ports): Promise<PublishOutcome[]> {
-    const outcomes: PublishOutcome[] = [];
-    for (const pkg of targets) {
-      console.log(`${c.info(`[${pkg.name}]`)} publishing v${pkg.version.toString()}`);
-      const outcome = await publishPackage(pkg, {
-        current: true,
-        distTag: this.distTag,
-        dryRun: this.dryRun,
-        ports,
-      });
-      if (outcome.status === 'failed') {
-        console.error(`${c.error(`[${pkg.name}]`)} publish failed`);
-      }
-      outcomes.push(outcome);
-    }
-    return outcomes;
   }
 
   /** Create the missing git tags; returns the packages whose tag exists afterwards. */
@@ -219,13 +205,13 @@ export class ReleaseCommand extends Command {
       // A throw while resolving assets/changelog is isolated to this package (like a failed
       // action), so one bad package can't abort the run before its report.
       try {
-        const changelog = await Changelog.load(pkg.changelog).catch(() => null);
+        const body = await Changelog.releaseNotes(pkg);
         const actions: Action[] = [
           {
             type: 'ensureRelease',
             tag: tagName,
             name: `${pkg.name} v${pkg.version.toString()}`,
-            body: changelog?.extractChanges(pkg) ?? undefined,
+            body,
             targetCommitish: commitish,
           },
           { type: 'uploadAssets', tag: tagName, assets: await resolveAssets(pkg) },
