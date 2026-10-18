@@ -12,6 +12,19 @@ both match the same directory. A directory counts as a package only when it dire
 `package.json`/`Cargo.toml`/`deno.json`; manifests below it (e.g. napi platform packages under
 `packages/node/npm/*`) are versioned as part of that package.
 
+To exclude manifests from versioning and publishing, set `versionedFilesIgnore` to glob patterns
+relative to the package directory. For example, this entry excludes project templates:
+
+```ts
+{
+  path: 'packages/create-wvb',
+  versionedFilesIgnore: ['template-*/**'],
+}
+```
+
+The patterns apply to `prepare-release`, `prerelease`, and `release`. Changes to excluded files
+still count as package changes. This option does not affect which files the package distributes.
+
 ## Features
 
 Which packages changed is determined from the `package.json`/`Cargo.toml` **dependency graph**,

@@ -82,7 +82,7 @@ export class Package {
     for (const [pkgPath, pkgConfig] of [...dirs.entries()].sort(([a], [b]) => a.localeCompare(b))) {
       const pkgName = pkgConfig.name ?? path.posix.basename(pkgPath);
 
-      const versionedFiles = await VersionedFile.loadAll(pkgPath);
+      const versionedFiles = await VersionedFile.loadAll(pkgPath, pkgConfig.versionedFilesIgnore);
       if (!isNonEmptyArray(versionedFiles)) {
         throw new Error(`Cannot load versioned files from "${pkgPath}"`);
       }

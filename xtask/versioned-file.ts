@@ -41,7 +41,7 @@ export class VersionedFile {
   private _nextVersion: Version | null;
   private pkgManager: PackageManager;
 
-  static async loadAll(dir: string): Promise<VersionedFile[]> {
+  static async loadAll(dir: string, ignore: readonly string[] = []): Promise<VersionedFile[]> {
     // Glob patterns must use POSIX separators; `path.join` emits `\` on Windows, which globbers
     // treat as an escape (matching nothing), so build the patterns with forward slashes.
     const base = dir.replaceAll('\\', '/');
@@ -50,7 +50,12 @@ export class VersionedFile {
       {
         cwd: ROOT_DIR,
         onlyFiles: true,
-        ignore: ['**/node_modules/**', '**/target', '**/dist'],
+        ignore: [
+          '**/node_modules/**',
+          '**/target',
+          '**/dist',
+          ...ignore.map(pattern => path.posix.join(base, pattern.replaceAll('\\', '/'))),
+        ],
       }
     );
     // Glob result order is nondeterministic; sort shallowest-first so the package's own manifest

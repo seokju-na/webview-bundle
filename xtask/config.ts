@@ -20,6 +20,10 @@ export type Script = z.infer<typeof ScriptSchema>;
 const PackageConfigSchema = z.strictObject({
   name: z.string().optional().describe('Package name [Default: directory name]'),
   changelog: z.string().optional().describe('Changelog file path [Default: CHANGELOG.md]'),
+  versionedFilesIgnore: z
+    .array(z.string())
+    .optional()
+    .describe('Manifest exclusion globs, relative to the package directory'),
   artifacts: z.array(ArtifactSchema).optional().describe('Package artifacts config'),
   beforePublishScripts: z
     .array(ScriptSchema)
