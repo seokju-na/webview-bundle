@@ -1,0 +1,22 @@
+# Webview Bundle · ios
+
+Run a ios app with a local Webview Bundle.
+
+## Prerequisites
+
+Node.js 22.12 or later, macOS, Xcode, and [Tuist](https://docs.tuist.dev/en/guides/quick-start/install-tuist).
+
+## Start
+
+Install dependencies and run the app:
+
+```sh
+{{installCommand}}
+{{devCommand}}
+```
+
+The `dev` script generates and opens the Xcode workspace. Select a simulator and run the {{nativeAppName}} scheme.
+
+The app displays a counter. Edit `webview/public/` and run `{{devCommand}}` again to rebuild the builtin bundle. `wvb.config.ts` packs the local `webview` project; no remote server is required.
+
+Before distributing your app, change the native app name and identifier in its platform configuration. See the [Webview Bundle documentation](https://wvb.dev/docs) for remote updates.

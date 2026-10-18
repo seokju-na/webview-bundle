@@ -1,0 +1,15 @@
+{
+  "name": "wvb-tauri-app",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "builtin": "wvb builtin",
+    "dev": "wvb builtin && tauri dev",
+    "build": "wvb builtin && tauri build"
+  },
+  "devDependencies": {
+    "@wvb/cli": "0.3.0",
+    "@tauri-apps/cli": "2.11.3"
+  }
+}

@@ -1,0 +1,22 @@
+# Webview Bundle · electron-builder
+
+Run a electron-builder app with a local Webview Bundle.
+
+## Prerequisites
+
+Node.js 22.12 or later.
+
+## Start
+
+Install dependencies and run the app:
+
+```sh
+{{installCommand}}
+{{devCommand}}
+```
+
+The `dev` script opens the desktop application. Use `{{buildCommand}}` to build it.
+
+The app displays a counter. Edit `webview/public/` and run `{{devCommand}}` again to rebuild the builtin bundle. `wvb.config.ts` packs the local `webview` project; no remote server is required.
+
+Before distributing your app, change the native app name and identifier in its platform configuration. See the [Webview Bundle documentation](https://wvb.dev/docs) for remote updates.

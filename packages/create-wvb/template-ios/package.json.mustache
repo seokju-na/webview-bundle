@@ -1,0 +1,14 @@
+{
+  "name": "wvb-ios-app",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "builtin": "wvb builtin",
+    "dev": "wvb builtin && tuist generate",
+    "build": "wvb builtin && tuist build {{nativeAppName}}"
+  },
+  "devDependencies": {
+    "@wvb/cli": "0.3.0"
+  }
+}

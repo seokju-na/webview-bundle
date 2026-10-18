@@ -1,0 +1,10 @@
+node_modules/
+.wvb/
+dist/
+out/
+.DS_Store
+.gradle/
+.idea/
+local.properties
+**/build/
+app/src/main/assets/bundles/
