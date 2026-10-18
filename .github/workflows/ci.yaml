@@ -121,15 +121,19 @@ jobs:
         with:
           targets: ${{ matrix.settings.target }}
           cache-key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+          cache-workspaces: |
+            . -> target
+            packages/tauri/e2e/fixtures/app/src-tauri -> target
       - name: Setup Deno
+        if: ${{ !matrix.settings.build_only }}
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # 4.0.1
         with:
           install_args: "deno"
       - name: Setup tauri for linux
-        if: matrix.settings.host == 'ubuntu-latest'
+        if: ${{ !matrix.settings.build_only && matrix.settings.host == 'ubuntu-latest' }}
         uses: ./.github/actions/tauri-linux-setup
       - name: Tauri web driver (Linux)
-        if: matrix.settings.host == 'ubuntu-latest'
+        if: ${{ !matrix.settings.build_only && matrix.settings.host == 'ubuntu-latest' }}
         run: |
           sudo apt-get update &&
           sudo apt-get install -y \
@@ -206,6 +210,7 @@ jobs:
         uses: ./.github/actions/rust-setup
         with:
           components: clippy
+          cache-key: clippy
       - name: Run clippy
         run: cargo clippy
   test-rust:
@@ -220,12 +225,8 @@ jobs:
             target: aarch64-apple-darwin
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-          - host: ubuntu-latest
-            target: x86_64-unknown-linux-musl
           - host: windows-latest
             target: x86_64-pc-windows-msvc
-          - host: windows-latest
-            target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.settings.host }}
     steps:
       - name: Git checkout
@@ -235,8 +236,27 @@ jobs:
         uses: ./.github/actions/tauri-linux-setup
       - name: Setup Rust
         uses: ./.github/actions/rust-setup
+        with:
+          cache-key: test-rust-${{ matrix.settings.target }}
       - name: Run cargo test
         run: cargo test --workspace --no-fail-fast --all-features
+  # These names are required by branch protection. They previously repeated host tests
+  # without --target; keep compatibility checks until the required names are retired.
+  test-rust-compat:
+    name: test-rust (${{ matrix.check }})
+    needs: [test-rust]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        check:
+          - ubuntu-latest, x86_64-unknown-linux-musl
+          - windows-latest, aarch64-pc-windows-msvc
+    steps:
+      - name: Require native Rust tests to pass
+        env:
+          RESULT: ${{ needs.test-rust.result }}
+        run: test "$RESULT" = success
   typecheck-lint:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"

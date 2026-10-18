@@ -4,6 +4,11 @@ import path from 'node:path';
 const srcTauriDir = path.join(import.meta.dirname, 'fixtures', 'app', 'src-tauri');
 
 export async function setup(): Promise<void> {
+  // The WebDriver suite only runs on Linux; avoid building a fixture for skipped tests.
+  if (process.platform !== 'linux') {
+    return;
+  }
+
   await new Promise<void>((resolve, reject) => {
     const child = spawn('cargo', ['build', '--release'], {
       cwd: srcTauriDir,

@@ -8,8 +8,12 @@ inputs:
     description: "Comma-separated list of additional targets to install."
     required: false
   cache-key:
-    description: "Cache key for cargo"
+    description: "Extra Cargo cache key (empty disables caching). Toolchain and dependency hashes are added automatically."
     required: false
+  cache-workspaces:
+    description: "Cargo workspace -> target directory mappings, separated by newlines."
+    required: false
+    default: ". -> target"
 runs:
   using: "composite"
   steps:
@@ -23,13 +27,10 @@ runs:
     - name: Cache cargo
       id: cache-cargo
       if: ${{ inputs.cache-key != '' }}
-      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # 5.0.3
+      uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       with:
-        path: |
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
+        key: ${{ inputs.cache-key }}
+        workspaces: ${{ inputs.cache-workspaces }}
+        cache-directories: |
           ~/.napi-rs
           .cargo-cache
-          target/
-        key: ${{ inputs.cache-key }}
