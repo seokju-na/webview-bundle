@@ -1,5 +1,5 @@
 {
-  "name": "@wvb-playground/native-deno",
+  "name": "@wvb-playground/native-deno-desktop",
   "private": true,
   "type": "module",
   "scripts": {
