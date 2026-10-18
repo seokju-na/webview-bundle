@@ -6,6 +6,6 @@ const env = loadEnv();
 export default defineConfig({
   builtin: { include: 'testbed' },
   remote: {
-    endpoint: env.remote.baseUrl,
+    baseUrl: env.remote.baseUrl,
   },
 });
