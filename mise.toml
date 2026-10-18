@@ -1,5 +1,5 @@
 [tools]
 deno  = "2.9.7"
 java  = "21"
-node  = "24.15.0"
+node  = "24.21.0"
 tuist = "4.195.6"
