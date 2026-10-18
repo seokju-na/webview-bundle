@@ -2,7 +2,7 @@
 edition      = "2024"
 name         = "wvb-app"
 rust-version = "1.90"
-version      = "0.0.1"
+version      = "0.1.0"
 
 [workspace]
 

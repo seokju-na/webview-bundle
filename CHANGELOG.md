@@ -1,5 +1,18 @@
 # Changelog
 
+## create-webview-bundle v0.1.0
+
+This release includes packages: [`create-webview-bundle`](https://www.npmjs.com/package/create-webview-bundle/v/0.1.0)
+
+- feat(create): add create cli (#274) (7a5c0aa)
+- update dependencies: create-wvb@0.1.0, wvb-android-app@0.1.0, wvb-electron-builder-app@0.1.0, wvb-electron-forge-app@0.1.0, wvb-electron-app@0.1.0, wvb-tauri-app@0.1.0, app@0.1.0, wvb-app@0.1.0
+
+## create-wvb v0.1.0
+
+This release includes packages: [`create-wvb`](https://www.npmjs.com/package/create-wvb/v/0.1.0), [`wvb-app`](https://crates.io/crates/wvb-app/0.1.0)
+
+- feat(create): add create cli (#274) (7a5c0aa)
+
 ## tauri v0.3.0
 
 This release includes packages: [`wvb-tauri`](https://crates.io/crates/wvb-tauri/0.3.0)
