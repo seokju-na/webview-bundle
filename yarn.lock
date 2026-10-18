@@ -8354,9 +8354,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wvb-playground/native-deno@workspace:playground/native/deno":
+"@wvb-playground/native-deno-desktop@workspace:playground/native/deno-desktop":
   version: 0.0.0-use.local
-  resolution: "@wvb-playground/native-deno@workspace:playground/native/deno"
+  resolution: "@wvb-playground/native-deno-desktop@workspace:playground/native/deno-desktop"
   dependencies:
     "@wvb-playground/env": "workspace:^"
     "@wvb/cli": "workspace:^"
