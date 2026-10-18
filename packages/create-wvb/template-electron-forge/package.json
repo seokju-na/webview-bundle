@@ -1,6 +1,6 @@
 {
   "name": "wvb-electron-forge-app",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,15 +12,15 @@
   },
   "devDependencies": {
     "@wvb/cli": "0.3.0",
-    "electron": "42.5.1",
-    "@electron-forge/cli": "7.11.2",
-    "@electron-forge/maker-zip": "7.11.2",
+    "electron": "^42",
+    "@electron-forge/cli": "^7",
+    "@electron-forge/maker-zip": "^7",
     "@wvb/electron-forge": "0.3.0",
-    "@electron-forge/plugin-vite": "7.11.2",
-    "@electron-forge/shared-types": "7.11.2",
-    "vite": "8.1.5",
+    "@electron-forge/plugin-vite": "^7",
+    "@electron-forge/shared-types": "^7",
+    "vite": "^8",
     "typescript": "7.0.2",
-    "@types/node": "25.9.1"
+    "@types/node": "^25"
   },
   "main": "./.vite/build/main.mjs",
   "dependencies": {

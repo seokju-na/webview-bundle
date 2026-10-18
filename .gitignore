@@ -32,3 +32,5 @@ artifacts-merged/
 # AI
 .claude/
 .codex/
+
+benchmarks/

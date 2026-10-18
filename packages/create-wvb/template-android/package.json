@@ -1,6 +1,6 @@
 {
   "name": "wvb-android-app",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,6 @@
   },
   "devDependencies": {
     "@wvb/cli": "0.3.0",
-    "es-toolkit": "1.51.0"
+    "es-toolkit": "^1.51.0"
   }
 }
