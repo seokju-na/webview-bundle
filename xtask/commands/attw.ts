@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { Command, Option } from 'clipanion';
+import { uniq } from 'es-toolkit';
 import pAll from 'p-all';
 import * as t from 'typanion';
 import { runCommand } from '../child_process.ts';
@@ -34,7 +35,7 @@ export class AttwCommand extends Command {
     setColorMode(this.colorMode);
     const allWorkspaces = await loadAllWorkspaces();
     const includePattern = this.include ?? [];
-    const excludePattern = this.exclude ?? [];
+    const excludePattern = uniq([...(this.exclude ?? []), 'packages/create-*']);
     const workspaces = allWorkspaces
       .filter(x => (includePattern.length > 0 ? matchWorkspaceByPattern(x, includePattern) : true))
       .filter(x => (excludePattern.length > 0 ? !matchWorkspaceByPattern(x, excludePattern) : true))

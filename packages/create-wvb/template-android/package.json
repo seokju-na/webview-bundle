@@ -1,0 +1,15 @@
+{
+  "name": "wvb-android-app",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "builtin": "wvb builtin",
+    "dev": "wvb builtin && node scripts/gradle.mjs installDebug",
+    "build": "wvb builtin && node scripts/gradle.mjs assembleDebug"
+  },
+  "devDependencies": {
+    "@wvb/cli": "0.3.0",
+    "es-toolkit": "1.51.0"
+  }
+}

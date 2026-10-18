@@ -1,0 +1,17 @@
+[package]
+edition      = "2024"
+name         = "wvb-app"
+rust-version = "1.90"
+version      = "0.0.1"
+
+[workspace]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri     = { version = "2", features = [] }
+wvb-tauri = "0.3.0"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

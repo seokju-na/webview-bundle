@@ -1,0 +1,9 @@
+node_modules/
+.wvb/
+dist/
+out/
+.DS_Store
+bundles/
+*.xcodeproj/
+*.xcworkspace/
+Derived/

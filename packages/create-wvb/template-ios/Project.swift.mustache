@@ -1,0 +1,29 @@
+import ProjectDescription
+
+let project = Project(
+  name: "{{nativeAppName}}",
+  packages: [
+    .remote(
+      url: "https://github.com/webview-bundle/webview-bundle-ios.git",
+      requirement: .exact("0.3.0")
+    ),
+  ],
+  targets: [
+    .target(
+      name: "{{nativeAppName}}",
+      destinations: .iOS,
+      product: .app,
+      bundleId: "{{nativeIdentifier}}",
+      deploymentTargets: .iOS("16.0"),
+      infoPlist: .extendingDefault(with: [
+        "UILaunchScreen": .dictionary([:]),
+      ]),
+      sources: ["Sources/**"],
+      resources: [
+        .folderReference(path: "bundles"),
+      ],
+      dependencies: [.package(product: "WebViewBundle")],
+      settings: .settings(base: ["SWIFT_VERSION": "5.0"])
+    ),
+  ]
+)
