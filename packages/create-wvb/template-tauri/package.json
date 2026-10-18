@@ -1,6 +1,6 @@
 {
   "name": "wvb-tauri-app",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,6 @@
   },
   "devDependencies": {
     "@wvb/cli": "0.3.0",
-    "@tauri-apps/cli": "2.11.3"
+    "@tauri-apps/cli": "^2"
   }
 }
