@@ -10934,7 +10934,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"create-wvb@workspace:packages/create-wvb":
+"create-webview-bundle@workspace:packages/create-webview-bundle":
+  version: 0.0.0-use.local
+  resolution: "create-webview-bundle@workspace:packages/create-webview-bundle"
+  dependencies:
+    create-wvb: "workspace:*"
+  bin:
+    create-webview-bundle: ./bin/create-webview-bundle.js
+  languageName: unknown
+  linkType: soft
+
+"create-wvb@workspace:*, create-wvb@workspace:packages/create-wvb":
   version: 0.0.0-use.local
   resolution: "create-wvb@workspace:packages/create-wvb"
   dependencies:

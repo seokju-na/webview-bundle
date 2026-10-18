@@ -13,6 +13,9 @@
     "directory": "packages/create-wvb"
   },
   "bin": "./dist/main.js",
+  "exports": {
+    "./cli": "./dist/main.js"
+  },
   "files": [
     "dist",
     "template-*"
