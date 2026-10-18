@@ -24,6 +24,7 @@
     "tinyglobby": "^0.2.14",
     "typanion": "^3.14.0",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:",
     "webdriverio": "9.27.2",
     "yazl": "^3.3.1",

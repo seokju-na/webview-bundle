@@ -60,6 +60,7 @@
     "playwright-core": "1.61.1",
     "tsdown": "catalog:",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:"
   }
 }

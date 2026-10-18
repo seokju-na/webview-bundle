@@ -48,6 +48,7 @@
     "tsdown": "catalog:",
     "type-fest": "^4.40.1",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:"
   }
 }

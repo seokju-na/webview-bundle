@@ -18,6 +18,7 @@
     "@yarnpkg/types": "^4.0.1",
     "lefthook": "1.13.6",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:"
   },
   "resolutions": {

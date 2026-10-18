@@ -75,6 +75,7 @@
     "esbuild": "0.28.1",
     "tsdown": "catalog:",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:"
   },
   "engines": {
