@@ -1,0 +1,33 @@
+{
+  "imports": {
+    "@wvb/deno/desktop": "jsr:@wvb/deno@0.3.0/desktop",
+    "@wvb/deno/install": "jsr:@wvb/deno@0.3.0/install",
+    "@wvb/cli": "npm:@wvb/cli@0.3.0"
+  },
+  "workspace": [],
+  "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "lib": [
+      "deno.desktop"
+    ]
+  },
+  "tasks": {
+    "install:lib": "deno run --allow-net --allow-read --allow-write @wvb/deno/install",
+    "check": "deno check main.ts",
+    "dev": "deno task builtin && deno task install:lib && deno desktop --hmr --allow-ffi --allow-read --allow-write --allow-env --allow-net --include bundles --include .wvb/lib main.ts",
+    "build": "deno task builtin && deno task install:lib && deno desktop --allow-ffi --allow-read --allow-write --allow-env --allow-net --include bundles --include .wvb/lib main.ts",
+    "builtin": "wvb builtin"
+  },
+  "desktop": {
+    "app": {
+      "name": "WvbApp",
+      "identifier": "com.example.wvbapp"
+    },
+    "backend": "webview",
+    "output": {
+      "macos": "./out/WvbApp.app",
+      "windows": "./out/WvbApp.exe",
+      "linux": "./out/WvbApp"
+    }
+  }
+}

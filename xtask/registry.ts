@@ -115,9 +115,7 @@ const npmRegistry: Registry = {
       args.push(`--tag=${prerelease.id}`);
     } else if (distTag != null) {
       // Maintenance lines publish under a line tag so `latest` never moves backward.
-      args.push(`--tag=${distTag}`, '--staged');
-    } else {
-      args.push('--staged');
+      args.push(`--tag=${distTag}`);
     }
     return { cmd: 'yarn', args, path: dir };
   },

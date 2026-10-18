@@ -1,0 +1,19 @@
+{
+  "name": "wvb-electron-app",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "builtin": "wvb builtin",
+    "dev": "wvb builtin && electron .",
+    "build": "wvb builtin"
+  },
+  "devDependencies": {
+    "@wvb/cli": "0.3.0",
+    "electron": "42.5.1"
+  },
+  "main": "./src/main.js",
+  "dependencies": {
+    "@wvb/electron": "0.3.0"
+  }
+}

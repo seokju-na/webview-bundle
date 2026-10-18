@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "WvbApp",
+  "version": "0.0.1",
+  "identifier": "com.example.wvbapp",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Webview Bundle",
+        "width": 800,
+        "height": 600,
+        "url": "bundle://app.wvb/"
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": {
+      "../.wvb/bundles/": "bundles/"
+    },
+    "icon": ["icons/icon.png", "icons/icon.icns"]
+  }
+}

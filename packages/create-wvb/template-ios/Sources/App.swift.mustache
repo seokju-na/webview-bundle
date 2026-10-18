@@ -1,0 +1,27 @@
+import SwiftUI
+import WebKit
+import WebViewBundle
+
+@main
+struct {{nativeAppName}}App: App {
+  var body: some Scene {
+    WindowGroup { BundleWebView() }
+  }
+}
+
+private struct BundleWebView: UIViewRepresentable {
+  func makeUIView(context: Context) -> WKWebView {
+    do {
+      let bundle = try WebViewBundle.configure(
+        WebViewBundleConfig(protocols: [.bundle(scheme: "bundle")])
+      )
+      let webView = bundle.makeWebView()
+      webView.load(URLRequest(url: URL(string: "bundle://app.wvb/")!))
+      return webView
+    } catch {
+      fatalError("Failed to initialize WebViewBundle: \(error)")
+    }
+  }
+
+  func updateUIView(_ uiView: WKWebView, context: Context) {}
+}

@@ -23,7 +23,8 @@
       "!packages/tauri/permissions/**/*",
       "!**/routeTree.gen.ts",
       "!packages/deno/lib/bindings.ts",
-      "!**/deno.json"
+      "!**/deno.json",
+      "!packages/create-wvb/template-*/**/*"
     ]
   },
   "formatter": {
