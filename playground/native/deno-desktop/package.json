@@ -1,0 +1,16 @@
+{
+  "name": "@wvb-playground/native-deno-desktop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "wvb-playground-env-setup-remote-info && deno task install:lib",
+    "builtin": "wvb builtin",
+    "check": "deno task check",
+    "dev": "deno task dev",
+    "build": "deno task build"
+  },
+  "devDependencies": {
+    "@wvb-playground/env": "workspace:^",
+    "@wvb/cli": "workspace:^"
+  }
+}

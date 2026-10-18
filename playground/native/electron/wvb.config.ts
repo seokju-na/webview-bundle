@@ -5,6 +5,6 @@ const env = loadEnv();
 
 export default defineConfig({
   remote: {
-    endpoint: env.remote.baseUrl,
+    baseUrl: env.remote.baseUrl,
   },
 });

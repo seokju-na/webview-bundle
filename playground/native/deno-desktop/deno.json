@@ -1,0 +1,32 @@
+{
+  "imports": {
+    "@wvb/deno/desktop": "jsr:@wvb/deno@0.3.0/desktop",
+    "@wvb/deno/install": "jsr:@wvb/deno@0.3.0/install"
+  },
+  "workspace": [],
+  "nodeModulesDir": "none",
+  "minimumDependencyAge": {
+    "exclude": ["jsr:@wvb/deno"]
+  },
+  "compilerOptions": {
+    "lib": ["deno.desktop"]
+  },
+  "tasks": {
+    "install:lib": "deno run --allow-net --allow-read --allow-write @wvb/deno/install",
+    "check": "deno check main.ts",
+    "dev": "deno desktop --hmr --allow-ffi --allow-read --allow-write --allow-env --allow-net --include bundles --include .wvb/lib main.ts",
+    "build": "deno desktop --allow-ffi --allow-read --allow-write --allow-env --allow-net --include bundles --include .wvb/lib main.ts"
+  },
+  "desktop": {
+    "app": {
+      "name": "WvbDeno",
+      "identifier": "dev.wvb.playground.deno"
+    },
+    "backend": "webview",
+    "output": {
+      "macos": "./out/WvbDeno.app",
+      "windows": "./out/WvbDeno.exe",
+      "linux": "./out/WvbDeno"
+    }
+  }
+}
