@@ -1,5 +1,9 @@
 # @wvb/electron-forge
 
+Webview Bundle API for [Electron Force](https://www.electronforge.io/).
+
+See the [documentation](https://wvb.dev/docs/guide/electron#electron-forge).
+
 ## Usage with Yarn
 
 These settings prevent Yarn's dependency layout and platform filtering from leaving required packages or native binaries out of the packaged app or DMG build.
@@ -11,3 +15,7 @@ These settings prevent Yarn's dependency layout and platform filtering from leav
   - Override it via `resolutions` with a pinned commit of [seokju-na/fs-xattr](https://github.com/seokju-na/fs-xattr/commit/750966126d2f8fd251be216d4eb4c8b4f85ce54c), as in this repository.
 
 See more details in [playground/native/electron-forge](../../playground/native/electron-forge).
+
+## License
+
+MIT License

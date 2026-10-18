@@ -1,11 +1,15 @@
 # webview-bundle
 
-Webview Bundle is offline-first web resources delivery system for webview mounted
-frameworks/platforms. (
-e.g. [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app/), Android and iOS)
+<img height="56" alt="Webview Bundle" src="https://static.wvb.dev/banner.png" />
 
-> [!NOTE]
-> This project is under development.
+Webview Bundle is an "Offline First" distributing system for web applications on webview-based frameworks and platforms.
+
+Instead of fetching your web application code over the network and rendering it in the webview,                                                                                              
+it loads web application code packed into a webview bundle file (`.wvb`) from local and renders it in the webview. A remote can also be configured to download webview bundles from the remote, effectively delivering up-to-date application code without requiring a native update.
+
+Webview Bundle supports all the platforms that provide a webview — [Electron](https://www.electronjs.org/), [Tauri](https://tauri.app), Android, iOS, and [Deno Desktop](https://docs.deno.com/runtime/desktop/) (experimental) — and also ships with a bridge for communicating with the webview.
+
+For more details, see the [documentation](https://wvb.dev/docs).
 
 ## Webview Bundle Format (.wvb)
 
@@ -214,3 +218,7 @@ Host: wvb.example.com
 ### Response
 HTTP 404 Not Found
 ```
+
+## License
+
+MIT License
