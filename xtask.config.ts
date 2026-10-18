@@ -1,12 +1,13 @@
 import { defineConfig } from './xtask/config.ts';
 
 export default defineConfig({
-  // A directory becomes a package when it directly holds a versioned manifest
-  // (`package.json`/`Cargo.toml`/`deno.json`); everything below it (e.g. napi platform
-  // packages under `packages/node/npm/*`) is versioned as part of that package.
   packages: [
     'packages/*',
     'packages/remote/*',
+    {
+      path: 'packages/create-wvb',
+      versionedFilesIgnore: ['template-*/**'],
+    },
     {
       path: 'packages/node',
       beforePublishScripts: [{ command: 'yarn', args: ['artifacts'] }],
