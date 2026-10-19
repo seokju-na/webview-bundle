@@ -43,6 +43,7 @@ export interface GitPort {
 export interface GitHubRelease {
   id: number;
   htmlUrl: string;
+  body?: string | null;
 }
 
 export interface GitHubReleaseAsset {

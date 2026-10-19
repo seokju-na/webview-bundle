@@ -297,7 +297,8 @@ async function runEnsureReleaseAction(
   let release = await github.findReleaseByTag(action.tag);
   if (release != null) {
     console.log(`${c.warn(`[${name}]`)} github release already exists: ${action.tag}`);
-    if (action.updateBody && action.body != null) {
+    // Complete a release left without notes by an earlier attempt; preserve edited notes.
+    if (action.body != null && (action.updateBody || !release.body?.trim())) {
       await github.updateReleaseBody(release.id, action.body);
     }
   } else {

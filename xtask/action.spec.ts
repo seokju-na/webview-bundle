@@ -140,7 +140,7 @@ describe('ensureRelease action', () => {
   });
 
   it('reuses an existing release, refreshing the body only when asked', async () => {
-    const existing = { id: 7, htmlUrl: 'https://github.test/releases/7' };
+    const existing = { id: 7, htmlUrl: 'https://github.test/releases/7', body: 'edited notes' };
     const github = makeGitHub({ findReleaseByTag: vi.fn(async () => existing) });
     const ports = makePorts({ github });
 
@@ -150,6 +150,16 @@ describe('ensureRelease action', () => {
     expect(reused.items[0]).toMatchObject({ succeed: true, data: existing });
 
     await runActions([{ ...action, updateBody: true }], { ports, reject: false });
+    expect(github.updateReleaseBody).toHaveBeenCalledWith(7, 'notes');
+  });
+
+  it.each([null, '', ' \n'])('repairs an existing release with an empty body: %j', async body => {
+    const github = makeGitHub({
+      findReleaseByTag: vi.fn(async () => ({ id: 7, htmlUrl: 'u', body })),
+    });
+    const result = await runActions([action], { ports: makePorts({ github }), reject: false });
+    expect(result.allSucceed).toBe(true);
+    expect(github.createRelease).not.toHaveBeenCalled();
     expect(github.updateReleaseBody).toHaveBeenCalledWith(7, 'notes');
   });
 
