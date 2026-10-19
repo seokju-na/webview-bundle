@@ -18,7 +18,10 @@ const ScriptSchema = z.strictObject({
 export type Script = z.infer<typeof ScriptSchema>;
 
 const PackageConfigSchema = z.strictObject({
-  name: z.string().optional().describe('Package name [Default: directory name]'),
+  name: z
+    .string()
+    .optional()
+    .describe('Package name [Default: directory path without packages/, joined with hyphens]'),
   changelog: z.string().optional().describe('Changelog file path [Default: CHANGELOG.md]'),
   versionedFilesIgnore: z
     .array(z.string())

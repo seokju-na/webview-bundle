@@ -80,7 +80,13 @@ export class Package {
 
     const packages: Package[] = [];
     for (const [pkgPath, pkgConfig] of [...dirs.entries()].sort(([a], [b]) => a.localeCompare(b))) {
-      const pkgName = pkgConfig.name ?? path.posix.basename(pkgPath);
+      const pkgName =
+        pkgConfig.name ??
+        path.posix
+          .normalize(pkgPath)
+          .replace(/^packages\//, '')
+          .replace(/\/$/, '')
+          .replaceAll('/', '-');
 
       const versionedFiles = await VersionedFile.loadAll(pkgPath, pkgConfig.versionedFilesIgnore);
       if (!isNonEmptyArray(versionedFiles)) {
