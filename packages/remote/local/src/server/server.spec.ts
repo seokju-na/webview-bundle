@@ -92,29 +92,23 @@ describe('webviewBundleRemote', () => {
     });
   });
 
-  it.each([
-    undefined,
-    '',
-    '0',
-    '-1',
-    '1.5',
-    'invalid',
-    'Infinity',
-    '9007199254740992',
-  ])('rejects an invalid runtime version: %s', async runtimeVersion => {
-    const server = webviewBundleServer({ baseDir });
-    const headers = new Headers({ 'wvb-update-protocol-version': '1' });
-    if (runtimeVersion != null) {
-      headers.set('wvb-runtime-version', runtimeVersion);
+  it.each([undefined, '', '0', '-1', '1.5', 'invalid', 'Infinity', '9007199254740992'])(
+    'rejects an invalid runtime version: %s',
+    async runtimeVersion => {
+      const server = webviewBundleServer({ baseDir });
+      const headers = new Headers({ 'wvb-update-protocol-version': '1' });
+      if (runtimeVersion != null) {
+        headers.set('wvb-runtime-version', runtimeVersion);
+      }
+
+      const response = await server.request('/update', { headers });
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({
+        message: `Invalid runtime version: ${runtimeVersion}`,
+      });
     }
-
-    const response = await server.request('/update', { headers });
-
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({
-      message: `Invalid runtime version: ${runtimeVersion}`,
-    });
-  });
+  );
 
   it('serves the current update and handles its etag', async () => {
     await writeUpdate();

@@ -190,6 +190,33 @@ export interface PublishOutcome {
   reason?: string;
 }
 
+/** Publish dependencies first, blocking dependents of a failed package while continuing others. */
+export async function publishPackages(
+  targets: Package[],
+  opts: PublishPackageOptions = {}
+): Promise<PublishOutcome[]> {
+  const graph = Package.buildGraph(targets);
+  const failed = new Set<Package>();
+  const outcomes: PublishOutcome[] = [];
+  for (const pkg of graph.topoSort(targets)) {
+    const blockedBy = graph.dependenciesOf(pkg).filter(dep => failed.has(dep));
+    let outcome: PublishOutcome;
+    if (blockedBy.length > 0) {
+      const reason = `dependency publish failed: ${blockedBy.map(dep => dep.name).join(', ')}`;
+      console.error(`${c.error(`[${pkg.name}]`)} ${reason}`);
+      outcome = { package: pkg, status: 'failed', reason };
+    } else {
+      console.log(`${c.info(`[${pkg.name}]`)} publishing v${pkg.version.toString()}`);
+      outcome = await publishPackage(pkg, opts);
+    }
+    if (outcome.status === 'failed') {
+      failed.add(pkg);
+    }
+    outcomes.push(outcome);
+  }
+  return outcomes;
+}
+
 export interface PublishPackageOptions {
   /** Publish the manifests' current (already-written) version instead of the pending bump. */
   current?: boolean;

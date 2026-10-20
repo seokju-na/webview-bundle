@@ -16,6 +16,22 @@ export class Changelog {
     return new Changelog(filepath, content);
   }
 
+  static async releaseNotes(pkg: Package): Promise<string> {
+    for (const filepath of new Set([pkg.changelog, 'CHANGELOG.md'])) {
+      const changelog = await Changelog.load(filepath).catch((error: NodeJS.ErrnoException) => {
+        if (error.code === 'ENOENT') {
+          return null;
+        }
+        throw error;
+      });
+      const notes = changelog?.extractChanges(pkg);
+      if (notes) {
+        return notes;
+      }
+    }
+    throw new Error(`Missing release notes for ${pkg.name} v${pkg.nextVersion.toString()}`);
+  }
+
   constructor(path: string, raw: string) {
     this.path = path;
     this.raw = raw;
@@ -32,7 +48,7 @@ export class Changelog {
     }
     const title = this.formatTitle(pkg);
     const changesLines = changes.changes.map(x => `- ${x.toString()}`);
-    const idx = this.lines.findIndex(x => x.startsWith(title));
+    const idx = this.lines.findIndex(x => x.trimEnd() === title);
     if (idx > -1) {
       this.lines.splice(idx + 2, 0, ...changesLines);
     } else {
@@ -59,7 +75,7 @@ export class Changelog {
   extractChanges(pkg: Package): string | null {
     const lines = [];
     const title = this.formatTitle(pkg);
-    let idx = this.lines.findIndex(x => x.startsWith(title));
+    let idx = this.lines.findIndex(x => x.trimEnd() === title);
     if (idx === -1) {
       return null;
     }
@@ -71,7 +87,7 @@ export class Changelog {
       lines.push(this.lines[idx]!);
       idx += 1;
     }
-    return this.lines.join('\n');
+    return lines.join('\n').trim();
   }
 
   write(): Action[] {

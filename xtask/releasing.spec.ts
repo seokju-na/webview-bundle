@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import type { PackageConfig } from './config.ts';
 import { Package } from './package.ts';
 import type { Ports } from './ports.ts';
-import { observePublishState, planPackagePublish, publishPackage } from './releasing.ts';
+import {
+  observePublishState,
+  planPackagePublish,
+  publishPackage,
+  publishPackages,
+} from './releasing.ts';
 import { Version } from './version.ts';
 import { VersionedFile } from './versioned-file.ts';
 
@@ -69,6 +74,61 @@ function makePorts(overrides: Partial<Ports> = {}): Ports {
     ...overrides,
   };
 }
+
+describe('publishing dependent packages', () => {
+  function pkg(name: string, dependency?: string): Package {
+    const file = VersionedFile.parse(
+      'package.json',
+      `packages/${name}/package.json`,
+      JSON.stringify({
+        name,
+        version: '0.1.0',
+        dependencies: dependency ? { [dependency]: 'workspace:*' } : {},
+      })
+    )!;
+    return new Package(name, `packages/${name}`, [file], {});
+  }
+
+  it('blocks direct and transitive dependents after a provenance failure, but publishes unrelated packages', async () => {
+    const core = pkg('create-wvb');
+    const alias = pkg('create-webview-bundle', 'create-wvb');
+    const dependent = pkg('dependent', 'create-webview-bundle');
+    const unrelated = pkg('unrelated');
+    const run = vi.fn(async (_cmd, _args, opts) =>
+      opts.cwd.endsWith('/create-wvb')
+        ? {
+            exitCode: 1,
+            output:
+              'error creating tlog entry - (409) an equivalent entry already exists in the transparency log',
+          }
+        : { exitCode: 0, output: '' }
+    );
+    const outcomes = await publishPackages([dependent, alias, core, unrelated], {
+      current: true,
+      ports: makePorts({ proc: { run } }),
+    });
+    expect(outcomes.map(x => [x.package.name, x.status])).toEqual([
+      ['create-wvb', 'failed'],
+      ['create-webview-bundle', 'failed'],
+      ['dependent', 'failed'],
+      ['unrelated', 'published'],
+    ]);
+    expect(outcomes[1]?.reason).toBe('dependency publish failed: create-wvb');
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it('resumes dependents when their dependency was already published', async () => {
+    const ports = makePorts({
+      registry: { exists: vi.fn(async (_type, name) => name === 'create-wvb') },
+    });
+    const outcomes = await publishPackages(
+      [pkg('create-webview-bundle', 'create-wvb'), pkg('create-wvb')],
+      { current: true, ports }
+    );
+    expect(outcomes.map(x => x.status)).toEqual(['already-published', 'published']);
+    expect(ports.proc.run).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('deno.json manifest', () => {
   it('parses a named, versioned deno.json as a jsr release target', () => {

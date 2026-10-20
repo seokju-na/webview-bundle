@@ -36,7 +36,7 @@ export function createGitHubPort(token: string): GitHubPort {
     async findReleaseByTag(tag) {
       try {
         const release = await client.rest.repos.getReleaseByTag({ ...repo, tag });
-        return { id: release.data.id, htmlUrl: release.data.html_url };
+        return { id: release.data.id, htmlUrl: release.data.html_url, body: release.data.body };
       } catch (e) {
         if ((e as { status?: number }).status === 404) {
           return null;
@@ -54,7 +54,7 @@ export function createGitHubPort(token: string): GitHubPort {
         // Pins a tag GitHub might still need to create to the release commit.
         target_commitish: params.targetCommitish,
       });
-      return { id: release.data.id, htmlUrl: release.data.html_url };
+      return { id: release.data.id, htmlUrl: release.data.html_url, body: release.data.body };
     },
     async updateReleaseBody(releaseId, body) {
       await client.rest.repos.updateRelease({ ...repo, release_id: releaseId, body });
