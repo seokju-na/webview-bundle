@@ -58,6 +58,7 @@
     "tinyglobby": "^0.2.14",
     "tsdown": "catalog:",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:",
     "yargs": "^18.0.0"
   },

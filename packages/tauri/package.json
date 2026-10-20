@@ -12,6 +12,7 @@
     "@wvb-playground/webview-hacker-news": "0.0.0",
     "selenium-webdriver": "4.44.0",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:"
   }
 }

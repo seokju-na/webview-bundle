@@ -67,6 +67,7 @@
     "@types/picomatch": "^4",
     "tsdown": "catalog:",
     "typescript": "catalog:",
+    "vite": "^8.1.5",
     "vitest": "catalog:"
   },
   "engines": {
