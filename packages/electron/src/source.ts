@@ -37,6 +37,6 @@ function defaultBuiltinDir(): string {
   return path.join(process.cwd(), '.wvb', 'builtin', 'bundles');
 }
 
-function defaultRemoteDir(): string {
+export function defaultRemoteDir(): string {
   return path.join(app.getPath('userData'), 'bundles');
 }
