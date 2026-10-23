@@ -9,7 +9,7 @@
     "@types/node": "catalog:",
     "@types/selenium-webdriver": "4.35.6",
     "@wvb-playground/testing": "0.0.1",
-    "@wvb-playground/webview-hacker-news": "0.0.0",
+    "@wvb-playground/webview-hacker-news": "0.2.0",
     "selenium-webdriver": "4.44.0",
     "typescript": "catalog:",
     "vite": "^8.1.5",

@@ -54,7 +54,7 @@
     "@playwright/test": "1.61.1",
     "@types/node": "catalog:",
     "@wvb-playground/testdriver": "0.0.1",
-    "@wvb-playground/webview-hacker-news": "0.0.0",
+    "@wvb-playground/webview-hacker-news": "0.2.0",
     "@wvb/node": "workspace:^",
     "electron": "^42.5.1",
     "playwright-core": "1.61.1",
