@@ -1,5 +1,13 @@
 # Changelog
 
+## electron v0.3.1
+
+This release includes packages: [`@wvb/electron`](https://www.npmjs.com/package/@wvb/electron/v/0.3.1)
+
+- fix(electron): make `updateFilepath` option optional (#288) (7563a02)
+- fix(electron): update builtin source default directory (#287) (9510173)
+- update dependencies: wvb-node@0.3.1, @wvb/node@0.3.1, @wvb/node-android-arm-eabi@0.3.1, @wvb/node-android-arm64@0.3.1, @wvb/node-darwin-arm64@0.3.1, @wvb/node-darwin-x64@0.3.1, @wvb/node-linux-arm-gnueabihf@0.3.1, @wvb/node-linux-arm64-gnu@0.3.1, @wvb/node-linux-arm64-musl@0.3.1, @wvb/node-linux-x64-gnu@0.3.1, @wvb/node-linux-x64-musl@0.3.1, @wvb/node-win32-arm64-msvc@0.3.1, @wvb/node-win32-ia32-msvc@0.3.1, @wvb/node-win32-x64-msvc@0.3.1
+
 ## electron v0.3.0
 
 This release includes packages: [`@wvb/electron`](https://www.npmjs.com/package/@wvb/electron/v/0.3.0)
