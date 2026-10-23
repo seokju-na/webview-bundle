@@ -40,9 +40,34 @@ const { task } = await cli.build({
 const outputs = await task;
 
 for (const { kind, path: file } of outputs) {
-  if (kind === 'dts') {
+  if (kind === 'js' && path.basename(file) === 'binding.cjs') {
+    await writeFile(file, usePackageVersion(await readFile(file, 'utf8')));
+  } else if (kind === 'dts') {
     await writeFile(file, unwrapOutcome(await readFile(file, 'utf8')));
   }
+}
+
+// Read the published manifest at runtime: prerelease versions are assigned after native builds.
+function usePackageVersion(binding: string): string {
+  const comparisons = /bindingPackageVersion !== '[^']+'/g;
+  const messages = /Native binding package version mismatch, expected [^\s]+ but got/g;
+  const count = [...binding.matchAll(comparisons)].length;
+  const anchor = 'let nativeBinding = null';
+  if (
+    count === 0 ||
+    count !== [...binding.matchAll(messages)].length ||
+    binding.split(anchor).length !== 2
+  ) {
+    throw new Error('Unexpected napi-rs binding version checks; update the binding postprocessor');
+  }
+  return binding
+    .replace(comparisons, 'bindingPackageVersion !== expectedBindingVersion')
+    .replace(
+      messages,
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: emitted JavaScript interpolation
+      'Native binding package version mismatch, expected ${expectedBindingVersion} but got'
+    )
+    .replace(anchor, `const expectedBindingVersion = require('./package.json').version\n${anchor}`);
 }
 
 // `Outcome<T>` is a Rust-side wrapper (see src/error.rs) that must not reach the published types,
