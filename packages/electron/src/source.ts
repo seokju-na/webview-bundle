@@ -31,7 +31,10 @@ export function source(options: SourceOptions = {}): Source {
 }
 
 function defaultBuiltinDir(): string {
-  return path.join(app.isPackaged ? process.resourcesPath : process.cwd(), 'bundles');
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'bundles');
+  }
+  return path.join(process.cwd(), '.wvb', 'builtin', 'bundles');
 }
 
 function defaultRemoteDir(): string {
