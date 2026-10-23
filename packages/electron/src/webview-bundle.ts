@@ -1,9 +1,10 @@
+import path from 'node:path';
 import type { Remote, Source, Updater, UpdaterOptions } from '@wvb/node';
 import { registerIpc } from './ipc.js';
 import { wvbNode } from './native.js';
 import { type Protocol, registerProtocol } from './protocol.js';
 import { type RemoteOptions, remote } from './remote.js';
-import { type SourceOptions, source } from './source.js';
+import { defaultRemoteDir, type SourceOptions, source } from './source.js';
 
 /** Remote endpoint and options used by the optional updater. */
 export interface WebviewBundleRemoteConfig extends RemoteOptions {
@@ -15,8 +16,8 @@ export interface WebviewBundleRemoteConfig extends RemoteOptions {
 export interface WebviewBundleUpdaterConfig extends UpdaterOptions {
   /** Remote service from which updates are requested. */
   remote: WebviewBundleRemoteConfig;
-  /** Persistent location for the last installed update metadata. */
-  updateFilepath: string;
+  /** Persistent update metadata location. Defaults to `update.json` in the remote bundle directory. */
+  updateFilepath?: string;
 }
 
 /** Configuration used to initialize the Electron integration. */
@@ -50,7 +51,7 @@ export class WebviewBundle {
       this._updater = new wvbNode.Updater(
         this._source,
         this._remote,
-        updateFilepath,
+        updateFilepath ?? path.join(config.source?.remoteDir ?? defaultRemoteDir(), 'update.json'),
         updaterOptions
       );
     }
