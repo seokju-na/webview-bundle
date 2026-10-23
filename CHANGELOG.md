@@ -1,5 +1,19 @@
 # Changelog
 
+## electron v0.3.1
+
+This release includes packages: [`@wvb/electron`](https://www.npmjs.com/package/@wvb/electron/v/0.3.1)
+
+- fix(electron): make `updateFilepath` option optional (#288) (7563a02)
+- fix(electron): update builtin source default directory (#287) (9510173)
+- update dependencies: wvb-node@0.3.1, @wvb/node@0.3.1, @wvb/node-android-arm-eabi@0.3.1, @wvb/node-android-arm64@0.3.1, @wvb/node-darwin-arm64@0.3.1, @wvb/node-darwin-x64@0.3.1, @wvb/node-linux-arm-gnueabihf@0.3.1, @wvb/node-linux-arm64-gnu@0.3.1, @wvb/node-linux-arm64-musl@0.3.1, @wvb/node-linux-x64-gnu@0.3.1, @wvb/node-linux-x64-musl@0.3.1, @wvb/node-win32-arm64-msvc@0.3.1, @wvb/node-win32-ia32-msvc@0.3.1, @wvb/node-win32-x64-msvc@0.3.1
+
+## node v0.3.1
+
+This release includes packages: [`@wvb/node`](https://www.npmjs.com/package/@wvb/node/v/0.3.1), [`@wvb/node-android-arm-eabi`](https://www.npmjs.com/package/@wvb/node-android-arm-eabi/v/0.3.1), [`@wvb/node-android-arm64`](https://www.npmjs.com/package/@wvb/node-android-arm64/v/0.3.1), [`@wvb/node-darwin-arm64`](https://www.npmjs.com/package/@wvb/node-darwin-arm64/v/0.3.1), [`@wvb/node-darwin-x64`](https://www.npmjs.com/package/@wvb/node-darwin-x64/v/0.3.1), [`@wvb/node-linux-arm-gnueabihf`](https://www.npmjs.com/package/@wvb/node-linux-arm-gnueabihf/v/0.3.1), [`@wvb/node-linux-arm64-gnu`](https://www.npmjs.com/package/@wvb/node-linux-arm64-gnu/v/0.3.1), [`@wvb/node-linux-arm64-musl`](https://www.npmjs.com/package/@wvb/node-linux-arm64-musl/v/0.3.1), [`@wvb/node-linux-x64-gnu`](https://www.npmjs.com/package/@wvb/node-linux-x64-gnu/v/0.3.1), [`@wvb/node-linux-x64-musl`](https://www.npmjs.com/package/@wvb/node-linux-x64-musl/v/0.3.1), [`@wvb/node-win32-arm64-msvc`](https://www.npmjs.com/package/@wvb/node-win32-arm64-msvc/v/0.3.1), [`@wvb/node-win32-ia32-msvc`](https://www.npmjs.com/package/@wvb/node-win32-ia32-msvc/v/0.3.1), [`@wvb/node-win32-x64-msvc`](https://www.npmjs.com/package/@wvb/node-win32-x64-msvc/v/0.3.1)
+
+- fix(node): match expect package version from `package.json` file (#290) (338139e)
+
 ## create-webview-bundle v0.1.0
 
 This release includes packages: [`create-webview-bundle`](https://www.npmjs.com/package/create-webview-bundle/v/0.1.0)

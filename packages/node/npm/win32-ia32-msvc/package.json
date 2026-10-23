@@ -1,6 +1,6 @@
 {
   "name": "@wvb/node-win32-ia32-msvc",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Webview bundle API for Node.js",
   "homepage": "https://github.com/webview-bundle/webview-bundle",
   "bugs": {
