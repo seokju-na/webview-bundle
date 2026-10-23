@@ -1,0 +1,22 @@
+{
+  "name": "wvb-electron-app",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "builtin": "wvb builtin",
+    "dev": "wvb builtin && {{{buildMainCommand}}} && {{{buildPreloadCommand}}} && electron .",
+    "build": "{{{buildMainCommand}}} && {{{buildPreloadCommand}}}",
+    "build:main": "esbuild src/main.ts --bundle --outdir=dist --platform=node --format=cjs --external:electron --external:@wvb/electron",
+    "build:preload": "esbuild src/preload.ts --bundle --outdir=dist --platform=node --format=cjs --external:electron"
+  },
+  "main": "./dist/main.js",
+  "dependencies": {
+    "@wvb/electron": "0.3.0"
+  },
+  "devDependencies": {
+    "@wvb/cli": "0.3.0",
+    "electron": "45.0.0",
+    "esbuild": "0.28.2",
+    "typescript": "~7.0.2"
+  }
+}
