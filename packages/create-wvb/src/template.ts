@@ -11,6 +11,8 @@ interface TemplateContext {
   installCommand: string;
   devCommand: string;
   buildCommand: string;
+  buildMainCommand: string;
+  buildPreloadCommand: string;
 }
 
 export function createTemplateContext(
@@ -38,6 +40,8 @@ export function createTemplateContext(
     installCommand: `${manager.name} install`,
     devCommand: runCommand(manager, 'dev'),
     buildCommand: runCommand(manager, 'build'),
+    buildMainCommand: runCommand(manager, 'build:main'),
+    buildPreloadCommand: runCommand(manager, 'build:preload'),
   };
 }
 
@@ -50,11 +54,15 @@ export function readTemplate(
   const renames: Record<string, string> = {
     _gitignore: '.gitignore',
     '_yarnrc.yml': '.yarnrc.yml',
+    _npmrc: '.npmrc',
   };
 
   function readDirectory(directory: string, relativeDir: string): void {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
       if (entry.name === '_yarnrc.yml' && !isYarnBerry(manager)) {
+        continue;
+      }
+      if (entry.name === '_npmrc' && manager.name !== 'pnpm') {
         continue;
       }
       const source = path.join(directory, entry.name);

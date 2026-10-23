@@ -1,11 +1,11 @@
-import { withWebviewBundle } from '@wvb/electron-builder';
+const { withWebviewBundle } = require('@wvb/electron-builder');
 
-export default withWebviewBundle({
+module.exports = withWebviewBundle({
   appId: 'com.example.wvbapp',
   productName: 'WvbApp',
   directories: { output: 'out' },
-  files: ['src/**/*'],
+  files: ['dist/**/*'],
   asar: true,
   asarUnpack: ['**/*.node'],
   npmRebuild: false,
-}, { root: import.meta.dirname });
+});

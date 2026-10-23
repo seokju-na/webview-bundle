@@ -21,4 +21,4 @@ The app displays a counter. Edit `webview/public/` and run `{{devCommand}}` agai
 
 Before distributing your app, change the native app name and identifier in its platform configuration. See the [Webview Bundle documentation](https://wvb.dev/docs) for remote updates.
 
-Main and preload sources are built with the Electron Forge Vite plugin. `vite.config.ts` keeps `@wvb/electron` external; Forge includes its runtime files when packaging. Edit `src/main.ts` and `src/preload.ts` to change native behavior.
+The `build:main` and `build:preload` scripts compile main and preload sources with esbuild. The main build keeps `@wvb/electron` external; Forge includes its runtime files when packaging. The `dev`, `build`, and `make` scripts run both builds before starting Forge. Edit `src/main.ts` and `src/preload.ts` to change native behavior.
