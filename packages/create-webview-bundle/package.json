@@ -1,6 +1,6 @@
 {
   "name": "create-webview-bundle",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Create a Webview Bundle project",
   "type": "module",
   "license": "MIT",
