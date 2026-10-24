@@ -1,5 +1,18 @@
 # Changelog
 
+## create-webview-bundle v0.2.0
+
+This release includes packages: [`create-webview-bundle`](https://www.npmjs.com/package/create-webview-bundle/v/0.2.0)
+
+- feat(create-wvb): update electron template (#291) (9a479d3)
+- update dependencies: create-wvb@0.2.0
+
+## create-wvb v0.2.0
+
+This release includes packages: [`create-wvb`](https://www.npmjs.com/package/create-wvb/v/0.2.0)
+
+- feat(create-wvb): update electron template (#291) (9a479d3)
+
 ## electron v0.3.1
 
 This release includes packages: [`@wvb/electron`](https://www.npmjs.com/package/@wvb/electron/v/0.3.1)
